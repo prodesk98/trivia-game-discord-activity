@@ -2,12 +2,12 @@ import config from "@colyseus/tools";
 import { monitor } from "@colyseus/monitor";
 import { playground } from "@colyseus/playground";
 
-import { auth, JWT } from "@colyseus/auth";
+import { JWT } from "@colyseus/auth";
 
 /**
  * Import your Room files
  */
-import { GameRoom } from "./rooms/GameRoom";
+import { TriviaGameRoom } from "./rooms/TriviaGameRoom";
 
 export default config({
 
@@ -15,7 +15,7 @@ export default config({
         /**
          * Define your room handlers:
          */
-        gameServer.define('game', GameRoom)
+        gameServer.define('game', TriviaGameRoom)
             .filterBy(['channelId']);
 
     },
