@@ -1,10 +1,12 @@
 import './App.css'
-import CreateRoom from "./components/CreateRoom.tsx";
+
+// components
+import GameRoom from "./components/GameRoom.tsx";
 
 function App() {
   return (
     <>
-        <CreateRoom />
+        <GameRoom />
     </>
   )
 }

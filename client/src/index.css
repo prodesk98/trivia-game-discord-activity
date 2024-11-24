@@ -1,5 +1,4 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -21,11 +20,41 @@
 }
 
 body {
-  font-family: Arial, sans-serif;
-  background-color: #FFD700;
-  color: white;
+  font-family: 'Fredoka One', cursive;
+  /*background: linear-gradient(135deg, #f39c12, #f1c40f);*/
+  background-size: 400% 400%; /* Para animação */
+  animation: gradientAnimation 10s ease infinite;
+  color: #fff;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
+  overflow: hidden;
 }
+
+/* Adicionando pontos ou textura no fundo */
+/*noinspection CssUnknownTarget*/
+body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('/cubes-texture.png'); /* Textura de fundo */
+  opacity: 0.2; /* Textura sutil */
+  pointer-events: none;
+}
+
+/* Animação de gradiente */
+@keyframes gradientAnimation {
+  0% { background-position: 0 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+h1, h2, .btn {
+  text-shadow: 0 0 8px #fff, 0 0 15px #f1c40f;
+}
+
+
