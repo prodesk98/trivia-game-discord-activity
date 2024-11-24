@@ -1,11 +1,10 @@
 import './App.css'
+import CreateRoom from "./components/CreateRoom.tsx";
 
 function App() {
   return (
     <>
-        <center>
-            <h1>Working</h1>
-        </center>
+        <CreateRoom />
     </>
   )
 }
