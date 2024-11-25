@@ -4,16 +4,29 @@ import accept from "../assets/icons/accept.png";
 import incorrect from "../assets/icons/incorrect.png";
 import trophy from "../assets/icons/trophy.png";
 import correctSound from "../assets/sounds/correct-answer.wav";
+import backgroundMusicGameTimer from "../assets/sounds/music-game-timer.wav";
 
 // css
 import "../css/GameRoom.css";
 
 import confetti from "canvas-confetti";
 
+import {Bounce, toast} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+
 export default function GameRoom(){
     const [timeLeft, setTimeLeft] = useState(30); // 30 segundos para responder
     const totalTime = 30; // Tempo total da pergunta
-    const soundEffectRef = useRef(new Audio(correctSound));
+
+    // Efeito sonoro de resposta correta
+    const correctSoundEffect = useRef(() => {
+        const audio = new Audio(correctSound);
+        audio.volume = 0.8;
+        audio.currentTime = 0;
+        audio.loop = false;
+        return audio;
+    });
 
     // Lista de jogadores
     const players = [
@@ -31,12 +44,34 @@ export default function GameRoom(){
         }
     }, [timeLeft]);
 
+    // background music
+    // TODO: Purchase the full track: https://1.envato.market/WDQBgA
+    useEffect(() => {
+        const audio = new Audio(backgroundMusicGameTimer);
+        audio.loop = true;
+        audio.volume = 0.08;
+        audio.play().then(() => console.log("Background music started!"));
+        return () => {
+            audio.pause();
+            audio.currentTime = 0;
+        };
+    }, []);
+
+    const handleNotifyError = (e: string) => toast.error(e, {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+        transition: Bounce,
+    });
+
     const handleConfetti = (e: any) => {
         const rect = e.target.getBoundingClientRect();
         const y = (rect.top + rect.height / 2) / window.innerHeight;
-
-        soundEffectRef.current.currentTime = 0;
-        soundEffectRef.current.play().then(() => console.log("Audio played!"));
 
         // Chama o efeito de confete quando o botão é clicado
         confetti({
@@ -45,6 +80,16 @@ export default function GameRoom(){
             origin: { y: y }, // Origem (ajusta a altura do disparo)
         });
     };
+
+    const handleAnswer = (e: any) => {
+        if (timeLeft <= 0) {
+            handleNotifyError(`${timeLeft} seconds left to answer!`);
+            return;
+        }
+
+        correctSoundEffect.current().play().then(() => console.log("Correct answer!"));
+        handleConfetti(e);
+    }
 
     const progressPercentage = (timeLeft / totalTime) * 100;
 
@@ -100,15 +145,15 @@ export default function GameRoom(){
 
                 {/* Pergunta */}
                 <div className="question">
-                    In vanilla Minecraft, which of the following cannot be made into a block?você!é
+                    Qual a melhor linguagem de programação de todos os tempos?
                 </div>
 
                 {/* Opções */}
                 <div className="options">
-                    <button className="option" onClick={handleConfetti}>String</button>
-                    <button className="option" onClick={handleConfetti}>Coal</button>
-                    <button className="option" onClick={handleConfetti}>Wheat</button>
-                    <button className="option correct" onClick={handleConfetti}>Charcoal</button>
+                    <button className="option" onClick={handleAnswer}>C++</button>
+                    <button className="option" onClick={handleAnswer}>C#</button>
+                    <button className="option correct" onClick={handleAnswer}>Python</button>
+                    <button className="option" onClick={handleAnswer}>Javascript</button>
                 </div>
             </div>
         </div>
