@@ -158,6 +158,10 @@
     animation: correct-shake 0.5s ease;
 }
 
+.option.incorrect {
+    background: #FF4040; /* Vermelho Coral */
+}
+
 /* Animação de acerto */
 @keyframes correct-shake {
     0%, 100% {
@@ -170,3 +174,125 @@
         transform: translateX(5px);
     }
 }
+
+.top-right-buttons {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 12px; /* Ajuste no espaçamento para maior clareza */
+}
+
+.top-right-buttons > button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Espaço entre o ícone e o texto */
+    padding: 12px 18px;
+    border-radius: 12px; /* Bordas mais suaves */
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Adiciona profundidade */
+    transition: all 0.3s ease; /* Animações suaves para hover e clique */
+}
+
+/* Botão Sair */
+.btn-exit {
+    background-color: #ff5c5c; /* Vermelho mais suave */
+    color: #fff;
+}
+
+.btn-exit:hover {
+    background-color: #e94f4f;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2); /* Efeito de foco */
+    transform: scale(1.05); /* Leve zoom no hover */
+}
+
+.btn-exit:active {
+    transform: scale(0.95); /* Feedback ao clicar */
+}
+
+/* Botão Mutar */
+.btn-mute {
+    background-color: #b0b8c1; /* Cinza mais claro */
+    color: #fff;
+}
+
+.btn-mute:hover {
+    background-color: #6c757d;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2); /* Efeito de foco */
+    transform: scale(1.05); /* Leve zoom no hover */
+}
+
+.btn-mute:active {
+    transform: scale(0.95); /* Feedback ao clicar */
+}
+
+/* Ícones */
+button i {
+    font-size: 1.2rem; /* Tamanho do ícone */
+}
+
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.dialog {
+    color: #333;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    width: 300px;
+}
+
+.dialog p {
+    margin-bottom: 20px;
+    font-size: 1rem;
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: space-around;
+}
+
+.btn-confirm {
+    background-color: #4caf50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-confirm:hover {
+    background-color: #45a049;
+}
+
+.btn-cancel {
+    background-color: #f44336;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-cancel:hover {
+    background-color: #d32f2f;
+}
+

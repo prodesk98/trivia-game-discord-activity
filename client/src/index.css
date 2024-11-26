@@ -20,7 +20,7 @@
 }
 
 body {
-  font-family: 'Fredoka One', cursive;
+  font-family: 'Baloo 2', cursive;
   /*background: linear-gradient(135deg, #f39c12, #f1c40f);*/
   background-size: 400% 400%; /* Para animação */
   animation: gradientAnimation 10s ease infinite;
