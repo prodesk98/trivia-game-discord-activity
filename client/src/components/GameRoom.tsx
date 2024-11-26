@@ -23,6 +23,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 export default function GameRoom(){
     const [timeLeft, setTimeLeft] = useState(30); // 30 segundos para responder
+    const [isPaused, setIsPaused] = useState(false); // Pausado ou não
     const [isMuted, setIsMuted] = useState(false); // Mudo ou não
     const [answerSelected, setAnswerSelected] = useState(null); // Resposta selecionada
     const [showDialog, setShowDialog] = useState(false); // Exibe o diálogo de saída
@@ -51,24 +52,28 @@ export default function GameRoom(){
 
     // Lista de jogadores
     const players = [
-        { id: 1, name: "Você", avatar: "https://i.pravatar.cc/54", accept: true, best: false },
-        { id: 3, name: "Player3", avatar: "https://i.pravatar.cc/54", accept: true, best: true },
+        { id: 3, name: "Você", avatar: "https://i.pravatar.cc/54", accept: true, best: true },
+        { id: 1, name: "Player1", avatar: "https://i.pravatar.cc/54", accept: true, best: false },
         { id: 2, name: "Player2", avatar: "https://i.pravatar.cc/54", accept: false, best: false },
         { id: 4, name: "Player4", avatar: "https://i.pravatar.cc/54", accept: false, best: false },
         { id: 5, name: "Player5", avatar: "https://i.pravatar.cc/54", accept: false, best: false },
     ];
 
     useEffect(() => {
-        if (timeLeft > 0) {
+        if (timeLeft > 0 && !isPaused) {
             const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
             return () => clearTimeout(timer);
         }
-    }, [timeLeft]);
+    }, [timeLeft, isPaused]);
 
     // background music
     // TODO: Purchase the full track: https://1.envato.market/WDQBgA
     useEffect(() => {
         const audio = new Audio(backgroundMusicGameTimer);
+        if (isPaused) {
+            audio.pause();
+            return;
+        }
         audio.loop = false;
         audio.volume = isMuted ? 0 : 0.08; // Define o volume com base no estado 'isMuted'
 
@@ -83,12 +88,13 @@ export default function GameRoom(){
         return () => {
             audio.pause();
         };
-    }, [isMuted]);
+    }, [isMuted, isPaused]);
 
     // Seleciona a resposta
     const handleSelectAnswer = (i: number) => {
         // @ts-ignore
         setAnswerSelected(i);
+        setIsPaused(true);
     };
     useEffect(() => {
         if(answerSelected !== null){
