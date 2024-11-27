@@ -1,7 +1,7 @@
 import {Room, Client} from "@colyseus/core";
 import {TriviaGameState} from "./schema/TriviaGameState";
 
-import {JWT} from "@colyseus/auth";
+// import {JWT} from "@colyseus/auth";
 import {Player} from "./schema/Player";
 import {AnswerResponse} from "./schema/messages/AnswerResponse";
 import {Delayed} from "colyseus";
@@ -28,7 +28,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
       const correctAnswer = this.getCorrectAnswer();
       player.score += this.calculateScore(message.response, correctAnswer);
 
-      this.send(client, new AnswerResponse(message.response, correctAnswer == message.response));
+      client.send(new AnswerResponse(message.response, correctAnswer == message.response));
     });
 
     // owner can start the game
@@ -37,12 +37,12 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
         console.log(`${client.sessionId} started the game!`);
         // check if the client is the owner
         if (client.sessionId !== this.state.owner && !this.state.gameStarted) {
-            this.send(client, new ErrorResponse("Only the owner can start the game!"));
+            client.send(new ErrorResponse("Only the owner can start the game!"));
             return;
         }
         // check if there are enough players
         if (this.state.players.size < 2) {
-            this.send(client, new ErrorResponse("Not enough players to start the game!"));
+            client.send(new ErrorResponse("Not enough players to start the game!"));
             return;
         }
         // TODO: generate question options using API GenAI
@@ -80,7 +80,6 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
   onLeave (client: Client, consented: boolean) {
     console.log(client.sessionId, "left!");
     this.state.players.delete(client.sessionId);
-    this.broadcast("playerLeave", client.sessionId);
   }
 
   onDispose() {
@@ -95,10 +94,6 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     return (correct === response ? 1 : 0) * this.state.currentTimer;
   }
 
-  getPlayerBySessionId(sessionId: string) {
-    return this.state.players.get(sessionId);
-  }
-
   getBestPlayer() {
     let bestPlayer = null;
     for (let player of this.state.players.values()) {
@@ -107,7 +102,6 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
       }
     }
     this.state.bestPlayer = bestPlayer;
-    this.broadcast("playerUpdate", this.getPlayerBySessionId(bestPlayer));
   }
 
   startGame() {
@@ -121,7 +115,6 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
       this.timer.clear();
       this.endTurn();
     }
-    this.broadcast("currentTimer", this.state.currentTimer);
   }
 
   endTurn() {

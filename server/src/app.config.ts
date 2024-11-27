@@ -2,6 +2,8 @@ import config from "@colyseus/tools";
 import { monitor } from "@colyseus/monitor";
 import { playground } from "@colyseus/playground";
 
+import { WebSocketTransport } from "@colyseus/ws-transport"
+
 import { JWT } from "@colyseus/auth";
 
 /**
@@ -10,6 +12,15 @@ import { JWT } from "@colyseus/auth";
 import { TriviaGameRoom } from "./rooms/TriviaGameRoom";
 
 export default config({
+
+    initializeTransport: function(opts) {
+        return new WebSocketTransport({
+            ...opts,
+            pingInterval: 6000,
+            pingMaxRetries: 4,
+            maxPayload: 1024 * 1024, // 1MB Max Payload
+        });
+    },
 
     initializeGameServer: (gameServer) => {
         /**

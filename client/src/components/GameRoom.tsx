@@ -27,9 +27,9 @@ import {Player} from "../../../server/src/rooms/schema/Player";
 
 export default function GameRoom(){
     // Colyseus
-    const [room, setRoom] = useState();
-    const [state, setState] = useState();
     const [players, setPlayers] = useState<Player[]>([]);
+    const [room, setRoom] = useState<any>(null);
+    const [gameStateLoaded, setGameStateLoaded] = useState(false);
     //
     const [timeLeft, setTimeLeft] = useState(30); // 30 segundos para responder
     const [isPaused, setIsPaused] = useState(false); // Pausado ou não
@@ -44,25 +44,43 @@ export default function GameRoom(){
         const client = new Client(import.meta.env.VITE_COLYSEUS_ENDPOINT);
         client.joinOrCreate("trivia1").then((room: any) => {
             setRoom(room);
-            setState(room.state);
 
             // listener change state
             room.onStateChange.once((state: any) => {
-                setState(state);
-                setPlayers(
-                    Array.from(room.state.players).map(([_, player]) => ({
-                        id: player.id,
-                        sessionId: player.sessionId,
-                        username: player.username,
-                        avatar: player.avatar,
-                        score: player.score,
-                        accepted: player.accepted,
-                        isBestPlayer: player.isBestPlayer,
-                    }))
-                );
+                setPlayers(Array.from(state.players.values()));
+
+                // onAdd player
+                state.players.onAdd((player: any, sessionId: string) => {
+                    console.log("Player joined!", sessionId);
+
+                    // add player to list
+                    players.push(player);
+                    setPlayers([...players]);
+
+                    // notify player joined
+                    if(gameStateLoaded) handleNotifyGameStatus(`${player.username} joined the game!`);
+                });
+
+                // onRemove player
+                state.players.onRemove((player: any, sessionId: string) => {
+                    console.log("Player left!", sessionId);
+
+                    // remove player from list
+                    const index = players.findIndex((player) => player.sessionId === sessionId);
+                    players.splice(index, 1);
+                    setPlayers([...players]);
+
+                    // notify player left
+                    handleNotifyGameStatus(`${player.username} left the game!`);
+                });
+
+                // set timer
+                setTimeLeft(state.currentTimer);
+                console.log(state.currentTimer);
+                setGameStateLoaded(true);
             });
 
-            room.onMessage("question", (message: any) => {
+            room.onMessage("startGame", (message: any) => {
                 console.log(message);
             });
         });
@@ -85,13 +103,6 @@ export default function GameRoom(){
         audio.loop = false;
         return audio;
     });
-
-    useEffect(() => {
-        if (timeLeft > 0 && !isPaused) {
-            const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-            return () => clearTimeout(timer);
-        }
-    }, [timeLeft, isPaused]);
 
     // background music
     // TODO: Purchase the full track: https://1.envato.market/WDQBgA
@@ -117,6 +128,10 @@ export default function GameRoom(){
         };
     }, [isMuted, isPaused]);
 
+    useEffect(() => {
+        // console.log(players);
+    }, [players]);
+
     // Seleciona a resposta
     const handleSelectAnswer = (i: number) => {
         // @ts-ignore
@@ -134,6 +149,18 @@ export default function GameRoom(){
         position: "bottom-right",
         autoClose: 5000,
         hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+        transition: Bounce,
+    });
+
+    const handleNotifyGameStatus = (e: string) => toast.info(e, {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: true,
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
@@ -173,14 +200,15 @@ export default function GameRoom(){
         handleSelectAnswer(i);
     }
 
-    const handleLeaveGame = () => {};
+    const handleLeaveGame = () => {
+        room.leave();
+    };
 
     const handleExitClick = () => {
         setShowDialog(true); // Exibe o diálogo
     };
 
     const confirmExit = () => {
-        console.log("Usuário saiu do jogo!");
         //TODO:  Adicione aqui a lógica para sair do jogo, como redirecionar para a home
         // window.location.href = "/home";
         handleLeaveGame();
