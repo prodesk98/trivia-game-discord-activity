@@ -154,12 +154,24 @@
 }
 
 .option.correct {
+    transform: none;
     background: #32CD32; /* Verde Limão */
     animation: correct-shake 0.5s ease;
 }
 
 .option.incorrect {
+    transform: none;
     background: #FF4040; /* Vermelho Coral */
+}
+
+.option.default {
+    transform: none;
+    background: #707070; /* Roxo Escuro */
+}
+
+.option.default:hover {
+    transform: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Animação de acerto */

@@ -15,7 +15,7 @@ export default config({
         /**
          * Define your room handlers:
          */
-        gameServer.define('game', TriviaGameRoom)
+        gameServer.define('trivia1', TriviaGameRoom)
             .filterBy(['channelId']);
 
     },

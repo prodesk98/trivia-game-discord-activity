@@ -14,9 +14,10 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
   questionOptions: QuestionOptions[] = new Array<QuestionOptions>();
   timer: Delayed;
 
-  static onAuth (token: string) {
-    return JWT.verify(token);
-  }
+  // TODO: implement JWT authentication
+  // static onAuth (token: string) {
+  //   return JWT.verify(token);
+  // }
 
   onCreate (options: any) {
     this.setState(new TriviaGameState());
@@ -57,10 +58,9 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     player.sessionId = client.sessionId;
     player.username = client.auth?.username || "Guest";
     player.avatar = client.auth?.avatar || "https://robohash.org/" + player.username;
+    player.isBestPlayer = false;
+    player.isOwner = client.sessionId === this.state.owner;
     player.score = 0;
-
-    // kick the player if they don't have an ID
-    if (player.id == null) client.leave();
 
     this.state.players.set(client.sessionId, player);
 

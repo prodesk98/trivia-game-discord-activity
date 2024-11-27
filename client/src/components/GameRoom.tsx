@@ -1,8 +1,5 @@
 import {useEffect, useRef, useState} from "react";
 // assets
-import accept from "../assets/icons/accept.png";
-import incorrect from "../assets/icons/incorrect.png";
-import trophy from "../assets/icons/trophy.png";
 import correctSound from "../assets/sounds/correct-answer.ogg";
 import incorrectSound from "../assets/sounds/incorrect-answer.ogg";
 import backgroundMusicGameTimer from "../assets/sounds/music-game-timer.ogg";
@@ -19,9 +16,21 @@ import confetti from "canvas-confetti";
 
 import {Bounce, toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import {Client} from "colyseus.js";
+
+import accept from "../assets/icons/accept.png";
+import incorrect from "../assets/icons/incorrect.png";
+import trophy from "../assets/icons/trophy.png";
+
+import {Player} from "../../../server/src/rooms/schema/Player";
 
 
 export default function GameRoom(){
+    // Colyseus
+    const [room, setRoom] = useState();
+    const [state, setState] = useState();
+    const [players, setPlayers] = useState<Player[]>([]);
+    //
     const [timeLeft, setTimeLeft] = useState(30); // 30 segundos para responder
     const [isPaused, setIsPaused] = useState(false); // Pausado ou não
     const [isMuted, setIsMuted] = useState(false); // Mudo ou não
@@ -31,6 +40,33 @@ export default function GameRoom(){
     const correctAnswerIndex = 2; // Resposta correta
     const options = ["C++", "C#", "Python", "Javascript"]; // Opções de resposta
 
+    useEffect(() => {
+        const client = new Client(import.meta.env.VITE_COLYSEUS_ENDPOINT);
+        client.joinOrCreate("trivia1").then((room: any) => {
+            setRoom(room);
+            setState(room.state);
+
+            // listener change state
+            room.onStateChange.once((state: any) => {
+                setState(state);
+                setPlayers(
+                    Array.from(room.state.players).map(([_, player]) => ({
+                        id: player.id,
+                        sessionId: player.sessionId,
+                        username: player.username,
+                        avatar: player.avatar,
+                        score: player.score,
+                        accepted: player.accepted,
+                        isBestPlayer: player.isBestPlayer,
+                    }))
+                );
+            });
+
+            room.onMessage("question", (message: any) => {
+                console.log(message);
+            });
+        });
+    }, []);
 
     // Efeito sonoro de resposta correta
     const correctSoundEffect = useRef(() => {
@@ -49,15 +85,6 @@ export default function GameRoom(){
         audio.loop = false;
         return audio;
     });
-
-    // Lista de jogadores
-    const players = [
-        { id: 3, name: "Você", avatar: "https://i.pravatar.cc/54", accept: true, best: true },
-        { id: 1, name: "Player1", avatar: "https://i.pravatar.cc/54", accept: true, best: false },
-        { id: 2, name: "Player2", avatar: "https://i.pravatar.cc/54", accept: false, best: false },
-        { id: 4, name: "Player4", avatar: "https://i.pravatar.cc/54", accept: false, best: false },
-        { id: 5, name: "Player5", avatar: "https://i.pravatar.cc/54", accept: false, best: false },
-    ];
 
     useEffect(() => {
         if (timeLeft > 0 && !isPaused) {
@@ -179,39 +206,46 @@ export default function GameRoom(){
             <div className="quiz-wrapper">
                 <div className="quiz-container">
                     {/* Lista de jogadores no topo */}
+
                     <div className="players-list">
-                        {players.map((player) => (
-                            <div className={`player ${player.best ? "best-player" : ""}`} key={player.id}>
-                                <div className="avatar-container">
-                                    <img
-                                        src={`${player.avatar}?img=${player.id}`}
-                                        alt={player.name}
-                                        className="player-avatar"
-                                    />
-                                    {player.accept ? (
-                                        <img
-                                            src={accept}
-                                            alt="Correct"
-                                            className="icon-correct"
-                                        />
-                                    ) : (
-                                        <img
-                                            src={incorrect}
-                                            alt="Incorrect"
-                                            className="icon-incorrect"
-                                        />
-                                    )}
-                                    {player.best && (
-                                        <img
-                                            src={trophy}
-                                            alt="Best Player"
-                                            className="icon-trophy"
-                                        />
-                                    )}
-                                </div>
-                                <span className="player-name">{player.name}</span>
-                            </div>
-                        ))}
+                        {
+                            players.map((player: any) => {
+                                return (
+                                    <div key={player.sessionId}>
+                                        <div className={`player ${player.isBestPlayer ? "best-player" : ""}`}>
+                                            <div className="avatar-container">
+                                                <img
+                                                    src={`${player.avatar}`}
+                                                    alt={player.username}
+                                                    className="player-avatar"
+                                                />
+                                                {player.accepted ? (
+                                                    <img
+                                                        src={accept}
+                                                        alt="Correct"
+                                                        className="icon-correct"
+                                                    />
+                                                ) : (
+                                                    <img
+                                                        src={incorrect}
+                                                        alt="Incorrect"
+                                                        className="icon-incorrect"
+                                                    />
+                                                )}
+                                                {player.isBestPlayer && (
+                                                    <img
+                                                        src={trophy}
+                                                        alt="Best Player"
+                                                        className="icon-trophy"
+                                                    />
+                                                )}
+                                            </div>
+                                            <span className="player-name">{player.username}</span>
+                                        </div>
+                                    </div>
+                                )
+                            })
+                        }
                     </div>
 
                     {/* Barra de progresso */}
@@ -241,7 +275,7 @@ export default function GameRoom(){
                                             ? "correct" // Destaca a resposta correta
                                             : index === answerSelected
                                                 ? "incorrect" // Destaca a resposta errada escolhida
-                                                : ""
+                                                : "default"
                                         : ""
                                 }`}
                                 onClick={(e) => handleAnswer(e, index)}
@@ -255,10 +289,10 @@ export default function GameRoom(){
             </div>
             <div className="top-right-buttons">
                 <button className="btn-mute" onClick={() => handleToggleSound()}>
-                    {isMuted ? <VolumeOff /> : <VolumeUp />}
+                    {isMuted ? <VolumeOff/> : <VolumeUp/>}
                 </button>
                 <button className="btn-exit" onClick={() => handleExitClick()}>
-                    <ExitToAppIcon />
+                    <ExitToAppIcon/>
                 </button>
             </div>
             {showDialog && (
