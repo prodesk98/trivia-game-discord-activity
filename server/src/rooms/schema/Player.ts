@@ -8,5 +8,5 @@ export class Player extends Schema {
     @type("number") score: number;
     @type("boolean") isOwner: boolean;
     @type("boolean") isBestPlayer: boolean;
-    @type("boolean") accepted: boolean;
+    @type("boolean") accepted: boolean = null;
 }

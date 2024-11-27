@@ -106,7 +106,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
 
   startGame() {
     this.totalTurns = 0;
-    this.broadcast("next", this.state.currentQuestionOptions);
+    this.broadcast("next", {});
   }
 
   tickGameTimer() {

@@ -23,14 +23,17 @@ import incorrect from "../assets/icons/incorrect.png";
 import trophy from "../assets/icons/trophy.png";
 
 import {Player} from "../../../server/src/rooms/schema/Player";
+import {QuestionOptions} from "../../../server/src/rooms/schema/QuestionOptions.ts";
 
 
 export default function GameRoom(){
     // Colyseus
     const [players, setPlayers] = useState<Player[]>([]);
+    const [question, setQuestion] = useState<QuestionOptions>();
     const [room, setRoom] = useState<any>(null);
-    const [gameStateLoaded, setGameStateLoaded] = useState(false);
     //
+
+    const [gameStateLoaded, setGameStateLoaded] = useState(false); // Estado do jogo carregado
     const [timeLeft, setTimeLeft] = useState(30); // 30 segundos para responder
     const [isPaused, setIsPaused] = useState(false); // Pausado ou não
     const [isMuted, setIsMuted] = useState(false); // Mudo ou não
@@ -74,13 +77,41 @@ export default function GameRoom(){
                     handleNotifyGameStatus(`${player.username} left the game!`);
                 });
 
+                // currentTimerChange
+                state.onChange = (changes: any) => {
+                    changes.forEach((change: any) => {
+                        if(change.field === "currentTimer"){
+                            setTimeLeft(change.value);
+                        }
+                        console.log(change);
+                    });
+                }
+
                 // set timer
                 setTimeLeft(state.currentTimer);
                 console.log(state.currentTimer);
                 setGameStateLoaded(true);
             });
 
+            // listener onError
+            room.onError((code: any, message: any) => {
+                handleNotifyError(`Error ${code}: ${message}`);
+            });
+
+            // listener onMessage
             room.onMessage("startGame", (message: any) => {
+                console.log(message);
+            });
+
+            room.onMessage("gameOver", (message: any) => {
+                console.log(message);
+            });
+
+            room.onMessage("next", (message: any) => {
+                console.log(message);
+            });
+
+            room.onMessage("__playground_message_types", (message: any) => {
                 console.log(message);
             });
         });
@@ -247,19 +278,23 @@ export default function GameRoom(){
                                                     alt={player.username}
                                                     className="player-avatar"
                                                 />
-                                                {player.accepted ? (
-                                                    <img
-                                                        src={accept}
-                                                        alt="Correct"
-                                                        className="icon-correct"
-                                                    />
-                                                ) : (
-                                                    <img
-                                                        src={incorrect}
-                                                        alt="Incorrect"
-                                                        className="icon-incorrect"
-                                                    />
-                                                )}
+                                                {
+                                                    player.accepted === null ? (
+                                                        player.accepted ? (
+                                                            <img
+                                                                src={accept}
+                                                                alt="Correct"
+                                                                className="icon-correct"
+                                                            />
+                                                        ) : (
+                                                            <img
+                                                                src={incorrect}
+                                                                alt="Incorrect"
+                                                                className="icon-incorrect"
+                                                            />
+                                                        )
+                                                    ) : ""
+                                                }
                                                 {player.isBestPlayer && (
                                                     <img
                                                         src={trophy}
