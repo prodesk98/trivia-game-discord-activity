@@ -30,8 +30,10 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
       let accepted = this.correctAnswer === message.answer;
       player.score += score;
       player.accepted = accepted;
+      player.answered = message.answer;
 
       const answerFeedback = new AnswerResponse();
+      answerFeedback.answered = player.answered;
       answerFeedback.correct = this.correctAnswer;
       answerFeedback.score = score;
       answerFeedback.accepted = accepted;
@@ -40,7 +42,6 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
 
       // send feedback to the player
       client.send("answerFeedback", answerFeedback);
-
     });
 
     // owner can start the game
@@ -60,23 +61,33 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
         // TODO: generate question options using API GenAI
         this.startGame();
     });
+    if (process.env.NODE_ENV !== "production") {
+      // TODO: remove this
+      this.onMessage("testStartGame", (client, message) => {
+        this.startGame();
+      });
 
-    // TODO: remove this
-    this.onMessage("test", (client, message) => {
-      this.startGame();
-    });
-
-    // TODO: remove this
-    this.onMessage("testScore", (client, message) => {
+      // TODO: remove this
+      this.onMessage("testScore", (client, message) => {
         const player = this.state.players.get(client.sessionId);
         player.score += 1;
-    });
+        // apply score state
+        this.state.players.set(client.sessionId, player);
+      });
 
-    // TODO: remove this
-    this.onMessage("testAccepted", (client, message) => {
+      // TODO: remove this
+      this.onMessage("testAccepted", (client, message) => {
         const player = this.state.players.get(client.sessionId);
         player.accepted = true;
-    });
+      });
+
+      // TODO: remove this
+      this.onMessage("testGameOver", (client, message) => {
+        this.state.gameOver = true;
+        this.state.currentTimer = 0;
+        this.broadcast("gameOver", {});
+      });
+    }
   }
 
   onJoin (client: Client, options: any) {
@@ -88,6 +99,8 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     player.username = client.auth?.username || `Guest-${Math.floor(Math.random() * 100)}`;
     player.avatar = client.auth?.avatar || "https://robohash.org/" + player.username;
     player.isBestPlayer = false;
+    player.accepted = null;
+    player.answered = null;
     player.isOwner = client.sessionId === this.state.owner;
     player.score = 0;
 
@@ -113,6 +126,12 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     if (this.state.players.size < this.maxClients) {
       this.unlock().then();
       console.log(`${this.roomId} is now unlocked!`);
+    }
+
+    if (this.state.owner === client.sessionId) {
+      // assign a new owner
+      this.state.owner = this.state.players.keys().next().value;
+      console.log(`${this.state.owner} is the owner!`);
     }
   }
 
@@ -149,6 +168,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     if (this.state.gameOver) {
         return;
     }
+    this.state.currentAnswer = this.correctAnswer;
     this.nextTurn();
   }
 

@@ -25,6 +25,7 @@ import trophy from "../assets/icons/trophy.png";
 import {Player} from "../../../server/src/rooms/schema/Player";
 import {QuestionOptions} from "../../../server/src/rooms/schema/QuestionOptions.ts";
 import {AnswerResponse} from "../../../server/src/rooms/schema/messages/AnswerResponse.ts";
+import {OrbitProgress} from "react-loading-indicators";
 
 
 export default function GameRoom(){
@@ -50,19 +51,31 @@ export default function GameRoom(){
                 const playersArray: Player[] = Array.from(state.players.values());
 
                 // sort players by score
-                const playersSorted = handleCalculateScore(playersArray, room.sessionId);
+                const playersSorted = handleCalculateRanking(playersArray, room.sessionId);
                 setPlayers(playersSorted);
 
                 // onAdd player
                 state.players.onAdd((player: any, sessionId: string) => {
                     console.log("Player joined!", sessionId);
 
+                    player.onChange(() => {
+                        // swap player
+                        const index = players.findIndex((player) => player.sessionId === sessionId);
+                        players[index] = player;
+
+                        // sort players by score
+                        const playersSorted = handleCalculateRanking(players, room.sessionId);
+
+                        // apply changes
+                        setPlayers(playersSorted);
+                    });
+
                     // add player to list
                     players.push(player);
 
                     // sort players by score
-                    const playersSorted = handleCalculateScore(players, room.sessionId);
-                    setPlayers([...playersSorted]);
+                    const playersSorted = handleCalculateRanking(players, room.sessionId);
+                    setPlayers(playersSorted);
 
                     // notify player joined
                     if(player.sessionId !== room.sessionId) handleNotifyGameStatus(`${player.username} joined the game!`);
@@ -77,38 +90,18 @@ export default function GameRoom(){
                     players.splice(index, 1);
 
                     // sort players by score
-                    const playersSorted = handleCalculateScore(players, room.sessionId);
-                    setPlayers([...playersSorted]);
+                    const playersSorted = handleCalculateRanking(players, room.sessionId);
+                    setPlayers(playersSorted);
 
                     // notify player left
                     handleNotifyGameStatus(`${player.username} left the game!`);
                 });
 
-                // onChange player
-                state.players.onChange((value: Player, key: any) => {
-                    console.log("Player changed!", key);
-
-                    console.log(key);
-
-                    // find index of player
-                    const index = players.findIndex((player) => player.sessionId === key);
-                    players[index] = value;
-
-                    // sort players by score
-                    const playersSorted = handleCalculateScore(players, room.sessionId);
-
-                    setPlayers([...playersSorted]);
-                });
-
                 // listen currentQuestionOptions
-                state.listen("currentQuestionOptions", (currentValue: QuestionOptions) => {
-                    setCurrentQuestionOptions(currentValue);
-                });
+                state.listen("currentQuestionOptions", (currentValue: QuestionOptions) => setCurrentQuestionOptions(currentValue));
 
                 // listen currentTimer
-                state.listen("currentTimer", (currentValue: number) => {
-                    setTimeLeft(currentValue);
-                });
+                state.listen("currentTimer", (currentValue: number) => setTimeLeft(currentValue));
 
                 // set timer
                 setStartTime(state.currentTimer);
@@ -129,9 +122,8 @@ export default function GameRoom(){
             });
 
             room.onMessage("gameOver", (message: any) => {
-                let bestPlayer = players.find((player) => player.id === message.bestPlayer);
-                if (bestPlayer) bestPlayer.isBestPlayer = true;
-                setPlayers([...players]);
+                console.log(`GameOver: ${message}`);
+                console.log(players);
             });
 
             room.onMessage("next", (message: any) => {
@@ -145,6 +137,7 @@ export default function GameRoom(){
                 } else {
                     if (!isMuted) incorrectSoundEffect.current().play().then(() => console.log("Incorrect answer!"));
                 }
+                setAnswerSelected(message.answered);
                 setAnswerCorrect(message.correct);
             });
 
@@ -160,7 +153,7 @@ export default function GameRoom(){
     // Efeito sonoro de resposta correta
     const correctSoundEffect = useRef(() => {
         const audio = new Audio(correctSound);
-        audio.volume = 0.8;
+        audio.volume = 0.07;
         audio.currentTime = 0;
         audio.loop = false;
         return audio;
@@ -169,7 +162,7 @@ export default function GameRoom(){
     // Efeito sonoro de resposta incorreta
     const incorrectSoundEffect = useRef(() => {
         const audio = new Audio(incorrectSound);
-        audio.volume = 0.8;
+        audio.volume = 0.2;
         audio.currentTime = 0;
         audio.loop = false;
         return audio;
@@ -230,7 +223,7 @@ export default function GameRoom(){
         });
     };
 
-    const handleCalculateScore = (players: Player[], mySessionId: string) => {
+    const handleCalculateRanking = (players: Player[], mySessionId: string) => {
         // my player
         let me: Player | undefined = players.find((player) => player.sessionId === mySessionId);
 
@@ -270,8 +263,6 @@ export default function GameRoom(){
             handleNotifyError("You have already selected an answer!");
             return;
         }
-        // select answer
-        setAnswerSelected(i);
 
         // highlight button
         const rect = e.target.getBoundingClientRect();
@@ -321,7 +312,7 @@ export default function GameRoom(){
 
                     <div className="players-list">
                         {
-                            players.map((player: any) => {
+                            players && players.map((player: any) => {
                                 return (
                                     <div key={player.sessionId}>
                                         <div className={`player ${player.isBestPlayer ? "best-player" : ""}`}>
@@ -332,7 +323,7 @@ export default function GameRoom(){
                                                     className="player-avatar"
                                                 />
                                                 {
-                                                    player.accepted === null ? (
+                                                    player.accepted != null ? (
                                                         player.accepted ? (
                                                             <img
                                                                 src={accept}
@@ -378,9 +369,9 @@ export default function GameRoom(){
                     {/* Pergunta */}
                     <div className="question">
                         {
-                            currentQuestionOptions
+                            currentQuestionOptions && currentQuestionOptions.question != null
                             ? currentQuestionOptions.question
-                            : "Loading question..."
+                            : <OrbitProgress variant="split-disc" color="#FFF" size="small" text="" textColor="" />
                         }
                     </div>
 
@@ -397,7 +388,9 @@ export default function GameRoom(){
                                             answerCorrect !== null
                                                 ? index === answerCorrect
                                                     ? "correct" // Destaca a resposta correta
-                                                    : "incorrect" // Destaca a resposta incorreta
+                                                    : answerSelected === index ?
+                                                        "incorrect" :
+                                                        "default" // Destaca a resposta incorreta
                                                 : ""
                                         }`}
                                         onClick={(e) => handleAnswer(e, index)}
@@ -406,7 +399,7 @@ export default function GameRoom(){
                                         {option}
                                     </button>
                                 )
-                            ) : "Loading options..."
+                            ) : ""
                         }
                     </div>
                 </div>
