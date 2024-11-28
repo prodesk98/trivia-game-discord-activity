@@ -12,6 +12,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
   maxClients = 5;
   totalTurns = 0;
   questionOptions: QuestionOptions[] = new Array<QuestionOptions>();
+  correctAnswer: number = 1;
   timer: Delayed;
 
   // TODO: implement JWT authentication
@@ -25,10 +26,21 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     // player send answer
     this.onMessage("answer", (client, message) => {
       const player = this.state.players.get(client.sessionId);
-      const correctAnswer = this.getCorrectAnswer();
-      player.score += this.calculateScore(message.response, correctAnswer);
+      let score = this.calculateScore(message.answer, this.correctAnswer);
+      let accepted = this.correctAnswer === message.answer;
+      player.score += score;
+      player.accepted = accepted;
 
-      client.send(new AnswerResponse(message.response, correctAnswer == message.response));
+      const answerFeedback = new AnswerResponse();
+      answerFeedback.correct = this.correctAnswer;
+      answerFeedback.score = score;
+      answerFeedback.accepted = accepted;
+      answerFeedback.rectTop = message.rectTop;
+      answerFeedback.rectHeight = message.rectHeight;
+
+      // send feedback to the player
+      client.send("answerFeedback", answerFeedback);
+
     });
 
     // owner can start the game
@@ -48,6 +60,23 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
         // TODO: generate question options using API GenAI
         this.startGame();
     });
+
+    // TODO: remove this
+    this.onMessage("test", (client, message) => {
+      this.startGame();
+    });
+
+    // TODO: remove this
+    this.onMessage("testScore", (client, message) => {
+        const player = this.state.players.get(client.sessionId);
+        player.score += 1;
+    });
+
+    // TODO: remove this
+    this.onMessage("testAccepted", (client, message) => {
+        const player = this.state.players.get(client.sessionId);
+        player.accepted = true;
+    });
   }
 
   onJoin (client: Client, options: any) {
@@ -56,7 +85,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     const player = new Player();
     player.id = client.auth?.id || null;
     player.sessionId = client.sessionId;
-    player.username = client.auth?.username || "Guest";
+    player.username = client.auth?.username || `Guest-${Math.floor(Math.random() * 100)}`;
     player.avatar = client.auth?.avatar || "https://robohash.org/" + player.username;
     player.isBestPlayer = false;
     player.isOwner = client.sessionId === this.state.owner;
@@ -80,32 +109,24 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
   onLeave (client: Client, consented: boolean) {
     console.log(client.sessionId, "left!");
     this.state.players.delete(client.sessionId);
+    // unlock the room if it's not full
+    if (this.state.players.size < this.maxClients) {
+      this.unlock().then();
+      console.log(`${this.roomId} is now unlocked!`);
+    }
   }
 
   onDispose() {
     console.log(`${this.roomId} disposed!`);
   }
 
-  getCorrectAnswer() {
-    return this.state.currentQuestionOptions.correctAnswer;
-  }
-
   calculateScore(response: number, correct: number) {
     return (correct === response ? 1 : 0) * this.state.currentTimer;
   }
 
-  getBestPlayer() {
-    let bestPlayer = null;
-    for (let player of this.state.players.values()) {
-      if (this.state.bestPlayer == null || player.score > this.state.players.get(this.state.bestPlayer).score) {
-        bestPlayer = player.id;
-      }
-    }
-    this.state.bestPlayer = bestPlayer;
-  }
-
   startGame() {
     this.totalTurns = 0;
+    this.nextTurn();
     this.broadcast("next", {});
   }
 
@@ -122,11 +143,9 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     this.totalTurns++;
     if (this.totalTurns > this.questionOptions.length) {
         this.state.gameOver = true;
-        this.broadcast("gameOver");
-        this.disconnect().then();
+        this.broadcast("gameOver", {});
         return;
     }
-    this.getBestPlayer();
     if (this.state.gameOver) {
         return;
     }
@@ -138,7 +157,12 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     this.state.gameOver = false;
     this.state.currentTimer = 30;
     this.timer = this.clock.setInterval(() => this.tickGameTimer(), 1000);
-    this.state.currentQuestionOptions = this.questionOptions[this.totalTurns];
-    this.broadcast("next", this.state.currentQuestionOptions);
+    // this.state.currentQuestionOptions = this.questionOptions[this.totalTurns];
+    const q = new QuestionOptions();
+    q.id = "1";
+    q.question = "Qual a melhor linguagem de programação?";
+    q.options = ["Java", "Python", "JavaScript", "C#"];
+    this.state.currentQuestionOptions = q;
+    this.broadcast("next", {});
   }
 }

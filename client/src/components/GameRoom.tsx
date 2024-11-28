@@ -24,33 +24,34 @@ import trophy from "../assets/icons/trophy.png";
 
 import {Player} from "../../../server/src/rooms/schema/Player";
 import {QuestionOptions} from "../../../server/src/rooms/schema/QuestionOptions.ts";
+import {AnswerResponse} from "../../../server/src/rooms/schema/messages/AnswerResponse.ts";
 
 
 export default function GameRoom(){
     // Colyseus
     const [players, setPlayers] = useState<Player[]>([]);
-    const [question, setQuestion] = useState<QuestionOptions>();
+    const [currentQuestionOptions, setCurrentQuestionOptions] = useState<QuestionOptions>();
     const [room, setRoom] = useState<any>(null);
     //
 
-    const [gameStateLoaded, setGameStateLoaded] = useState(false); // Estado do jogo carregado
     const [timeLeft, setTimeLeft] = useState(30); // 30 segundos para responder
-    const [isPaused, setIsPaused] = useState(false); // Pausado ou não
+    const [startTime, setStartTime] = useState(0); // Início do tempo
     const [isMuted, setIsMuted] = useState(false); // Mudo ou não
-    const [answerSelected, setAnswerSelected] = useState(null); // Resposta selecionada
+    const [answerSelected, setAnswerSelected] = useState<number|null>(null); // Resposta selecionada
+    const [answerCorrect, setAnswerCorrect] = useState<number|null>(null); // Resposta correta
     const [showDialog, setShowDialog] = useState(false); // Exibe o diálogo de saída
     const totalTime = 30; // Tempo total da pergunta
-    const correctAnswerIndex = 2; // Resposta correta
-    const options = ["C++", "C#", "Python", "Javascript"]; // Opções de resposta
 
     useEffect(() => {
         const client = new Client(import.meta.env.VITE_COLYSEUS_ENDPOINT);
         client.joinOrCreate("trivia1").then((room: any) => {
-            setRoom(room);
-
             // listener change state
             room.onStateChange.once((state: any) => {
-                setPlayers(Array.from(state.players.values()));
+                const playersArray: Player[] = Array.from(state.players.values());
+
+                // sort players by score
+                const playersSorted = handleCalculateScore(playersArray, room.sessionId);
+                setPlayers(playersSorted);
 
                 // onAdd player
                 state.players.onAdd((player: any, sessionId: string) => {
@@ -58,10 +59,13 @@ export default function GameRoom(){
 
                     // add player to list
                     players.push(player);
-                    setPlayers([...players]);
+
+                    // sort players by score
+                    const playersSorted = handleCalculateScore(players, room.sessionId);
+                    setPlayers([...playersSorted]);
 
                     // notify player joined
-                    if(gameStateLoaded) handleNotifyGameStatus(`${player.username} joined the game!`);
+                    if(player.sessionId !== room.sessionId) handleNotifyGameStatus(`${player.username} joined the game!`);
                 });
 
                 // onRemove player
@@ -71,26 +75,47 @@ export default function GameRoom(){
                     // remove player from list
                     const index = players.findIndex((player) => player.sessionId === sessionId);
                     players.splice(index, 1);
-                    setPlayers([...players]);
+
+                    // sort players by score
+                    const playersSorted = handleCalculateScore(players, room.sessionId);
+                    setPlayers([...playersSorted]);
 
                     // notify player left
                     handleNotifyGameStatus(`${player.username} left the game!`);
                 });
 
-                // currentTimerChange
-                state.onChange = (changes: any) => {
-                    changes.forEach((change: any) => {
-                        if(change.field === "currentTimer"){
-                            setTimeLeft(change.value);
-                        }
-                        console.log(change);
-                    });
-                }
+                // onChange player
+                state.players.onChange((value: Player, key: any) => {
+                    console.log("Player changed!", key);
+
+                    console.log(key);
+
+                    // find index of player
+                    const index = players.findIndex((player) => player.sessionId === key);
+                    players[index] = value;
+
+                    // sort players by score
+                    const playersSorted = handleCalculateScore(players, room.sessionId);
+
+                    setPlayers([...playersSorted]);
+                });
+
+                // listen currentQuestionOptions
+                state.listen("currentQuestionOptions", (currentValue: QuestionOptions) => {
+                    setCurrentQuestionOptions(currentValue);
+                });
+
+                // listen currentTimer
+                state.listen("currentTimer", (currentValue: number) => {
+                    setTimeLeft(currentValue);
+                });
 
                 // set timer
+                setStartTime(state.currentTimer);
                 setTimeLeft(state.currentTimer);
-                console.log(state.currentTimer);
-                setGameStateLoaded(true);
+
+                // set currentQuestionOptions
+                setCurrentQuestionOptions(state.currentQuestionOptions);
             });
 
             // listener onError
@@ -104,16 +129,31 @@ export default function GameRoom(){
             });
 
             room.onMessage("gameOver", (message: any) => {
-                console.log(message);
+                let bestPlayer = players.find((player) => player.id === message.bestPlayer);
+                if (bestPlayer) bestPlayer.isBestPlayer = true;
+                setPlayers([...players]);
             });
 
             room.onMessage("next", (message: any) => {
-                console.log(message);
+                console.log(`next: ${message}`);
+            });
+
+            room.onMessage("answerFeedback", (message: AnswerResponse) => {
+                if (message.accepted) {
+                    if (!isMuted) correctSoundEffect.current().play().then(() => console.log("Correct answer!"));
+                    handleConfetti(message.rectTop, message.rectHeight);
+                } else {
+                    if (!isMuted) incorrectSoundEffect.current().play().then(() => console.log("Incorrect answer!"));
+                }
+                setAnswerCorrect(message.correct);
             });
 
             room.onMessage("__playground_message_types", (message: any) => {
                 console.log(message);
             });
+
+            // set room
+            setRoom(room);
         });
     }, []);
 
@@ -139,11 +179,7 @@ export default function GameRoom(){
     // TODO: Purchase the full track: https://1.envato.market/WDQBgA
     useEffect(() => {
         const audio = new Audio(backgroundMusicGameTimer);
-        if (isPaused) {
-            audio.pause();
-            return;
-        }
-        audio.loop = false;
+        audio.loop = true;
         audio.volume = isMuted ? 0 : 0.08; // Define o volume com base no estado 'isMuted'
 
         if (!isMuted) {
@@ -157,24 +193,7 @@ export default function GameRoom(){
         return () => {
             audio.pause();
         };
-    }, [isMuted, isPaused]);
-
-    useEffect(() => {
-        // console.log(players);
-    }, [players]);
-
-    // Seleciona a resposta
-    const handleSelectAnswer = (i: number) => {
-        // @ts-ignore
-        setAnswerSelected(i);
-        setIsPaused(true);
-    };
-    useEffect(() => {
-        if(answerSelected !== null){
-            // TODO: Enviar a resposta para o servidor
-            console.log(`Answer selected: ${answerSelected}`);
-        }
-    }, [answerSelected]);
+    }, [isMuted, startTime]);
 
     const handleNotifyError = (e: string) => toast.error(e, {
         position: "bottom-right",
@@ -200,9 +219,8 @@ export default function GameRoom(){
         transition: Bounce,
     });
 
-    const handleConfetti = (e: any) => {
-        const rect = e.target.getBoundingClientRect();
-        const y = (rect.top + rect.height / 2) / window.innerHeight;
+    const handleConfetti = (rectTop: number, rectHeight: number) => {
+        const y = (rectTop + rectHeight / 2) / window.innerHeight;
 
         // Chama o efeito de confete quando o botão é clicado
         confetti({
@@ -212,7 +230,38 @@ export default function GameRoom(){
         });
     };
 
+    const handleCalculateScore = (players: Player[], mySessionId: string) => {
+        // my player
+        let me: Player | undefined = players.find((player) => player.sessionId === mySessionId);
+
+        // remove me from players
+        players = players.filter((player) => player.sessionId !== mySessionId);
+
+        // sort players by score
+        players.sort((a, b) => b.score - a.score);
+
+        // insert my session in first position
+        if (me) players = [me, ...players];
+
+        // first player is the best player
+        if (players.length > 1) {
+            const bestPlayer = players[1];
+            players.forEach((player) => player.isBestPlayer = player === bestPlayer && bestPlayer.score > 0);
+
+            // set me as best player
+            if (me && bestPlayer.score < me.score) {
+                me.isBestPlayer = true;
+                bestPlayer.isBestPlayer = false;
+            }
+        }else{
+            players.forEach((player) => player.isBestPlayer = player.score > 0);
+        }
+
+        return players;
+    }
+
     const handleAnswer = (e: any, i: number) => {
+        if (room === null) handleNotifyError("Room not found!");
         if (timeLeft <= 0) {
             handleNotifyError(`${timeLeft} seconds left to answer!`);
             return;
@@ -221,14 +270,18 @@ export default function GameRoom(){
             handleNotifyError("You have already selected an answer!");
             return;
         }
-        if (i === correctAnswerIndex){
-            if (!isMuted) correctSoundEffect.current().play().then(() => console.log("Correct answer!"));
-            handleConfetti(e);
-        }
-        else{
-            if (!isMuted) incorrectSoundEffect.current().play().then(() => console.log("Incorrect answer!"));
-        }
-        handleSelectAnswer(i);
+        // select answer
+        setAnswerSelected(i);
+
+        // highlight button
+        const rect = e.target.getBoundingClientRect();
+
+        // sent answer to server
+        room.send("answer", {
+            answer: i,
+            rectTop: rect.top,
+            rectHeight: rect.height,
+        });
     }
 
     const handleLeaveGame = () => {
@@ -324,29 +377,37 @@ export default function GameRoom(){
 
                     {/* Pergunta */}
                     <div className="question">
-                        Qual a melhor linguagem de programação de todos os tempos?
+                        {
+                            currentQuestionOptions
+                            ? currentQuestionOptions.question
+                            : "Loading question..."
+                        }
                     </div>
 
                     {/* Opções */}
                     <div className="options">
-                        {options.map((option, index) => (
-                            <button
-                                key={index}
-                                className={`option ${
-                                    answerSelected !== null
-                                        ? index === correctAnswerIndex
-                                            ? "correct" // Destaca a resposta correta
-                                            : index === answerSelected
-                                                ? "incorrect" // Destaca a resposta errada escolhida
-                                                : "default"
-                                        : ""
-                                }`}
-                                onClick={(e) => handleAnswer(e, index)}
-                                disabled={answerSelected !== null} // Desativa os botões após a escolha
-                            >
-                                {option}
-                            </button>
-                        ))}
+                        {
+                            currentQuestionOptions &&
+                            currentQuestionOptions.options ?
+                            currentQuestionOptions.options.map(
+                                (option, index) => (
+                                    <button
+                                        key={index}
+                                        className={`option ${
+                                            answerCorrect !== null
+                                                ? index === answerCorrect
+                                                    ? "correct" // Destaca a resposta correta
+                                                    : "incorrect" // Destaca a resposta incorreta
+                                                : ""
+                                        }`}
+                                        onClick={(e) => handleAnswer(e, index)}
+                                        disabled={answerSelected !== null} // Desativa os botões após a escolha
+                                    >
+                                        {option}
+                                    </button>
+                                )
+                            ) : "Loading options..."
+                        }
                     </div>
                 </div>
             </div>

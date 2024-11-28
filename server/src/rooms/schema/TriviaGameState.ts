@@ -6,7 +6,6 @@ export class TriviaGameState extends Schema {
 
   @type({ map: Player }) players = new MapSchema<Player>();
   @type("string") owner: string;
-  @type("string") bestPlayer: string;
   @type("boolean") gameStarted = false;
   @type("boolean") gameOver = false;
   @type("number") currentTimer = 30;
