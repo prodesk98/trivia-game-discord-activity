@@ -23,12 +23,12 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
   // }
 
     async dbTest() {
-        getSumScoreByUserId("d2cb66dd-7e7b-49aa-895e-ebb681a6781d")
-            .then((result) => {
-                console.log(result);
-            }).catch((err) => {
-            console.log(err);
-        });
+        const user = await getUserById("9697dcbe-5671-4c36-b357-0e03c3633cfc");
+        if (user) {
+            await createScore(user.id, 10);
+            const sum = await getSumScoreByUserId(user.id);
+            console.log(sum);
+        }
     }
 
   onCreate (options: any) {
@@ -109,7 +109,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     player.id = client.auth?.id || null;
     player.sessionId = client.sessionId;
     player.username = client.auth?.username || `Guest-${Math.floor(Math.random() * 100)}`;
-    player.avatar = client.auth?.avatar || "https://robohash.org/" + player.username;
+    player.avatar = client.auth?.avatar || `https://cdn.discordapp.com/embed/avatars/${parseInt(Math.floor(Math.random() * 5).toString())}.png`;
     player.isBestPlayer = false;
     player.accepted = null;
     player.answered = null;
