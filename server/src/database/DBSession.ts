@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { UserSchema } from '../schema/User';
 import { RoomSchema } from '../schema/Room';
-import {ScoreSchema} from "../schema/Score";
+import { ScoreSchema } from "../schema/Score";
 
 
 mongoose.connect(process.env.MONGO_URI).then(() => console.log("💾  Connected to MongoDB!"));
