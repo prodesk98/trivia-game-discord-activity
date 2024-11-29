@@ -7,7 +7,7 @@ import {AnswerResponse} from "./schema/messages/AnswerResponse";
 import {Delayed} from "colyseus";
 import {QuestionOptions} from "./schema/QuestionOptions";
 import {ErrorResponse} from "./schema/messages/ErrorResponse";
-import {db} from "../database/DBClient";
+import {createScore, createUser, getSumScoreByUserId, getUserById} from "../database/DBSession";
 
 
 export class TriviaGameRoom extends Room<TriviaGameState> {
@@ -17,28 +17,17 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
   correctAnswer: number = 1;
   timer: Delayed;
 
-  // prisma client
-
-
   // TODO: implement JWT authentication
   // static onAuth (token: string) {
   //   return JWT.verify(token);
   // }
 
-    async prismaTest() {
-        await db.user.create({
-          data: {
-            discordId: "123",
-            username: "test",
-            avatar: "test",
-            guild: {
-                create: {
-                    guildId: "123",
-                    name: "test",
-                    icon: "test",
-                },
-            },
-          }
+    async dbTest() {
+        getSumScoreByUserId("d2cb66dd-7e7b-49aa-895e-ebb681a6781d")
+            .then((result) => {
+                console.log(result);
+            }).catch((err) => {
+            console.log(err);
         });
     }
 
@@ -87,7 +76,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
       // TODO: remove this
       this.onMessage("testStartGame", (client, message) => {
         this.startGame();
-        this.prismaTest().then();
+        this.dbTest().then();
       });
 
       // TODO: remove this
