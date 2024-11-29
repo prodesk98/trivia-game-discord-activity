@@ -7,6 +7,7 @@ import {AnswerResponse} from "./schema/messages/AnswerResponse";
 import {Delayed} from "colyseus";
 import {QuestionOptions} from "./schema/QuestionOptions";
 import {ErrorResponse} from "./schema/messages/ErrorResponse";
+import {PrismaClient} from "@prisma/client";
 
 export class TriviaGameRoom extends Room<TriviaGameState> {
   maxClients = 5;
@@ -15,10 +16,30 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
   correctAnswer: number = 1;
   timer: Delayed;
 
+  // prisma client
+  prisma = new PrismaClient();
+
   // TODO: implement JWT authentication
   // static onAuth (token: string) {
   //   return JWT.verify(token);
   // }
+
+    async prismaTest() {
+        await this.prisma.user.create({
+          data: {
+            discordId: "123",
+            username: "test",
+            avatar: "test",
+            guild: {
+                create: {
+                    guildId: "123",
+                    name: "test",
+                    icon: "test",
+                },
+            },
+          }
+        });
+    }
 
   onCreate (options: any) {
     this.setState(new TriviaGameState());
@@ -65,6 +86,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
       // TODO: remove this
       this.onMessage("testStartGame", (client, message) => {
         this.startGame();
+        this.prismaTest().then();
       });
 
       // TODO: remove this

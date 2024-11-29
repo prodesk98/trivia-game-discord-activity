@@ -1,0 +1,64 @@
+
+services:
+  mongodb-1:
+    image: mongo:latest
+    container_name: mongodb-1
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: trivia1
+    ports:
+      - "27108:27017"
+    command:
+      - /bin/bash
+      - -c
+      - |
+        chmod 400 /etc/secrets/mongo-keyfile
+        chown mongodb:mongodb /etc/secrets/mongo-keyfile
+        mongod --replSet rs0 --bind_ip_all --keyFile /etc/secrets/mongo-keyfile
+    volumes:
+      - ./.data/mongodb-1:/data/db
+      - ./mongo-keyfile:/etc/secrets/mongo-keyfile
+
+  mongodb-2:
+    image: mongo:latest
+    container_name: mongodb-2
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: trivia1
+    ports:
+      - "27109:27017"
+    command:
+      - /bin/bash
+      - -c
+      - |
+        chmod 400 /etc/secrets/mongo-keyfile
+        chown mongodb:mongodb /etc/secrets/mongo-keyfile
+        mongod --replSet rs0 --bind_ip_all --keyFile /etc/secrets/mongo-keyfile
+    volumes:
+      - ./.data/mongodb-2:/data/db
+      - ./mongo-keyfile:/etc/secrets/mongo-keyfile
+
+  mongodb-3:
+    image: mongo:latest
+    container_name: mongodb-3
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: trivia1
+    ports:
+      - "27110:27017"
+    command:
+      - /bin/bash
+      - -c
+      - |
+        chmod 400 /etc/secrets/mongo-keyfile
+        chown mongodb:mongodb /etc/secrets/mongo-keyfile
+        mongod --replSet rs0 --bind_ip_all --keyFile /etc/secrets/mongo-keyfile
+    volumes:
+      - ./.data/mongodb-3:/data/db
+      - ./mongo-keyfile:/etc/secrets/mongo-keyfile
+
+volumes:
+    mongodb-1:
+    mongodb-2:
+    mongodb-3:
+

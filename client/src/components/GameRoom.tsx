@@ -27,6 +27,8 @@ import {QuestionOptions} from "../../../server/src/rooms/schema/QuestionOptions.
 import {AnswerResponse} from "../../../server/src/rooms/schema/messages/AnswerResponse.ts";
 import {OrbitProgress} from "react-loading-indicators";
 
+import {setLocalStorage, getLocalStorage} from "../core/LocalStorage.ts";
+
 
 export default function GameRoom(){
     // Colyseus
@@ -171,6 +173,9 @@ export default function GameRoom(){
     // background music
     // TODO: Purchase the full track: https://1.envato.market/WDQBgA
     useEffect(() => {
+        const isMutedStorage = getLocalStorage("isMuted");
+        setIsMuted(isMutedStorage);
+
         const audio = new Audio(backgroundMusicGameTimer);
         audio.loop = true;
         audio.volume = isMuted ? 0 : 0.08; // Define o volume com base no estado 'isMuted'
@@ -296,6 +301,7 @@ export default function GameRoom(){
     const handleToggleSound = () => {
         const toggle = !isMuted;
         setIsMuted(toggle);
+        setLocalStorage("isMuted", toggle);
 
         if (toggle) {
             correctSoundEffect.current().pause();
@@ -356,15 +362,20 @@ export default function GameRoom(){
                     </div>
 
                     {/* Barra de progresso */}
-                    <div className="progress-bar">
-                        <div
-                            className="progress-bar-fill"
-                            style={{
-                                width: `${progressPercentage}%`,
-                                background: timeLeft > 10 ? "#4caf50" : "#ff5555",
-                            }}
-                        ></div>
-                    </div>
+                    {
+                        currentQuestionOptions &&
+                        currentQuestionOptions.question != null ? (
+                            <div className="progress-bar">
+                                <div
+                                    className="progress-bar-fill"
+                                    style={{
+                                        width: `${progressPercentage}%`,
+                                        background: timeLeft > 10 ? "#4caf50" : "#ff5555",
+                                    }}
+                                ></div>
+                            </div>
+                        ) : ""
+                    }
 
                     {/* Pergunta */}
                     <div className="question">
