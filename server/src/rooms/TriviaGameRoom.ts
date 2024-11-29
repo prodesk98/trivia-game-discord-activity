@@ -7,7 +7,8 @@ import {AnswerResponse} from "./schema/messages/AnswerResponse";
 import {Delayed} from "colyseus";
 import {QuestionOptions} from "./schema/QuestionOptions";
 import {ErrorResponse} from "./schema/messages/ErrorResponse";
-import {PrismaClient} from "@prisma/client";
+import {db} from "../database/DBClient";
+
 
 export class TriviaGameRoom extends Room<TriviaGameState> {
   maxClients = 5;
@@ -17,7 +18,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
   timer: Delayed;
 
   // prisma client
-  prisma = new PrismaClient();
+
 
   // TODO: implement JWT authentication
   // static onAuth (token: string) {
@@ -25,7 +26,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
   // }
 
     async prismaTest() {
-        await this.prisma.user.create({
+        await db.user.create({
           data: {
             discordId: "123",
             username: "test",
