@@ -42,6 +42,7 @@ export default function GameRoom(){
     // const [token, setToken] = useState<string|null>(null);
     const [players, setPlayers] = useState<Player[]>([]);
     const [currentQuestionOptions, setCurrentQuestionOptions] = useState<QuestionOptions>();
+    const [gameEnded, setGameEnded] = useState<boolean>(false);
     const [gameStarted, setGameStarted] = useState<boolean>(false);
     const [gamePaused, setGamePaused] = useState<boolean>(false);
     const [room, setRoom] = useState<any>(null);
@@ -164,6 +165,7 @@ export default function GameRoom(){
     const confirmExit = () => {
         //TODO:  Adicione aqui a lógica para sair do jogo, como redirecionar para a home
         // window.location.href = "/home";
+        setShowDialogLeave(false); // Oculta o diálogo
         handleLeaveGame();
     };
 
@@ -245,6 +247,9 @@ export default function GameRoom(){
             // listen gameStarted
             state.listen("gameStarted", (currentValue: boolean) => setGameStarted(currentValue));
 
+            // listen gameEnded
+            state.listen("gameEnded", (currentValue: boolean) => setGameEnded(currentValue));
+
             // set timer
             setStartTime(state.currentTimer);
             setTimeLeft(state.currentTimer);
@@ -262,12 +267,16 @@ export default function GameRoom(){
         room.onMessage("startGame", (message: any) => {
             console.log(message);
             setGamePaused(false);
+            setGameStarted(true);
+            setGameEnded(false);
         });
 
         room.onMessage("gameOver", (message: any) => {
             console.log(`GameOver: ${message}`);
             setGamePaused(true);
+            setGameEnded(true);
             setGameStarted(false);
+            setTimeLeft(0);
 
             // reset answer
             setAnswerSelected(null);
@@ -322,7 +331,7 @@ export default function GameRoom(){
     // Efeito sonoro de resposta correta
     const correctSoundEffect = useRef(() => {
         const audio = new Audio(correctSound);
-        audio.volume = 0.07;
+        audio.volume = 0.2;
         audio.currentTime = 0;
         audio.loop = false;
         return audio;
@@ -331,7 +340,7 @@ export default function GameRoom(){
     // Efeito sonoro de resposta incorreta
     const incorrectSoundEffect = useRef(() => {
         const audio = new Audio(incorrectSound);
-        audio.volume = 0.2;
+        audio.volume = 0.3;
         audio.currentTime = 0;
         audio.loop = false;
         return audio;
@@ -378,7 +387,7 @@ export default function GameRoom(){
 
                     <div className="players-list">
                         {
-                            players && players.map((player: any) => {
+                            players && players.map((player: Player) => {
                                 return (
                                     <div key={player.sessionId}>
                                         <div className={`player ${player.isBestPlayer ? "best-player" : ""}`}>
@@ -389,7 +398,7 @@ export default function GameRoom(){
                                                     className="player-avatar"
                                                 />
                                                 {
-                                                    player.accepted != null ? (
+                                                    player.accepted != null && answerSelected != null ? (
                                                         player.accepted ? (
                                                             <img
                                                                 src={accept}
@@ -425,6 +434,7 @@ export default function GameRoom(){
                     {
                         currentQuestionOptions &&
                         currentQuestionOptions.question != null &&
+                        !gameEnded &&
                         !gamePaused ? (
                             <div className="progress-bar">
                                 <div
@@ -441,47 +451,76 @@ export default function GameRoom(){
                     {/* Pergunta */}
                     <div className="question">
                         {
-                            currentQuestionOptions && currentQuestionOptions.question != null
+                            currentQuestionOptions &&
+                            currentQuestionOptions.question != null &&
+                            !gameEnded
                             ? currentQuestionOptions.question
-                            : <OrbitProgress variant="split-disc" color="#FFF" size="small" text="" textColor="" />
+                            : (
+                                !gameEnded ?
+                                    <OrbitProgress variant="split-disc" color="#FFF" size="small" text="" textColor="" />
+                                    : ""
+                            )
                         }
                     </div>
 
-                    {/* Opções */}
-                    <div className="options">
-                        {
-                            currentQuestionOptions &&
-                            currentQuestionOptions.options ?
-                            currentQuestionOptions.options.map(
-                                (option, index) => (
-                                    <button
-                                        key={index}
-                                        className={`option ${
-                                            answerCorrect !== null
-                                                ? index === answerCorrect
-                                                    ? "correct" // Destaca a resposta correta
-                                                    : answerSelected === index ?
-                                                        "incorrect" :
-                                                        "default" // Destaca a resposta incorreta
-                                                : ""
-                                        }`}
-                                        onClick={(e) => handleAnswer(e, index)}
-                                        disabled={answerSelected !== null} // Desativa os botões após a escolha
+
+                    {/* Raking */}
+                    { gameEnded ? (
+                        <div className="leaderboard-container">
+                            <div className="leaderboard">
+                                {players.map((player, index) => (
+                                    <div
+                                        key={player.id}
+                                        className={`leaderboard-item ${index === 0 ? "first" : index === 1 ? "second" : index === 2 ? "third" : ""}`}
                                     >
-                                        {option}
-                                    </button>
-                                )
-                            ) : ""
-                        }
-                    </div>
+                                        <div className="rank-avatar">
+                                            <span className="rank">{index + 1}</span>
+                                            <img src={player.avatar} alt={player.username} className="avatar"/>
+                                        </div>
+                                        <span className="username">{player.username}</span>
+                                        <span className="points">{player.score}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ) :
+                    (
+                        <div className="options">
+                            {
+                                currentQuestionOptions &&
+                                currentQuestionOptions.options ?
+                                currentQuestionOptions.options.map(
+                                    (option, index) => (
+                                        <button
+                                            key={index}
+                                            className={`option ${
+                                                answerCorrect !== null
+                                                    ? index === answerCorrect
+                                                        ? "correct" // Destaca a resposta correta
+                                                        : answerSelected === index ?
+                                                            "incorrect" :
+                                                            "default" // Destaca a resposta incorreta
+                                                    : ""
+                                            }`}
+                                            onClick={(e) => handleAnswer(e, index)}
+                                            disabled={answerSelected !== null} // Desativa os botões após a escolha
+                                        >
+                                            {option}
+                                        </button>
+                                    )
+                                ) : ""
+                            }
+                        </div>
+                    )}
                 </div>
             </div>
             <div className="top-right-buttons">
-                { !gameStarted && room !== null ? (
-                    <button className={`btn-play-game ${isMuted ? "muted" : ""}`} onClick={() => handleSendMessage("startGame", {})}>
-                        <PlayArrowIcon /> Start Game
+                {!gameStarted && room !== null ? (
+                    <button className={`btn-play-game ${isMuted ? "muted" : ""}`}
+                            onClick={() => handleSendMessage("startGame", {})}>
+                        <PlayArrowIcon/> Start Game
                     </button>
-                ) : "" }
+                ) : ""}
                 <button className="btn-mute" onClick={() => handleToggleSound()}>
                     {isMuted ? <VolumeOff/> : <VolumeUp/>}
                 </button>
@@ -492,7 +531,7 @@ export default function GameRoom(){
             {showDialogLeave && (
                 <div className="dialog-overlay">
                     <div className="dialog">
-                        <p>Are you sure you want to leave the room?</p>
+                    <p>Are you sure you want to leave the room?</p>
                         <div className="dialog-actions">
                             <button className="btn-confirm" onClick={confirmExit}>
                                 Yes

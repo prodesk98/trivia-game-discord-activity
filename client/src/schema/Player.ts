@@ -16,7 +16,9 @@ export class Player extends Schema {
     // @ts-ignore
     @type("boolean") isBestPlayer: boolean;
     // @ts-ignore
-    @type("boolean") accepted: null = null;
+    @type("boolean") accepted: boolean = false;
     // @ts-ignore
-    @type("number") answered: number = null;
+    @type("number") answered: number = -1;
+    // @ts-ignore
+    @type("boolean") lack: boolean = true;
 }

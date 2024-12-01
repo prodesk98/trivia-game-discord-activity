@@ -112,8 +112,9 @@ export default config({
                 const guildId = req.headers.referer?.split("&").find((x: string) => x.includes("guild_id"))?.split("=")[1];
 
                 const user = {
-                    avatar: userStorage.avatar,
+                    userId: userIdString,
                     discordId: userStorage.discordId,
+                    avatar: userStorage.avatar,
                     username: userStorage.username,
                     guildId: guildId,
                 }

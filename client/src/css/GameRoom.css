@@ -31,6 +31,7 @@
     padding: 15px;
     background: #4B0082; /* Roxo Escuro */
     border-bottom: 3px solid #FFA500; /* Laranja Vibrante */
+    overflow-x: auto;
 }
 
 .player {
@@ -313,3 +314,102 @@ button i {
     background-color: #d32f2f;
 }
 
+/* Container do Leaderboard */
+.leaderboard-container {
+    border-radius: 15px;
+    padding: 20px;
+    width: 100%;
+    margin: auto;
+    overflow-x: auto;
+    color: white;
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Estilo da Lista de Pontuação */
+.leaderboard {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Estilo para cada item na leaderboard */
+.leaderboard-item {
+    background-color: #f1c40f; /* Cor de fundo dourado */
+    padding: 10px 20px;
+    border-radius: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    text-align: left;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Hover no item da leaderboard */
+.leaderboard-item:hover {
+    background-color: #f39c12; /* Tom mais escuro do dourado */
+}
+
+/* Avatar do jogador */
+.rank-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.rank {
+    font-weight: bold;
+    font-size: 18px;
+    margin-right: 10px;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    border: 2px solid white; /* Borda branca no avatar */
+}
+
+/* Nome do jogador no item */
+.username {
+    font-size: 18px;
+    flex-grow: 1;  /* O nome ocupa o espaço disponível */
+    text-align: left;
+    font-weight: bold;
+}
+
+/* Pontuação */
+.points {
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+}
+
+.points img {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+}
+
+/* Destaque para o primeiro lugar */
+.first {
+    background-color: #b39a33; /* Ouro */
+}
+
+.second {
+    background-color: #336ab3; /* Prata */
+}
+
+.third {
+    background-color: #cd4932; /* Bronze */
+}
+
+/* Estilo de borda e sombra */
+.leaderboard-container {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
