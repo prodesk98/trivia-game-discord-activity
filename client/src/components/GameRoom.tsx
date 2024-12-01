@@ -8,6 +8,7 @@ import backgroundMusicGameTimer from "../assets/sounds/music-game-timer.ogg";
 import VolumeOff from "@mui/icons-material/VolumeOff"
 import VolumeUp from "@mui/icons-material/VolumeUp"
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 // css
 import "../css/GameRoom.css";
@@ -16,7 +17,6 @@ import confetti from "canvas-confetti";
 
 import {Bounce, toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import {Client} from "colyseus.js";
 
 import accept from "../assets/icons/accept.png";
 import incorrect from "../assets/icons/incorrect.png";
@@ -33,23 +33,26 @@ import {OrbitProgress} from "react-loading-indicators";
 import {setLocalStorage, getLocalStorage} from "../utils/LocalStorage.ts";
 import {authenticate} from "../utils/Auth.ts";
 import {colyseusSDK} from "../utils/Colyseus.ts";
+import {discordSDK} from "../utils/DiscordSDK.ts";
 
 
 export default function GameRoom(){
 
     // Colyseus
-    const [token, setToken] = useState(null);
+    // const [token, setToken] = useState<string|null>(null);
     const [players, setPlayers] = useState<Player[]>([]);
     const [currentQuestionOptions, setCurrentQuestionOptions] = useState<QuestionOptions>();
+    const [gameStarted, setGameStarted] = useState<boolean>(false);
+    const [gamePaused, setGamePaused] = useState<boolean>(false);
     const [room, setRoom] = useState<any>(null);
     //
 
-    const [timeLeft, setTimeLeft] = useState(30); // 30 segundos para responder
+    const [timeLeft, setTimeLeft] = useState(0); // 0 segundos para responder
     const [startTime, setStartTime] = useState(0); // Início do tempo
     const [isMuted, setIsMuted] = useState(false); // Mudo ou não
     const [answerSelected, setAnswerSelected] = useState<number|null>(null); // Resposta selecionada
     const [answerCorrect, setAnswerCorrect] = useState<number|null>(null); // Resposta correta
-    const [showDialog, setShowDialog] = useState(false); // Exibe o diálogo de saída
+    const [showDialogLeave, setShowDialogLeave] = useState(false); // Exibe o diálogo de saída
     const totalTime = 30; // Tempo total da pergunta
 
     const handleNotifyError = (e: string) => toast.error(e, {
@@ -132,11 +135,22 @@ export default function GameRoom(){
         const rect = e.target.getBoundingClientRect();
 
         // sent answer to server
-        room.send("answer", {
+        handleSendMessage("answer", {
             answer: i,
             rectTop: rect.top,
             rectHeight: rect.height,
         });
+
+        // set answer selected
+        setAnswerSelected(i);
+
+        // set paused
+        setGamePaused(true);
+        setTimeLeft(30);
+    }
+
+    const handleSendMessage = (message: string, data: any = {}) => {
+        room.send(message, data);
     }
 
     const handleLeaveGame = () => {
@@ -144,7 +158,7 @@ export default function GameRoom(){
     };
 
     const handleExitClick = () => {
-        setShowDialog(true); // Exibe o diálogo
+        setShowDialogLeave(true); // Exibe o diálogo
     };
 
     const confirmExit = () => {
@@ -154,7 +168,7 @@ export default function GameRoom(){
     };
 
     const cancelExit = () => {
-        setShowDialog(false); // Oculta o diálogo
+        setShowDialogLeave(false); // Oculta o diálogo
     };
 
     const handleToggleSound = () => {
@@ -167,132 +181,143 @@ export default function GameRoom(){
         }
     };
 
+    const handleColyseusConnection = async (token: string) => {
+        colyseusSDK.auth.token = token;
+        const room = await colyseusSDK.joinOrCreate("game", { channelId: discordSDK.channelId });
+        setRoom(room);
+
+        room.onStateChange.once((state: any) => {
+            const playersArray: Player[] = Array.from(state.players.values());
+
+            // sort players by score
+            const playersSorted = handleCalculateRanking(playersArray, room.sessionId);
+            setPlayers(playersSorted);
+
+            // onAdd player
+            state.players.onAdd((player: any, sessionId: string) => {
+                console.log("Player joined!", sessionId);
+
+                player.onChange(() => {
+                    // swap player
+                    const index = players.findIndex((player) => player.sessionId === sessionId);
+                    players[index] = player;
+
+                    // sort players by score
+                    const playersSorted = handleCalculateRanking(players, room.sessionId);
+
+                    // apply changes
+                    setPlayers(playersSorted);
+                });
+
+                // add player to list
+                players.push(player);
+
+                // sort players by score
+                const playersSorted = handleCalculateRanking(players, room.sessionId);
+                setPlayers(playersSorted);
+
+                // notify player joined
+                if(player.sessionId !== room.sessionId) handleNotifyGameStatus(`${player.username} joined the game!`);
+            });
+
+            // onRemove player
+            state.players.onRemove((player: any, sessionId: string) => {
+                console.log("Player left!", sessionId);
+
+                // remove player from list
+                const index = players.findIndex((player) => player.sessionId === sessionId);
+                players.splice(index, 1);
+
+                // sort players by score
+                const playersSorted = handleCalculateRanking(players, room.sessionId);
+                setPlayers(playersSorted);
+
+                // notify player left
+                handleNotifyGameStatus(`${player.username} left the game!`);
+            });
+
+            // listen currentQuestionOptions
+            state.listen("currentQuestionOptions", (currentValue: QuestionOptions) => setCurrentQuestionOptions(currentValue));
+
+            // listen currentTimer
+            state.listen("currentTimer", (currentValue: number) => setTimeLeft(currentValue));
+
+            // listen gameStarted
+            state.listen("gameStarted", (currentValue: boolean) => setGameStarted(currentValue));
+
+            // set timer
+            setStartTime(state.currentTimer);
+            setTimeLeft(state.currentTimer);
+
+            // set currentQuestionOptions
+            setCurrentQuestionOptions(state.currentQuestionOptions);
+        });
+
+        // listener onError
+        room.onError((code: any, message: any) => {
+            handleNotifyError(`[${code}] Error Connection: ${message}`);
+        });
+
+        // listener onMessage
+        room.onMessage("startGame", (message: any) => {
+            console.log(message);
+            setGamePaused(false);
+        });
+
+        room.onMessage("gameOver", (message: any) => {
+            console.log(`GameOver: ${message}`);
+            setGamePaused(true);
+            setGameStarted(false);
+
+            // reset answer
+            setAnswerSelected(null);
+            setAnswerCorrect(null);
+        });
+
+        room.onMessage("next", (message: any) => {
+            console.log(`Next: ${message}`);
+
+            // reset answer
+            setAnswerSelected(null);
+            setAnswerCorrect(null);
+
+            // set paused
+            setGamePaused(false);
+        });
+
+        room.onMessage("answerFeedback", (message: AnswerResponse) => {
+            if (message.accepted) {
+                if (!isMuted) correctSoundEffect.current().play().then(() => console.log("Correct answer!"));
+                handleConfetti(message.rectTop, message.rectHeight);
+            } else {
+                if (!isMuted) incorrectSoundEffect.current().play().then(() => console.log("Incorrect answer!"));
+            }
+            setAnswerSelected(message.answered);
+            setAnswerCorrect(message.correct);
+        });
+
+        room.onMessage("__playground_message_types", (message: any) => {
+            console.log(message);
+        });
+    };
+
     // Discord Embedded SDK: Retrieve user token when under Discord/Embed
     useEffect(() => {
         try {
             console.log("Authenticating with Discord...");
             authenticate().then((response) => {
                 const token = response.token;
-                setToken(token);
+                console.log("Authenticated with Discord!");
+                // setToken(token);
+
+                // connect to colyseus
+                handleColyseusConnection(token).then();
             });
         }catch (e) {
             console.error(e);
             handleNotifyError(`Failed to authenticate with Discord. ${e}`);
         }
     }, []);
-
-    // Set token in colyseusSDK
-    useEffect(() => {
-        if (token === null) return;
-        colyseusSDK.auth.token = token;
-    }, [token]);
-
-    useEffect(() => {
-        const client = new Client(import.meta.env.VITE_COLYSEUS_ENDPOINT);
-        client.joinOrCreate("playground").then((room: any) => {
-            // listener change state
-            room.onStateChange.once((state: any) => {
-                const playersArray: Player[] = Array.from(state.players.values());
-
-                // sort players by score
-                const playersSorted = handleCalculateRanking(playersArray, room.sessionId);
-                setPlayers(playersSorted);
-
-                // onAdd player
-                state.players.onAdd((player: any, sessionId: string) => {
-                    console.log("Player joined!", sessionId);
-
-                    player.onChange(() => {
-                        // swap player
-                        const index = players.findIndex((player) => player.sessionId === sessionId);
-                        players[index] = player;
-
-                        // sort players by score
-                        const playersSorted = handleCalculateRanking(players, room.sessionId);
-
-                        // apply changes
-                        setPlayers(playersSorted);
-                    });
-
-                    // add player to list
-                    players.push(player);
-
-                    // sort players by score
-                    const playersSorted = handleCalculateRanking(players, room.sessionId);
-                    setPlayers(playersSorted);
-
-                    // notify player joined
-                    if(player.sessionId !== room.sessionId) handleNotifyGameStatus(`${player.username} joined the game!`);
-                });
-
-                // onRemove player
-                state.players.onRemove((player: any, sessionId: string) => {
-                    console.log("Player left!", sessionId);
-
-                    // remove player from list
-                    const index = players.findIndex((player) => player.sessionId === sessionId);
-                    players.splice(index, 1);
-
-                    // sort players by score
-                    const playersSorted = handleCalculateRanking(players, room.sessionId);
-                    setPlayers(playersSorted);
-
-                    // notify player left
-                    handleNotifyGameStatus(`${player.username} left the game!`);
-                });
-
-                // listen currentQuestionOptions
-                state.listen("currentQuestionOptions", (currentValue: QuestionOptions) => setCurrentQuestionOptions(currentValue));
-
-                // listen currentTimer
-                state.listen("currentTimer", (currentValue: number) => setTimeLeft(currentValue));
-
-                // set timer
-                setStartTime(state.currentTimer);
-                setTimeLeft(state.currentTimer);
-
-                // set currentQuestionOptions
-                setCurrentQuestionOptions(state.currentQuestionOptions);
-            });
-
-            // listener onError
-            room.onError((code: any, message: any) => {
-                handleNotifyError(`[${code}] Error Connection: ${message}`);
-            });
-
-            // listener onMessage
-            room.onMessage("startGame", (message: any) => {
-                console.log(message);
-            });
-
-            room.onMessage("gameOver", (message: any) => {
-                console.log(`GameOver: ${message}`);
-                console.log(players);
-            });
-
-            room.onMessage("next", (message: any) => {
-                console.log(`next: ${message}`);
-            });
-
-            room.onMessage("answerFeedback", (message: AnswerResponse) => {
-                if (message.accepted) {
-                    if (!isMuted) correctSoundEffect.current().play().then(() => console.log("Correct answer!"));
-                    handleConfetti(message.rectTop, message.rectHeight);
-                } else {
-                    if (!isMuted) incorrectSoundEffect.current().play().then(() => console.log("Incorrect answer!"));
-                }
-                setAnswerSelected(message.answered);
-                setAnswerCorrect(message.correct);
-            });
-
-            room.onMessage("__playground_message_types", (message: any) => {
-                console.log(message);
-            });
-
-            // set room
-            setRoom(room);
-        });
-    }, [token]);
 
     // Efeito sonoro de resposta correta
     const correctSoundEffect = useRef(() => {
@@ -328,12 +353,20 @@ export default function GameRoom(){
             audio.pause();
         }
 
+        if (timeLeft <= 0) {
+            audio.pause();
+            audio.currentTime = 0;
+            return () => {
+                audio.pause();
+            }
+        }
+
         audio.currentTime = 30 - timeLeft; // Define o tempo atual com base no tempo restante
 
         return () => {
             audio.pause();
         };
-    }, [isMuted, startTime]);
+    }, [isMuted, gameStarted, startTime]);
 
     const progressPercentage = (timeLeft / totalTime) * 100;
 
@@ -351,7 +384,7 @@ export default function GameRoom(){
                                         <div className={`player ${player.isBestPlayer ? "best-player" : ""}`}>
                                             <div className="avatar-container">
                                                 <img
-                                                    src={`${player.avatar}`}
+                                                    src={player.avatar}
                                                     alt={player.username}
                                                     className="player-avatar"
                                                 />
@@ -391,7 +424,8 @@ export default function GameRoom(){
                     {/* Barra de progresso */}
                     {
                         currentQuestionOptions &&
-                        currentQuestionOptions.question != null ? (
+                        currentQuestionOptions.question != null &&
+                        !gamePaused ? (
                             <div className="progress-bar">
                                 <div
                                     className="progress-bar-fill"
@@ -443,6 +477,11 @@ export default function GameRoom(){
                 </div>
             </div>
             <div className="top-right-buttons">
+                { !gameStarted && room !== null ? (
+                    <button className={`btn-play-game ${isMuted ? "muted" : ""}`} onClick={() => handleSendMessage("startGame", {})}>
+                        <PlayArrowIcon /> Start Game
+                    </button>
+                ) : "" }
                 <button className="btn-mute" onClick={() => handleToggleSound()}>
                     {isMuted ? <VolumeOff/> : <VolumeUp/>}
                 </button>
@@ -450,16 +489,16 @@ export default function GameRoom(){
                     <ExitToAppIcon/>
                 </button>
             </div>
-            {showDialog && (
+            {showDialogLeave && (
                 <div className="dialog-overlay">
                     <div className="dialog">
-                        <p>Tem certeza de que deseja sair da sala?</p>
+                        <p>Are you sure you want to leave the room?</p>
                         <div className="dialog-actions">
                             <button className="btn-confirm" onClick={confirmExit}>
-                                Sim
+                                Yes
                             </button>
                             <button className="btn-cancel" onClick={cancelExit}>
-                                Cancelar
+                                Cancel
                             </button>
                         </div>
                     </div>

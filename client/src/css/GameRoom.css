@@ -226,6 +226,11 @@
     transform: scale(0.95); /* Feedback ao clicar */
 }
 
+.btn-play-game {
+    background-color: #4caf50; /* Verde mais suave */
+    color: #fff;
+}
+
 /* Botão Mutar */
 .btn-mute {
     background-color: #b0b8c1; /* Cinza mais claro */

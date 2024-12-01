@@ -13,13 +13,15 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
   maxClients = 5;
   totalTurns = 0;
   questionOptions: QuestionOptions[] = new Array<QuestionOptions>();
-  correctAnswer: number = 1;
+  currentQuestionIndex = 0;
+  answerOptions: number[] = [];
   timer: Delayed;
+  timeOut: Delayed;
 
   // TODO: uncomment this
-  // static onAuth (token: string) {
-  //   return JWT.verify(token);
-  // }
+  static onAuth (token: string) {
+    return JWT.verify(token);
+  }
 
   onCreate (options: any) {
     this.setState(new TriviaGameState());
@@ -27,19 +29,35 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     // player send answer
     this.onMessage("answer", (client, message) => {
       const player = this.state.players.get(client.sessionId);
-      let score = this.calculateScore(message.answer, this.correctAnswer);
-      let accepted = this.correctAnswer === message.answer;
+      // check if the player has already answered
+      const correct = this.answerOptions[this.currentQuestionIndex];
+
+      let score = this.calculateScore(message.answer, correct);
+      let accepted = correct === message.answer;
       player.score += score;
       player.accepted = accepted;
       player.answered = message.answer;
 
       const answerFeedback = new AnswerResponse();
       answerFeedback.answered = player.answered;
-      answerFeedback.correct = this.correctAnswer;
+      answerFeedback.correct = correct;
       answerFeedback.score = score;
       answerFeedback.accepted = accepted;
       answerFeedback.rectTop = message.rectTop;
       answerFeedback.rectHeight = message.rectHeight;
+
+      // check if all players have answered
+      let allAnswered = false;
+      for (const [sessionId, player] of this.state.players) {
+        if (player.answered === null) {
+          continue;
+        }
+        allAnswered = true;
+      }
+
+      if (allAnswered) {
+        this.endTurn();
+      }
 
       // send feedback to the player
       client.send("answerFeedback", answerFeedback);
@@ -55,10 +73,11 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
             return;
         }
         // check if there are enough players
-        if (this.state.players.size < 2) {
-            client.send(new ErrorResponse("Not enough players to start the game!"));
-            return;
-        }
+        // TODO: uncomment this
+        // if (this.state.players.size < 2) {
+        //     client.send(new ErrorResponse("Not enough players to start the game!"));
+        //     return;
+        // }
         // TODO: generate question options using API GenAI
         this.startGame();
     });
@@ -95,7 +114,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     console.log(client.sessionId, "joined!");
 
     const player = new Player();
-    player.id = client.auth?.id || null;
+    player.id = client.auth?.discordId || null;
     player.sessionId = client.sessionId;
     player.username = client.auth?.username || `Guest-${Math.floor(Math.random() * 100)}`;
     player.avatar = client.auth?.avatar || `https://cdn.discordapp.com/embed/avatars/${parseInt(Math.floor(Math.random() * 5).toString())}.png`;
@@ -105,6 +124,9 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     player.isOwner = client.sessionId === this.state.owner;
     player.score = 0;
 
+    if (!player.avatar.startsWith("https://")) {
+      player.avatar = `https://cdn.discordapp.com/avatars/${player.id}/${player.avatar}.png?size=256`;
+    }
     this.state.players.set(client.sessionId, player);
 
     // assign the owner if there's no owner
@@ -146,6 +168,96 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
 
   startGame() {
     this.totalTurns = 0;
+
+    // TODO: generate question options using API GenAI
+    this.questionOptions = [
+      new QuestionOptions(
+          {
+            id: "1",
+            question: "Qual a melhor linguagem de programação?",
+            options: ["Java", "Python", "JavaScript", "C#"],
+            correct: 2
+          }
+      ),
+      new QuestionOptions(
+          {
+            id: "2",
+            question: "O que é um framework?",
+            options: ["Um conjunto de códigos prontos",
+            "Uma linguagem de programação",
+            "Um banco de dados",
+            "Um sistema operacional"],
+            correct: 0
+          }
+      ),
+      new QuestionOptions(
+          {
+            id: "3",
+            question: "O que é uma API?",
+            options: ["Um conjunto de códigos prontos", "Uma linguagem de programação", "Um banco de dados", "Um sistema operacional"],
+            correct: 0
+          }
+      ),
+      new QuestionOptions(
+          {
+            id: "4",
+            question: "Qual destes é um sistema de controle de versão?",
+            options: ["Docker", "Git", "Node.js", "Angular"],
+            correct: 1
+          }
+      ),
+      new QuestionOptions(
+          {
+            id: "5",
+            question: "O que significa a sigla SQL?",
+            options: ["Structured Query Language", "Simple Query Logic", "Software Query Language", "System Query Language"],
+            correct: 0
+          }
+      ),
+      new QuestionOptions(
+          {
+            id: "6",
+            question: "Qual a principal diferença entre o HTTP e o HTTPS?",
+            options: ["HTTPS é mais rápido", "HTTPS é seguro, usando criptografia", "HTTP funciona apenas em sites locais", "HTTPS é utilizado somente em redes privadas"],
+            correct: 1
+          }
+      ),
+      new QuestionOptions(
+          {
+            id: "7",
+            question: "O que significa a sigla OOP, usada em programação?",
+            options: ["Object Oriented Programming", "Open Online Platform", "Operational Overhead Processing", "Offshore Optimization Program"],
+            correct: 0
+          }
+      ),
+      new QuestionOptions(
+          {
+            id: "8",
+            question: "O que é a programação assíncrona?",
+            options: ["Execução de códigos de maneira sequencial", "Execução de códigos sem bloqueio de thread", "Execução de códigos em paralelo", "Execução de códigos com dependência de tempo"],
+            correct: 1
+          }
+      ),
+      new QuestionOptions(
+          {
+            id: "9",
+            question: "Qual o conceito principal do 'Big O' na análise de algoritmos?",
+            options: ["Avaliação de custo de energia", "Avaliação de tempo de execução e uso de memória", "Avaliação de usabilidade do software", "Avaliação de segurança do código"],
+            correct: 1
+          }
+      ),
+      new QuestionOptions(
+          {
+            id: "10",
+            question: "Em qual estrutura de dados o acesso aos elementos é feito de forma Last In, First Out (LIFO)?",
+            options: ["Fila", "Pilha", "Árvore", "Lista"],
+            correct: 1
+          }
+      ),
+    ]
+
+    this.answerOptions = this.questionOptions.map(q => q.correct);
+
     this.nextTurn();
     this.broadcast("next", {});
   }
@@ -159,7 +271,6 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
   }
 
   endTurn() {
-    this.state.currentTimer = 30;
     this.totalTurns++;
     if (this.totalTurns > this.questionOptions.length) {
         this.state.gameOver = true;
@@ -169,21 +280,37 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     if (this.state.gameOver) {
         return;
     }
-    this.state.currentAnswer = this.correctAnswer;
-    this.nextTurn();
+    this.state.currentAnswer = this.answerOptions[this.currentQuestionIndex];
+
+    // clear the timer
+    if(this.timer) this.timer.clear();
+
+    // next turn
+    this.timeOut = this.clock.setTimeout(() => this.nextTurn(), 3000);
   }
 
   nextTurn() {
     this.state.gameStarted = true;
     this.state.gameOver = false;
-    this.state.currentTimer = 30;
+    this.currentQuestionIndex = this.totalTurns;
+    this.state.currentQuestionOptions = this.questionOptions[this.currentQuestionIndex];
+    this.state.currentAnswer = this.answerOptions[this.currentQuestionIndex];
+
+    // reset player answers
+    for (const [sessionId, player] of this.state.players) {
+      player.accepted = null;
+      player.answered = null;
+      this.state.players.set(sessionId, player);
+    }
+
+    // clear the timeout
+    if(this.timeOut) this.timeOut.clear();
+
+    // broadcast the next question
+    this.broadcast("next", {i: this.currentQuestionIndex});
+
+    // start the timer
+    if (this.state.currentTimer < 30) this.state.currentTimer = 30;
     this.timer = this.clock.setInterval(() => this.tickGameTimer(), 1000);
-    // this.state.currentQuestionOptions = this.questionOptions[this.totalTurns];
-    const q = new QuestionOptions();
-    q.id = "1";
-    q.question = "Qual a melhor linguagem de programação?";
-    q.options = ["Java", "Python", "JavaScript", "C#"];
-    this.state.currentQuestionOptions = q;
-    this.broadcast("next", {});
   }
 }
