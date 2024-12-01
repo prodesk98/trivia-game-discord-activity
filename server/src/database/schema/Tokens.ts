@@ -2,29 +2,32 @@ import {model, Schema} from "mongoose";
 import { v4 as uuid4 } from "uuid";
 
 
-const UserSchema = new Schema({
+const TokensSchema = new Schema({
     id: {
         type: Schema.Types.UUID,
         required: true,
         unique: true,
         default: () => uuid4(),
     },
-    discordId: {
-        type: String,
+    userId: {
+        type: Schema.Types.UUID,
         required: true,
         unique: true,
     },
-    username: {
+    accessToken: {
         type: String,
         required: true,
     },
-    avatar: {
+    refreshToken: {
         type: String,
-        required: false,
-        default: () => {
-            return `https://cdn.discordapp.com/embed/avatars/${parseInt(Math.floor(Math.random() * 5).toString())}.png`;
-        },
+        required: true,
+    },
+    expiresAt: {
+        type: Date,
+        expires: 3600,
+        default: Date.now,
+        required: true,
     },
 });
 
-export const User = model('User', UserSchema);
+export const Tokens = model('Tokens', TokensSchema);

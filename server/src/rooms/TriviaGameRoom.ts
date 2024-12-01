@@ -1,13 +1,12 @@
 import {Room, Client} from "@colyseus/core";
 import {TriviaGameState} from "./schema/TriviaGameState";
 
-// import {JWT} from "@colyseus/auth";
+import {JWT} from "@colyseus/auth";
 import {Player} from "./schema/Player";
 import {AnswerResponse} from "./schema/messages/AnswerResponse";
 import {Delayed} from "colyseus";
 import {QuestionOptions} from "./schema/QuestionOptions";
 import {ErrorResponse} from "./schema/messages/ErrorResponse";
-import {createScore, createUser, getSumScoreByUserId, getUserById} from "../database/DBSession";
 
 
 export class TriviaGameRoom extends Room<TriviaGameState> {
@@ -17,19 +16,10 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
   correctAnswer: number = 1;
   timer: Delayed;
 
-  // TODO: implement JWT authentication
+  // TODO: uncomment this
   // static onAuth (token: string) {
   //   return JWT.verify(token);
   // }
-
-    async dbTest() {
-        const user = await getUserById("9697dcbe-5671-4c36-b357-0e03c3633cfc");
-        if (user) {
-            await createScore(user.id, 10);
-            const sum = await getSumScoreByUserId(user.id);
-            console.log(sum);
-        }
-    }
 
   onCreate (options: any) {
     this.setState(new TriviaGameState());
@@ -76,7 +66,6 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
       // TODO: remove this
       this.onMessage("testStartGame", (client, message) => {
         this.startGame();
-        this.dbTest().then();
       });
 
       // TODO: remove this

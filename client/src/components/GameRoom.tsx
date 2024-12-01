@@ -22,16 +22,23 @@ import accept from "../assets/icons/accept.png";
 import incorrect from "../assets/icons/incorrect.png";
 import trophy from "../assets/icons/trophy.png";
 
-import {Player} from "../../../server/src/rooms/schema/Player";
-import {QuestionOptions} from "../../../server/src/rooms/schema/QuestionOptions.ts";
-import {AnswerResponse} from "../../../server/src/rooms/schema/messages/AnswerResponse.ts";
+// Schema
+import {Player} from "../schema/Player.ts";
+import {QuestionOptions} from "../schema/QuestionOptions.ts";
+import {AnswerResponse} from "../schema/AnswerResponse.ts";
+//
+
 import {OrbitProgress} from "react-loading-indicators";
 
-import {setLocalStorage, getLocalStorage} from "../core/LocalStorage.ts";
+import {setLocalStorage, getLocalStorage} from "../utils/LocalStorage.ts";
+import {authenticate} from "../utils/Auth.ts";
+import {colyseusSDK} from "../utils/Colyseus.ts";
 
 
 export default function GameRoom(){
+
     // Colyseus
+    const [token, setToken] = useState(null);
     const [players, setPlayers] = useState<Player[]>([]);
     const [currentQuestionOptions, setCurrentQuestionOptions] = useState<QuestionOptions>();
     const [room, setRoom] = useState<any>(null);
@@ -44,154 +51,6 @@ export default function GameRoom(){
     const [answerCorrect, setAnswerCorrect] = useState<number|null>(null); // Resposta correta
     const [showDialog, setShowDialog] = useState(false); // Exibe o diálogo de saída
     const totalTime = 30; // Tempo total da pergunta
-
-    useEffect(() => {
-        const client = new Client(import.meta.env.VITE_COLYSEUS_ENDPOINT);
-        client.joinOrCreate("trivia1").then((room: any) => {
-            // listener change state
-            room.onStateChange.once((state: any) => {
-                const playersArray: Player[] = Array.from(state.players.values());
-
-                // sort players by score
-                const playersSorted = handleCalculateRanking(playersArray, room.sessionId);
-                setPlayers(playersSorted);
-
-                // onAdd player
-                state.players.onAdd((player: any, sessionId: string) => {
-                    console.log("Player joined!", sessionId);
-
-                    player.onChange(() => {
-                        // swap player
-                        const index = players.findIndex((player) => player.sessionId === sessionId);
-                        players[index] = player;
-
-                        // sort players by score
-                        const playersSorted = handleCalculateRanking(players, room.sessionId);
-
-                        // apply changes
-                        setPlayers(playersSorted);
-                    });
-
-                    // add player to list
-                    players.push(player);
-
-                    // sort players by score
-                    const playersSorted = handleCalculateRanking(players, room.sessionId);
-                    setPlayers(playersSorted);
-
-                    // notify player joined
-                    if(player.sessionId !== room.sessionId) handleNotifyGameStatus(`${player.username} joined the game!`);
-                });
-
-                // onRemove player
-                state.players.onRemove((player: any, sessionId: string) => {
-                    console.log("Player left!", sessionId);
-
-                    // remove player from list
-                    const index = players.findIndex((player) => player.sessionId === sessionId);
-                    players.splice(index, 1);
-
-                    // sort players by score
-                    const playersSorted = handleCalculateRanking(players, room.sessionId);
-                    setPlayers(playersSorted);
-
-                    // notify player left
-                    handleNotifyGameStatus(`${player.username} left the game!`);
-                });
-
-                // listen currentQuestionOptions
-                state.listen("currentQuestionOptions", (currentValue: QuestionOptions) => setCurrentQuestionOptions(currentValue));
-
-                // listen currentTimer
-                state.listen("currentTimer", (currentValue: number) => setTimeLeft(currentValue));
-
-                // set timer
-                setStartTime(state.currentTimer);
-                setTimeLeft(state.currentTimer);
-
-                // set currentQuestionOptions
-                setCurrentQuestionOptions(state.currentQuestionOptions);
-            });
-
-            // listener onError
-            room.onError((code: any, message: any) => {
-                handleNotifyError(`Error ${code}: ${message}`);
-            });
-
-            // listener onMessage
-            room.onMessage("startGame", (message: any) => {
-                console.log(message);
-            });
-
-            room.onMessage("gameOver", (message: any) => {
-                console.log(`GameOver: ${message}`);
-                console.log(players);
-            });
-
-            room.onMessage("next", (message: any) => {
-                console.log(`next: ${message}`);
-            });
-
-            room.onMessage("answerFeedback", (message: AnswerResponse) => {
-                if (message.accepted) {
-                    if (!isMuted) correctSoundEffect.current().play().then(() => console.log("Correct answer!"));
-                    handleConfetti(message.rectTop, message.rectHeight);
-                } else {
-                    if (!isMuted) incorrectSoundEffect.current().play().then(() => console.log("Incorrect answer!"));
-                }
-                setAnswerSelected(message.answered);
-                setAnswerCorrect(message.correct);
-            });
-
-            room.onMessage("__playground_message_types", (message: any) => {
-                console.log(message);
-            });
-
-            // set room
-            setRoom(room);
-        });
-    }, []);
-
-    // Efeito sonoro de resposta correta
-    const correctSoundEffect = useRef(() => {
-        const audio = new Audio(correctSound);
-        audio.volume = 0.07;
-        audio.currentTime = 0;
-        audio.loop = false;
-        return audio;
-    });
-
-    // Efeito sonoro de resposta incorreta
-    const incorrectSoundEffect = useRef(() => {
-        const audio = new Audio(incorrectSound);
-        audio.volume = 0.2;
-        audio.currentTime = 0;
-        audio.loop = false;
-        return audio;
-    });
-
-    // background music
-    // TODO: Purchase the full track: https://1.envato.market/WDQBgA
-    useEffect(() => {
-        const isMutedStorage = getLocalStorage("isMuted");
-        setIsMuted(isMutedStorage);
-
-        const audio = new Audio(backgroundMusicGameTimer);
-        audio.loop = true;
-        audio.volume = isMuted ? 0 : 0.08; // Define o volume com base no estado 'isMuted'
-
-        if (!isMuted) {
-            audio.play().then(() => console.log("Background music started!"));
-        } else {
-            audio.pause();
-        }
-
-        audio.currentTime = 30 - timeLeft; // Define o tempo atual com base no tempo restante
-
-        return () => {
-            audio.pause();
-        };
-    }, [isMuted, startTime]);
 
     const handleNotifyError = (e: string) => toast.error(e, {
         position: "bottom-right",
@@ -307,6 +166,174 @@ export default function GameRoom(){
             correctSoundEffect.current().pause();
         }
     };
+
+    // Discord Embedded SDK: Retrieve user token when under Discord/Embed
+    useEffect(() => {
+        try {
+            console.log("Authenticating with Discord...");
+            authenticate().then((response) => {
+                const token = response.token;
+                setToken(token);
+            });
+        }catch (e) {
+            console.error(e);
+            handleNotifyError(`Failed to authenticate with Discord. ${e}`);
+        }
+    }, []);
+
+    // Set token in colyseusSDK
+    useEffect(() => {
+        if (token === null) return;
+        colyseusSDK.auth.token = token;
+    }, [token]);
+
+    useEffect(() => {
+        const client = new Client(import.meta.env.VITE_COLYSEUS_ENDPOINT);
+        client.joinOrCreate("playground").then((room: any) => {
+            // listener change state
+            room.onStateChange.once((state: any) => {
+                const playersArray: Player[] = Array.from(state.players.values());
+
+                // sort players by score
+                const playersSorted = handleCalculateRanking(playersArray, room.sessionId);
+                setPlayers(playersSorted);
+
+                // onAdd player
+                state.players.onAdd((player: any, sessionId: string) => {
+                    console.log("Player joined!", sessionId);
+
+                    player.onChange(() => {
+                        // swap player
+                        const index = players.findIndex((player) => player.sessionId === sessionId);
+                        players[index] = player;
+
+                        // sort players by score
+                        const playersSorted = handleCalculateRanking(players, room.sessionId);
+
+                        // apply changes
+                        setPlayers(playersSorted);
+                    });
+
+                    // add player to list
+                    players.push(player);
+
+                    // sort players by score
+                    const playersSorted = handleCalculateRanking(players, room.sessionId);
+                    setPlayers(playersSorted);
+
+                    // notify player joined
+                    if(player.sessionId !== room.sessionId) handleNotifyGameStatus(`${player.username} joined the game!`);
+                });
+
+                // onRemove player
+                state.players.onRemove((player: any, sessionId: string) => {
+                    console.log("Player left!", sessionId);
+
+                    // remove player from list
+                    const index = players.findIndex((player) => player.sessionId === sessionId);
+                    players.splice(index, 1);
+
+                    // sort players by score
+                    const playersSorted = handleCalculateRanking(players, room.sessionId);
+                    setPlayers(playersSorted);
+
+                    // notify player left
+                    handleNotifyGameStatus(`${player.username} left the game!`);
+                });
+
+                // listen currentQuestionOptions
+                state.listen("currentQuestionOptions", (currentValue: QuestionOptions) => setCurrentQuestionOptions(currentValue));
+
+                // listen currentTimer
+                state.listen("currentTimer", (currentValue: number) => setTimeLeft(currentValue));
+
+                // set timer
+                setStartTime(state.currentTimer);
+                setTimeLeft(state.currentTimer);
+
+                // set currentQuestionOptions
+                setCurrentQuestionOptions(state.currentQuestionOptions);
+            });
+
+            // listener onError
+            room.onError((code: any, message: any) => {
+                handleNotifyError(`[${code}] Error Connection: ${message}`);
+            });
+
+            // listener onMessage
+            room.onMessage("startGame", (message: any) => {
+                console.log(message);
+            });
+
+            room.onMessage("gameOver", (message: any) => {
+                console.log(`GameOver: ${message}`);
+                console.log(players);
+            });
+
+            room.onMessage("next", (message: any) => {
+                console.log(`next: ${message}`);
+            });
+
+            room.onMessage("answerFeedback", (message: AnswerResponse) => {
+                if (message.accepted) {
+                    if (!isMuted) correctSoundEffect.current().play().then(() => console.log("Correct answer!"));
+                    handleConfetti(message.rectTop, message.rectHeight);
+                } else {
+                    if (!isMuted) incorrectSoundEffect.current().play().then(() => console.log("Incorrect answer!"));
+                }
+                setAnswerSelected(message.answered);
+                setAnswerCorrect(message.correct);
+            });
+
+            room.onMessage("__playground_message_types", (message: any) => {
+                console.log(message);
+            });
+
+            // set room
+            setRoom(room);
+        });
+    }, [token]);
+
+    // Efeito sonoro de resposta correta
+    const correctSoundEffect = useRef(() => {
+        const audio = new Audio(correctSound);
+        audio.volume = 0.07;
+        audio.currentTime = 0;
+        audio.loop = false;
+        return audio;
+    });
+
+    // Efeito sonoro de resposta incorreta
+    const incorrectSoundEffect = useRef(() => {
+        const audio = new Audio(incorrectSound);
+        audio.volume = 0.2;
+        audio.currentTime = 0;
+        audio.loop = false;
+        return audio;
+    });
+
+    // background music
+    // TODO: Purchase the full track: https://1.envato.market/WDQBgA
+    useEffect(() => {
+        const isMutedStorage = getLocalStorage("isMuted");
+        setIsMuted(isMutedStorage);
+
+        const audio = new Audio(backgroundMusicGameTimer);
+        audio.loop = true;
+        audio.volume = isMuted ? 0 : 0.08; // Define o volume com base no estado 'isMuted'
+
+        if (!isMuted) {
+            audio.play().then(() => console.log("Background music started!"));
+        } else {
+            audio.pause();
+        }
+
+        audio.currentTime = 30 - timeLeft; // Define o tempo atual com base no tempo restante
+
+        return () => {
+            audio.pause();
+        };
+    }, [isMuted, startTime]);
 
     const progressPercentage = (timeLeft / totalTime) * 100;
 

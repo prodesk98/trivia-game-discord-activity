@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import { User } from './schema/User';
 import { Room } from './schema/Room';
 import { Score } from "./schema/Score";
+import {Guild} from "./schema/Guild";
+import {Tokens} from "./schema/Tokens";
 
 
 mongoose.connect(process.env.MONGO_URI).then(() => console.log("💾  Connected to MongoDB!"));
@@ -25,10 +27,17 @@ export const getUserByDiscordId = async (discordId: string) => {
     );
 }
 
-export const createUser = async (discordId: string, guildId: string, username: string, avatar?: string): Promise<mongoose.Types.UUID> => {
+export const existsUser = async (discordId: string) => {
+    return User.exists(
+        {
+            discordId: discordId,
+        }
+    );
+}
+
+export const createUser = async (discordId: string, username: string, avatar?: string): Promise<mongoose.Types.UUID> => {
     const user = new User();
     user.discordId = discordId;
-    user.guildId = guildId;
     user.username = username;
     user.avatar = avatar;
     await user.save();
@@ -94,4 +103,75 @@ export const getSumScoreByUserId = async (userId: string): Promise<Number> => {
         ]
     );
     return result.length > 0 ? result[0].total : 0;
+}
+
+/*
+* Guild
+*/
+
+export const getGuildById = async (id: string) => {
+    return Guild.findOne(
+        {
+            id: new mongoose.Types.UUID(id),
+        }
+    );
+}
+
+
+export const getAllGuildsByUserId = async (userId: string) => {
+    return Guild.find(
+        {
+            userId: new mongoose.Types.UUID(userId),
+        }
+    );
+}
+
+export const existsGuild = async (guildId: string, userId?: string) => {
+    return Guild.exists(
+        {
+            guildId: guildId,
+            userId: userId ? new mongoose.Types.UUID(userId) : { $exists: true },
+        }
+    );
+}
+
+
+export const createGuild = async (discordId: string, userId: string, name: string, icon?: string): Promise<mongoose.Types.UUID> => {
+    const guild = new Guild();
+    guild.guildId = discordId;
+    // @ts-ignore
+    guild.userId = new mongoose.Types.UUID(userId);
+    guild.name = name;
+    guild.icon = icon;
+    await guild.save();
+    return guild.id;
+}
+
+
+/*
+* Tokens
+*/
+
+export const getTokensByUserId = async (userId: string) => {
+    return Tokens.findOne(
+        {
+            userId: userId,
+        }
+    );
+}
+
+
+export const upsertTokens = async (userId: string, accessToken: string, refreshToken: string) => {
+    return Tokens.updateOne(
+        {
+            userId: new mongoose.Types.UUID(userId),
+        },
+        {
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+        },
+        {
+            upsert: true,
+        }
+    );
 }

@@ -12,5 +12,25 @@ services:
     volumes:
       - ./.data/mongodb:/data/db
 
+  game-server:
+    container_name: game-server
+    build:
+      context: ./server
+      dockerfile: ./Dockerfile
+    ports:
+        - "8080:8080"
+    depends_on:
+        - mongodb
+
+  game-client:
+    container_name: game-client
+    build:
+      context: ./client
+      dockerfile: ./Dockerfile
+    ports:
+        - "3000:3000"
+    depends_on:
+        - game-server
+
 volumes:
   mongodb:

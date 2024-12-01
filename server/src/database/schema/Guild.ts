@@ -2,29 +2,29 @@ import {model, Schema} from "mongoose";
 import { v4 as uuid4 } from "uuid";
 
 
-const UserSchema = new Schema({
+const GuildSchema = new Schema({
     id: {
         type: Schema.Types.UUID,
         required: true,
         unique: true,
         default: () => uuid4(),
     },
-    discordId: {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    username: {
+    guildId: {
         type: String,
         required: true,
     },
-    avatar: {
+    userId: {
+        type: Schema.Types.UUID,
+        required: true,
+    },
+    name: {
+        type: String,
+        required: true,
+    },
+    icon: {
         type: String,
         required: false,
-        default: () => {
-            return `https://cdn.discordapp.com/embed/avatars/${parseInt(Math.floor(Math.random() * 5).toString())}.png`;
-        },
     },
 });
 
-export const User = model('User', UserSchema);
+export const Guild = model('Guild', GuildSchema);

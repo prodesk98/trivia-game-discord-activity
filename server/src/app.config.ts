@@ -1,5 +1,4 @@
 import config from "@colyseus/tools";
-import { monitor } from "@colyseus/monitor";
 import { playground } from "@colyseus/playground";
 
 import { WebSocketTransport } from "@colyseus/ws-transport"
@@ -10,6 +9,7 @@ import { JWT } from "@colyseus/auth";
  * Import your Room files
  */
 import { TriviaGameRoom } from "./rooms/TriviaGameRoom";
+import {createGuild, createUser, existsGuild, existsUser, getUserByDiscordId, upsertTokens} from "./database/DBSession";
 
 export default config({
 
@@ -26,36 +26,18 @@ export default config({
         /**
          * Define your room handlers:
          */
-        gameServer.define('trivia1', TriviaGameRoom)
-            .filterBy(['channelId']);
+        if (process.env.NODE_ENV !== "production") {
+            gameServer.define('playground', TriviaGameRoom)
+                .filterBy(['channelId']);
+        }
 
     },
 
     initializeExpress: (app) => {
         /**
-         * Bind your custom express routes here:
-         * Read more: https://expressjs.com/en/starter/basic-routing.html
-         */
-        app.get("/hello_world", (req, res) => {
-            res.send("It's time to kick ass and chew bubblegum!");
-        });
-
-        /**
          * Discord Embedded SDK: Retrieve user token when under Discord/Embed
          */
-        app.post("/token/discord", async (req, res) => {
-            //
-            // TODO: remove this on production
-            //
-            if (req.body.code === "mock_code") {
-                const user = {
-                    id: Math.random().toString(36).slice(2, 10),
-                    username: `User ${Math.random().toString().slice(2, 10)}`,
-                }
-                res.send({ access_token: "mocked", token: await JWT.sign(user), user });
-                return;
-            }
-
+        app.post("/colyseus/discord/token", async (req, res) => {
             try {
                 const response = await fetch('https://discord.com/api/oauth2/token', {
                     method: "POST",
@@ -70,7 +52,11 @@ export default config({
                     }),
                 });
 
-                const { access_token } = await response.json();
+                const { access_token, refresh_token } = await response.json();
+
+                if (typeof access_token === 'undefined') {
+                    return res.status(400).send({ error: "Invalid code" });
+                }
 
                 const profile = await (await fetch('https://discord.com/api/users/@me', {
                     method: "GET",
@@ -80,11 +66,56 @@ export default config({
                     },
                 })).json();
 
-                // TODO: save user profile on your database
+                if (typeof profile.id === 'undefined') {
+                    return res.status(400).send({ error: "Invalid profile" });
+                }
+
+                // create user if not exists
+                const userExists = await existsUser(profile.id);
+
+                if (!userExists) await createUser(
+                    profile.id,
+                    profile.username,
+                    profile.avatar
+                );
+
+                const userStorage = await getUserByDiscordId(profile.id);
+
+                if (userStorage == null) {
+                    return res.status(400).send({ error: "Invalid user" });
+                }
+
+                // parse userId(uuid) to string
+                const userIdString: string = userStorage.id.toString();
+
+                await upsertTokens(
+                    userIdString,
+                    access_token,
+                    refresh_token,
+                );
+
+                // get all guilds
+                const guilds = await (await fetch('https://discord.com/api/users/@me/guilds', {
+                    method: "GET",
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': `Bearer ${access_token}`,
+                    },
+                })).json();
+
+                for (const guild of guilds) {
+                    const guildExists = await existsGuild(guild.id, userIdString);
+                    if (!guildExists) await createGuild(guild.id, userIdString, guild.name, guild.icon)
+                }
+
+                // get current guildId using referrer
+                const guildId = req.headers.referer?.split("&").find((x: string) => x.includes("guild_id"))?.split("=")[1];
 
                 const user = {
-                    id: profile.id,
-                    username: profile.username,
+                    avatar: userStorage.avatar,
+                    discordId: userStorage.discordId,
+                    username: userStorage.username,
+                    guildId: guildId,
                 }
 
                 res.send({ access_token, token: await JWT.sign(user), user });
@@ -106,7 +137,6 @@ export default config({
          * It is recommended to protect this route with a password
          * Read more: https://docs.colyseus.io/tools/monitor/#restrict-access-to-the-panel-using-a-password
          */
-        app.use("/colyseus", monitor());
     },
 
 
