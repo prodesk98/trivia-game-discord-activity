@@ -18,10 +18,6 @@ import confetti from "canvas-confetti";
 import {Bounce, toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import accept from "../assets/icons/accept.png";
-import incorrect from "../assets/icons/incorrect.png";
-import trophy from "../assets/icons/trophy.png";
-
 // Schema
 import {Player} from "../schema/Player.ts";
 import {QuestionOptions} from "../schema/QuestionOptions.ts";
@@ -34,6 +30,7 @@ import {setLocalStorage, getLocalStorage} from "../utils/LocalStorage.ts";
 import {authenticate} from "../utils/Auth.ts";
 import {colyseusSDK} from "../utils/Colyseus.ts";
 import {discordSDK} from "../utils/DiscordSDK.ts";
+import {PlayerList} from "./fragment/PlayerList.tsx";
 
 
 export default function GameRoom(){
@@ -51,8 +48,8 @@ export default function GameRoom(){
     const [timeLeft, setTimeLeft] = useState(0); // 0 segundos para responder
     const [startTime, setStartTime] = useState(0); // Início do tempo
     const [isMuted, setIsMuted] = useState(false); // Mudo ou não
-    const [answerSelected, setAnswerSelected] = useState<number|null>(null); // Resposta selecionada
-    const [answerCorrect, setAnswerCorrect] = useState<number|null>(null); // Resposta correta
+    const [answerSelected, setAnswerSelected] = useState<number>(-1); // Resposta selecionada
+    const [answerCorrect, setAnswerCorrect] = useState<number>(-1); // Resposta correta
     const [showDialogLeave, setShowDialogLeave] = useState(false); // Exibe o diálogo de saída
     const totalTime = 30; // Tempo total da pergunta
 
@@ -127,7 +124,7 @@ export default function GameRoom(){
             handleNotifyError(`${timeLeft} seconds left to answer!`);
             return;
         }
-        if (answerSelected !== null) {
+        if (answerSelected > -1) {
             handleNotifyError("You have already selected an answer!");
             return;
         }
@@ -279,16 +276,16 @@ export default function GameRoom(){
             setTimeLeft(0);
 
             // reset answer
-            setAnswerSelected(null);
-            setAnswerCorrect(null);
+            setAnswerSelected(-1);
+            setAnswerCorrect(-1);
         });
 
         room.onMessage("next", (message: any) => {
             console.log(`Next: ${message}`);
 
             // reset answer
-            setAnswerSelected(null);
-            setAnswerCorrect(null);
+            setAnswerSelected(-1);
+            setAnswerCorrect(-1);
 
             // set paused
             setGamePaused(false);
@@ -386,48 +383,7 @@ export default function GameRoom(){
                     {/* Lista de jogadores no topo */}
 
                     <div className="players-list">
-                        {
-                            players && players.map((player: Player) => {
-                                return (
-                                    <div key={player.sessionId}>
-                                        <div className={`player ${player.isBestPlayer ? "best-player" : ""}`}>
-                                            <div className="avatar-container">
-                                                <img
-                                                    src={player.avatar}
-                                                    alt={player.username}
-                                                    className="player-avatar"
-                                                />
-                                                {
-                                                    player.accepted != null && answerSelected != null ? (
-                                                        player.accepted ? (
-                                                            <img
-                                                                src={accept}
-                                                                alt="Correct"
-                                                                className="icon-correct"
-                                                            />
-                                                        ) : (
-                                                            <img
-                                                                src={incorrect}
-                                                                alt="Incorrect"
-                                                                className="icon-incorrect"
-                                                            />
-                                                        )
-                                                    ) : ""
-                                                }
-                                                {player.isBestPlayer && (
-                                                    <img
-                                                        src={trophy}
-                                                        alt="Best Player"
-                                                        className="icon-trophy"
-                                                    />
-                                                )}
-                                            </div>
-                                            <span className="player-name">{player.username}</span>
-                                        </div>
-                                    </div>
-                                )
-                            })
-                        }
+                        <PlayerList players={players} answerSelected={answerSelected} />
                     </div>
 
                     {/* Barra de progresso */}
@@ -494,7 +450,7 @@ export default function GameRoom(){
                                         <button
                                             key={index}
                                             className={`option ${
-                                                answerCorrect !== null
+                                                answerCorrect > -1
                                                     ? index === answerCorrect
                                                         ? "correct" // Destaca a resposta correta
                                                         : answerSelected === index ?
@@ -503,7 +459,7 @@ export default function GameRoom(){
                                                     : ""
                                             }`}
                                             onClick={(e) => handleAnswer(e, index)}
-                                            disabled={answerSelected !== null} // Desativa os botões após a escolha
+                                            disabled={answerSelected > -1} // Desativa os botões após a escolha
                                         >
                                             {option}
                                         </button>
