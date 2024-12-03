@@ -13,8 +13,7 @@ import {OrbitProgress} from "react-loading-indicators";
 // notifications
 import {handleNotifyError, handleNotifyGameStatus} from "../core/Notification.ts";
 
-// TODO: Uncomment this block to enable Discord authentication
-// import {authenticate} from "../utils/Auth.ts";
+import {authenticate} from "../utils/Auth.ts";
 import {PlayerList} from "./fragments/PlayerList.tsx";
 import {Leaderboard} from "./fragments/Leaderboard.tsx";
 import {OptionsGame} from "./fragments/OptionsGame.tsx";
@@ -66,7 +65,7 @@ export default function GameRoom(){
         setTimeLeft,
         setAnswerSelected,
         setAnswerCorrect,
-        setIsMuted,
+        setIsMuted
     } = useHookState();
 
     // correct sound effect
@@ -108,45 +107,30 @@ export default function GameRoom(){
         const audio = new Audio(backgroundMusicGameTimer);
         audio.loop = true;
         audio.volume = isMuted ? 0 : 0.08; // Define o volume com base no estado 'isMuted'
+        if (gameStarted) audio.play().then(() => console.log("Background music started!"));
+        if (gameEnded) audio.pause();
 
-        if (!isMuted)
-            audio.play().then(() => console.log("Background music started!"));
-        else
-            audio.pause();
+        audio.currentTime = totalTime - timeLeft; // Define o tempo atual com base no tempo restante
 
-        if (timeLeft <= 0) {
-            audio.pause();
-            audio.currentTime = 0;
-            return () => {
-                audio.pause();
-            }
-        }
-
-        audio.currentTime = 30 - timeLeft; // Define o tempo atual com base no tempo restante
-
-        return () => {
-            audio.pause();
-        };
-    }, [isMuted, gameStarted]);
+        return () => {audio.pause()};
+    }, [isMuted, gameStarted, gameEnded]);
 
     // Discord Embedded SDK: Retrieve user token when under Discord/Embed
     useEffect(() => {
-        handleColyseusConnection("123").then();
-        // TODO: Uncomment this block to enable Discord authentication
-        // try {
-        //     console.log("Authenticating with Discord...");
-        //     authenticate().then((response) => {
-        //         const token = response.token;
-        //         console.log("Authenticated with Discord!");
-        //         // setToken(token);
-        //
-        //         // connect to colyseus
-        //         handleColyseusConnection(token).then();
-        //     });
-        // }catch (e) {
-        //     console.error(e);
-        //     handleNotifyError(`Failed to authenticate with Discord. ${e}`);
-        // }
+        try {
+            console.log("Authenticating with Discord...");
+            authenticate().then((response) => {
+                const token = response.token;
+                console.log("Authenticated with Discord!");
+                console.log(token);
+
+                // connect to colyseus
+                handleColyseusConnection(token).then();
+            });
+        }catch (e) {
+            console.error(e);
+            handleNotifyError(`Failed to authenticate with Discord. ${e}`);
+        }
     }, []);
 
     // sendMessage
@@ -248,8 +232,8 @@ export default function GameRoom(){
         room.onMessage("startGame", (message: any) => {
             console.log(message);
             setGamePaused(false);
-            setGameStarted(true);
             setGameEnded(false);
+            setTimeLeft(totalTime);
         });
 
         room.onMessage("gameOver", (message: any) => {
@@ -257,7 +241,7 @@ export default function GameRoom(){
             setGamePaused(true);
             setGameEnded(true);
             setGameStarted(false);
-            setTimeLeft(0);
+            setTimeLeft(totalTime);
 
             // reset answer
             setAnswerSelected(-1);
@@ -368,7 +352,9 @@ export default function GameRoom(){
                         {
                             !gameEnded && !gameStarted ?
                             (
-                                <OrbitProgress variant="split-disc" color="#FFF" size="small" text="" textColor="" />
+                                <div style={{padding: '15px'}}>
+                                    <OrbitProgress variant="split-disc" color="#FFF" size="small" text="" textColor="" />
+                                </div>
                             )
                             : ""
                         }

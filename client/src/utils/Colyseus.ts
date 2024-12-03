@@ -1,6 +1,12 @@
 import { Client } from "colyseus.js";
 
-// TODO: Change this to run Discord
-// export const colyseusSDK = new Client("/.proxy/colyseus");
+let client;
+if (import.meta.env.NODE_ENV === "production") {
+    console.log("Production mode");
+    client = new Client("/.proxy/colyseus");
+} else {
+    console.log("Development mode");
+    client = new Client("http://localhost:2567");
+}
 
-export const colyseusSDK = new Client("http://localhost:2567");
+export const colyseusSDK = client;

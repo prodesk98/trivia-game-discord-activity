@@ -123,6 +123,10 @@
     font-weight: bold;
 }
 
+.quiz-header {
+    background-color: blueviolet; /* Roxo Azulado */
+}
+
 /* Opções de resposta */
 .options {
     display: flex;

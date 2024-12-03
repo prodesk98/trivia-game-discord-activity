@@ -3,6 +3,28 @@ import {colyseusSDK} from "./Colyseus.ts";
 
 
 export async function authenticate() {
+    if (import.meta.env.NODE_ENV !== "production") {
+        console.log("Development mode");
+        return {
+            access_token: "mock",
+            user: {
+                username: "mock",
+                discriminator: "mock",
+                id: "mock",
+                avatar: null,
+                public_flags: 1,
+            },
+            scopes: [],
+            expires: new Date(2112, 1, 1).toString(),
+            application: {
+                description: "mock",
+                icon: "mock",
+                id: "mock",
+                name: "mock",
+            },
+        };
+    }
+
     await discordSDK.ready();
 
     const { code } = await discordSDK.commands.authorize({
