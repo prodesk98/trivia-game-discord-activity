@@ -1,9 +1,14 @@
 import {Player} from "../../schema/Player.ts";
+
+// assets
 import accept from "../../assets/icons/accept.png";
 import incorrect from "../../assets/icons/incorrect.png";
 import trophy from "../../assets/icons/trophy.png";
+import {IPlayerList} from "../interfaces/IPlayerList.ts";
+import React from "react";
 
-export const PlayerList = (players: Player[] | any, answerSelected: number) => {
+
+export const PlayerList: React.FC<IPlayerList> = ({ players, answerSelected }) => {
     return (
         players.map((player: Player) => {
             return (

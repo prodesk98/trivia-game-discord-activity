@@ -3,14 +3,16 @@ import { DiscordSDK, DiscordSDKMock } from '@discord/embedded-app-sdk';
 export const DISCORD_CLIENT_ID = import.meta.env.VITE_DISCORD_CLIENT_ID;
 
 const queryParams = new URLSearchParams(window.location.search);
-const isEmbedded = queryParams.has("frame_id") != null;
+const isEmbedded = queryParams.has("frame_id");
 
 let discordSDK: DiscordSDK | DiscordSDKMock;
+
 
 if (isEmbedded) {
     discordSDK = new DiscordSDK(DISCORD_CLIENT_ID);
 } else {
-    enum SessionStorageQueryParam { user_id = "user_id", guild_id = "guild_id", channel_id = "channel_id" }
+    console.log("Running in standalone mode. Using DiscordSDKMock.");
+    enum SessionStorageQueryParam { user_id = "user_id", guild_id = "guild_id" }
 
     function getOverrideOrRandomSessionValue(queryParam: `${SessionStorageQueryParam}`) {
         const overrideValue = queryParams.get(queryParam);
