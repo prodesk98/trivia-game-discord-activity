@@ -20,3 +20,9 @@ cd server
 npm install
 npm start
 ```
+
+## GenAI
+```bash
+cd genai
+fastapi dev server/main.py
+```
