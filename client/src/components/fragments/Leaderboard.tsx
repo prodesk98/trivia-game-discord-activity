@@ -9,10 +9,11 @@ export const Leaderboard: React.FC<ILeaderboard> = ({ players }) => {
     return (
         <>
             <div className="leaderboard-container">
+                <h2>Result</h2>
                 <div className="leaderboard">
                     {players.map((player: Player, index: number) => (
                         <div
-                            key={player.id}
+                            key={index}
                             className={`leaderboard-item ${index === 0 ? "first" : index === 1 ? "second" : index === 2 ? "third" : ""}`}
                         >
                             <div className="rank-avatar">

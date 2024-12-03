@@ -13,7 +13,8 @@ import {OrbitProgress} from "react-loading-indicators";
 // notifications
 import {handleNotifyError, handleNotifyGameStatus} from "../core/Notification.ts";
 
-import {authenticate} from "../utils/Auth.ts";
+// TODO: Uncomment this block to enable Discord authentication
+// import {authenticate} from "../utils/Auth.ts";
 import {PlayerList} from "./fragments/PlayerList.tsx";
 import {Leaderboard} from "./fragments/Leaderboard.tsx";
 import {OptionsGame} from "./fragments/OptionsGame.tsx";
@@ -46,11 +47,15 @@ export default function GameRoom(){
         gameStarted,
         isMuted,
         room,
+        profile,
+        owner,
         players,
         timeLeft,
         answerSelected,
         // setters
         setPlayers,
+        setProfile,
+        setOwner,
         setCurrentQuestionOptions,
         setGameEnded,
         setGamePaused,
@@ -124,25 +129,30 @@ export default function GameRoom(){
 
     // Discord Embedded SDK: Retrieve user token when under Discord/Embed
     useEffect(() => {
-        try {
-            console.log("Authenticating with Discord...");
-            authenticate().then((response) => {
-                const token = response.token;
-                console.log("Authenticated with Discord!");
-                // setToken(token);
-
-                // connect to colyseus
-                handleColyseusConnection(token).then();
-            });
-        }catch (e) {
-            console.error(e);
-            handleNotifyError(`Failed to authenticate with Discord. ${e}`);
-        }
+        handleColyseusConnection("123").then();
+        // TODO: Uncomment this block to enable Discord authentication
+        // try {
+        //     console.log("Authenticating with Discord...");
+        //     authenticate().then((response) => {
+        //         const token = response.token;
+        //         console.log("Authenticated with Discord!");
+        //         // setToken(token);
+        //
+        //         // connect to colyseus
+        //         handleColyseusConnection(token).then();
+        //     });
+        // }catch (e) {
+        //     console.error(e);
+        //     handleNotifyError(`Failed to authenticate with Discord. ${e}`);
+        // }
     }, []);
 
     // sendMessage
     const handleSendMessage = (message: string, data: any = {}) => {
-        if (typeof room === 'undefined') return handleNotifyError("Room not found!");
+        if (typeof room === 'undefined') {
+            handleNotifyError("Room undefined!");
+            return;
+        }
         room.send(message, data);
     }
 
@@ -161,6 +171,10 @@ export default function GameRoom(){
             // onAdd player
             state.players.onAdd((player: any, sessionId: string) => {
                 console.log("Player joined!", sessionId);
+
+                if (player.sessionId === room.sessionId) {
+                    setProfile(player);
+                }
 
                 player.onChange(() => {
                     // swap player
@@ -212,6 +226,9 @@ export default function GameRoom(){
 
             // listen gameEnded
             state.listen("gameEnded", (currentValue: boolean) => setGameEnded(currentValue));
+
+            // listen setOwner
+            state.listen("owner", (currentValue: string) => setOwner(currentValue));
 
             // set timer
             setTimeLeft(state.currentTimer);
@@ -309,7 +326,7 @@ export default function GameRoom(){
                     {/* Lista de jogadores no topo */}
 
                     <div className="players-list">
-                        <PlayerList players={players} answerSelected={answerSelected} />
+                        <PlayerList players={players} answerSelected={answerSelected} hasQuestions={currentQuestionOptions?.question != null} />
                     </div>
 
                     {/* Barra de progresso */}
@@ -331,32 +348,33 @@ export default function GameRoom(){
                     }
 
                     {/* Pergunta */}
-                    <div className="question">
+                    <>
                         {
-                            currentQuestionOptions &&
-                            currentQuestionOptions.question !== null &&
-                            !gameEnded
-                            ? currentQuestionOptions.question
-                            : (
-                                !gameEnded ?
-                                    <OrbitProgress variant="split-disc" color="#FFF" size="small" text="" textColor="" />
-                                    : ""
+                            !gameEnded && !gameStarted ?
+                            (
+                                <OrbitProgress variant="split-disc" color="#FFF" size="small" text="" textColor="" />
                             )
+                            : ""
                         }
-                    </div>
-
+                    </>
 
                     {/* Raking */}
                     { gameEnded ? (
                         <Leaderboard players={players} />
                     ) : (
-                        <OptionsGame options={currentQuestionOptions?.options || []} answerCorrect={answerCorrect} answerSelected={answerSelected} handleAnswer={handleAnswer} />
-                        )
+                        gameStarted ? (
+                            <div className="question">
+                                <OptionsGame options={currentQuestionOptions?.options || []}
+                                             answerCorrect={answerCorrect}
+                                             answerSelected={answerSelected} handleAnswer={handleAnswer}/>
+                            </div>
+                        ) : ""
+                    )
                     }
                 </div>
             </div>
             <div className="top-right-buttons">
-                {!gameStarted && typeof room !== 'undefined' ? (
+                {!gameStarted && typeof room !== 'undefined' && (profile && profile.sessionId == owner) ? (
                     <button className={`btn-play-game ${isMuted ? "muted" : ""}`}
                             onClick={() => handleSendMessage("startGame", {})}>
                         <PlayArrowIcon/> Start Game

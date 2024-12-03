@@ -332,6 +332,8 @@ button i {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    overflow-x: scroll;
+    height: 350px;
 }
 
 /* Estilo para cada item na leaderboard */

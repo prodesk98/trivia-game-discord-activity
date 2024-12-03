@@ -8,7 +8,7 @@ import {IPlayerList} from "../interfaces/IPlayerList.ts";
 import React from "react";
 
 
-export const PlayerList: React.FC<IPlayerList> = ({ players, answerSelected }) => {
+export const PlayerList: React.FC<IPlayerList> = ({ players, answerSelected, hasQuestions }) => {
     return (
         players.map((player: Player) => {
             return (
@@ -21,7 +21,7 @@ export const PlayerList: React.FC<IPlayerList> = ({ players, answerSelected }) =
                                 className="player-avatar"
                             />
                             {
-                                answerSelected > -1 ? (
+                                answerSelected > -1 && hasQuestions ? (
                                     player.accepted ? (
                                         <img
                                             src={accept}
