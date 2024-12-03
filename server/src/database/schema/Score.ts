@@ -13,6 +13,10 @@ const ScoreSchema = new Schema({
         type: Schema.Types.UUID,
         required: true,
     },
+    roundId: {
+        type: Schema.Types.UUID,
+        required: true,
+    },
     value: {
         type: Number,
         required: true,

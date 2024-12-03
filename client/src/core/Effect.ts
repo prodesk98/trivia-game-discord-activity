@@ -1,5 +1,5 @@
 import confetti from "canvas-confetti";
-import {IConfetti} from "../components/interfaces/IConfetti.tsx";
+import {IConfetti} from "../components/interfaces/IConfetti.ts";
 
 
 export const handleConfetti = ({ rectTop, rectHeight }: IConfetti) => {

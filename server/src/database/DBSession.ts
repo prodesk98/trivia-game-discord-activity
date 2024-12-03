@@ -79,10 +79,12 @@ export const updateRoom = async (id: string, guildId: string) => {
 * Score
 */
 
-export const createScore = async (userId: string, value: number) => {
+export const createScore = async (userId: string, roundId: string, value: number) => {
     const score = new Score();
     // @ts-ignore
     score.userId = new mongoose.Types.UUID(userId);
+    // @ts-ignore
+    score.roundId = new mongoose.Types.UUID(roundId);
     score.value = value;
     await score.save();
     return score.id;
@@ -93,6 +95,24 @@ export const getSumScoreByUserId = async (userId: string): Promise<Number> => {
         [
             {
                 $match: { userId: new mongoose.Types.UUID(userId) }
+            },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: "$value" }
+                }
+            }
+        ]
+    );
+    return result.length > 0 ? result[0].total : 0;
+}
+
+
+export const getSumScoreByUserIdAndRoundId = async (userId: string, roundId: string): Promise<Number> => {
+    const result = await Score.aggregate(
+        [
+            {
+                $match: { userId: new mongoose.Types.UUID(userId), roundId: new mongoose.Types.UUID(roundId) }
             },
             {
                 $group: {

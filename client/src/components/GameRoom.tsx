@@ -24,6 +24,8 @@ import backgroundMusicGameTimer from "../assets/sounds/music-game-timer.ogg";
 import correctSound from "../assets/sounds/correct-answer.ogg";
 import incorrectSound from "../assets/sounds/incorrect-answer.ogg";
 
+import logo from "../assets/images/logo.png";
+
 import {useHookState} from "../core/HookState.ts";
 import {colyseusSDK} from "../utils/Colyseus.ts";
 import {discordSDK} from "../utils/DiscordSDK.ts";
@@ -323,11 +325,25 @@ export default function GameRoom(){
         <>
             <div className="quiz-wrapper">
                 <div className="quiz-container">
-                    {/* Lista de jogadores no topo */}
+                    {/* Logo */}
+                    {!gameStarted ? (
+                        <div className="quiz-header">
+                            <img src={logo} width={130} style={
+                                {
+                                    padding: "10px",
+                                }
+                            } alt={"logo"}/>
+                        </div>
+                        ): ""
+                    }
 
-                    <div className="players-list">
-                        <PlayerList players={players} answerSelected={answerSelected} hasQuestions={currentQuestionOptions?.question != null} />
-                    </div>
+                    {/* Lista de jogadores no topo */}
+                    {gameStarted ? (
+                            <div className="players-list">
+                                <PlayerList players={players} answerSelected={answerSelected} hasQuestions={currentQuestionOptions?.question != null} />
+                            </div>
+                        ): ""
+                    }
 
                     {/* Barra de progresso */}
                     {
@@ -363,7 +379,10 @@ export default function GameRoom(){
                         <Leaderboard players={players} />
                     ) : (
                         gameStarted ? (
-                            <div className="question">
+                            <div>
+                                <div className="question">
+                                    {currentQuestionOptions?.question}
+                                </div>
                                 <OptionsGame options={currentQuestionOptions?.options || []}
                                              answerCorrect={answerCorrect}
                                              answerSelected={answerSelected} handleAnswer={handleAnswer}/>

@@ -1,4 +1,4 @@
-import {IOptionsGameProps} from "../interfaces/IOptions.tsx";
+import {IOptionsGameProps} from "../interfaces/IOptions.ts";
 import React from "react";
 
 

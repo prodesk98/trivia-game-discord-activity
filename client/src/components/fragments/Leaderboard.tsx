@@ -1,6 +1,6 @@
 import {Player} from "../../schema/Player.ts";
 import React from "react";
-import {ILeaderboard} from "../interfaces/ILeaderboard.tsx";
+import {ILeaderboard} from "../interfaces/ILeaderboard.ts";
 
 
 export const Leaderboard: React.FC<ILeaderboard> = ({ players }) => {

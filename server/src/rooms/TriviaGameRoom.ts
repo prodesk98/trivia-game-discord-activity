@@ -1,6 +1,8 @@
 import {Room, Client} from "@colyseus/core";
 import {TriviaGameState} from "./schema/TriviaGameState";
 
+import { v4 as uuid4 } from "uuid";
+
 import {JWT} from "@colyseus/auth";
 import {Player} from "./schema/Player";
 import {AnswerResponse} from "./schema/messages/AnswerResponse";
@@ -13,6 +15,7 @@ import {createScore} from "../database/DBSession";
 export class TriviaGameRoom extends Room<TriviaGameState> {
   maxClients = 5;
   totalTurns = 0;
+  roundId: string;
   questionOptions: QuestionOptions[] = new Array<QuestionOptions>();
   currentQuestionIndex = 0;
   answerOptions: number[] = [];
@@ -36,7 +39,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
       let score = this.calculateScore(message.answer, correct);
       let accepted = correct === message.answer;
 
-      if (accepted) createScore(player.userId, score).then();
+      if (accepted) createScore(player.userId, this.roundId, score).then();
 
       player.score += score;
       player.accepted = accepted;
@@ -81,6 +84,8 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
         //     return;
         // }
         // TODO: generate question options using API GenAI
+
+        this.roundId = uuid4();
         this.startGame();
     });
     if (process.env.NODE_ENV !== "production") {

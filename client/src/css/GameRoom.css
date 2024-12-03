@@ -338,7 +338,7 @@ button i {
 
 /* Estilo para cada item na leaderboard */
 .leaderboard-item {
-    background-color: #f1c40f; /* Cor de fundo dourado */
+    background-color: #919191; /* Tom mais escuro do cinza */
     padding: 10px 20px;
     border-radius: 15px;
     display: flex;
@@ -352,9 +352,9 @@ button i {
 }
 
 /* Hover no item da leaderboard */
-.leaderboard-item:hover {
-    background-color: #f39c12; /* Tom mais escuro do dourado */
-}
+/*.leaderboard-item:hover {*/
+/*    background-color: #919191; !* Tom mais escuro do dourado *!*/
+/*}*/
 
 /* Avatar do jogador */
 .rank-avatar {
@@ -400,15 +400,15 @@ button i {
 
 /* Destaque para o primeiro lugar */
 .first {
-    background-color: #b39a33; /* Ouro */
+    background-color: #b39a33 !important; /* Ouro */
 }
 
 .second {
-    background-color: #336ab3; /* Prata */
+    background-color: #336ab3 !important; /* Prata */
 }
 
 .third {
-    background-color: #cd4932; /* Bronze */
+    background-color: #cd4932 !important; /* Bronze */
 }
 
 /* Estilo de borda e sombra */
