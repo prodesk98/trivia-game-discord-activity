@@ -10,7 +10,30 @@ services:
     ports:
       - "27108:27017"
     volumes:
-      - ./.data/mongodb:/data/db
+      - mongodb_data:/data/db
+    restart: on-failure:0
+
+  weaviate:
+    command:
+    - --host
+    - 0.0.0.0
+    - --port
+    - '8080'
+    - --scheme
+    - http
+    image: cr.weaviate.io/semitechnologies/weaviate:1.27.6
+    environment:
+      QUERY_DEFAULTS_LIMIT: 30
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      ENABLE_API_BASED_MODULES: 'true'
+      CLUSTER_HOSTNAME: 'node1'
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    restart: on-failure:0
 
   game-server:
     container_name: game-server
@@ -33,4 +56,5 @@ services:
         - game-server
 
 volumes:
-  mongodb:
+  mongodb_data:
+  weaviate_data:
