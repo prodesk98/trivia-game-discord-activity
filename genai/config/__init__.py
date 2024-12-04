@@ -1,4 +1,4 @@
-from environment import env
+from .environment import env
 
 __all__ = [
     "env"
