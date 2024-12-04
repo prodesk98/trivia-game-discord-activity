@@ -28,6 +28,7 @@ services:
       PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
       ENABLE_API_BASED_MODULES: 'true'
       CLUSTER_HOSTNAME: 'node1'
+      ENABLE_MODULES: 'text2vec-openai'
     ports:
       - "8080:8080"
       - "50051:50051"
