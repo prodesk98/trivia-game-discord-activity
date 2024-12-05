@@ -211,7 +211,6 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     for (const [sessionId, player] of this.state.players) {
         player.accepted = false;
         player.answered = -1;
-        player.score = 0;
         player.lack = true;
         this.state.players.set(sessionId, player);
     }
