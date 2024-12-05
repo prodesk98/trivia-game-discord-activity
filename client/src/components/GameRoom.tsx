@@ -8,7 +8,7 @@ import "../css/GameRoom.css";
 
 import 'react-toastify/dist/ReactToastify.css';
 
-import {OrbitProgress} from "react-loading-indicators";
+import {OrbitProgress, Riple} from "react-loading-indicators";
 
 // notifications
 import {handleNotifyError, handleNotifyGameStatus} from "../core/Notification.ts";
@@ -52,6 +52,8 @@ export default function GameRoom(){
         owner,
         players,
         timeLeft,
+        isGameLoading,
+        isDialogPlayGame,
         answerSelected,
         // setters
         setPlayers,
@@ -65,7 +67,9 @@ export default function GameRoom(){
         setTimeLeft,
         setAnswerSelected,
         setAnswerCorrect,
-        setIsMuted
+        setIsMuted,
+        setIsGameLoading,
+        setIsDialogPlayGame,
     } = useHookState();
 
     // correct sound effect
@@ -140,6 +144,22 @@ export default function GameRoom(){
             return;
         }
         room.send(message, data);
+    }
+
+    // play game
+    const handlePlayGame = () => {
+        setIsGameLoading(true);
+        const prompt = document.querySelector('.dialog-textarea');
+        if (prompt === null) {
+            handleNotifyError("Please enter a prompt!");
+            setIsGameLoading(false);
+        }
+        if (prompt?.value === "") {
+            handleNotifyError("Please enter a prompt!");
+            setIsGameLoading(false);
+        }
+        handleSendMessage("startGame", {prompt: prompt?.value});
+        setIsDialogPlayGame(false);
     }
 
     const handleColyseusConnection = async (token: string) => {
@@ -228,14 +248,6 @@ export default function GameRoom(){
             handleNotifyError(`[${code}] Error Connection: ${message}`);
         });
 
-        // listener onMessage
-        room.onMessage("startGame", (message: any) => {
-            console.log(message);
-            setGamePaused(false);
-            setGameEnded(false);
-            setTimeLeft(totalTime);
-        });
-
         room.onMessage("gameOver", (message: any) => {
             console.log(`GameOver: ${message}`);
             setGamePaused(true);
@@ -257,6 +269,9 @@ export default function GameRoom(){
 
             // set paused
             setGamePaused(false);
+
+            // set isGameLoading
+            setIsGameLoading(false);
         });
 
         room.onMessage("answerFeedback", (message: AnswerResponse) => {
@@ -380,15 +395,37 @@ export default function GameRoom(){
             </div>
             <div className="top-right-buttons">
                 {!gameStarted && typeof room !== 'undefined' && (profile && profile.sessionId == owner) ? (
-                    <button className={`btn-play-game ${isMuted ? "muted" : ""}`}
-                            onClick={() => handleSendMessage("startGame", {})}>
-                        <PlayArrowIcon/> Start Game
-                    </button>
+                    !isGameLoading ? (
+                        <button className={`btn-play-game ${isMuted ? "muted" : ""}`}
+                                onClick={() => setIsDialogPlayGame(true)}>
+                            <PlayArrowIcon/> Create Game
+                        </button>
+                    ) : (
+                        <button className="btn-play-game" disabled>
+                            <Riple color="#FFF" size="small" text="" textColor="" style={{fontSize: '5px'}} />
+                        </button>
+                    )
                 ) : ""}
                 <button className="btn-mute" onClick={() => handleToggleSound()}>
                     {isMuted ? <VolumeOff/> : <VolumeUp/>}
                 </button>
             </div>
+
+            {isDialogPlayGame? (
+                <div className={'dialog-overlay'}>
+                    <div className={'dialog'}>
+                        <div className={'dialog-content'}>
+                            <h1>Customize your Quiz with a Theme</h1>
+                            <p>Artificial intelligence creates personalized questions based on the chosen topic.</p>
+                            <textarea placeholder={'Enter a theme, e.g. Greek Mythology'} className={'dialog-textarea'} maxLength={126}></textarea>
+                        </div>
+                        <div className={'dialog-actions'}>
+                            <button className={'btn-confirm'} onClick={() => handlePlayGame()}>Start Game</button>
+                            <button className={'btn-cancel'} onClick={() => setIsDialogPlayGame(false)}>Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            ): "" }
         </>
     )
 }

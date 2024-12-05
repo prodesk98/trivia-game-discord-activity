@@ -2,10 +2,15 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
-from ..provider.schemas import QuestionSchema
+from ..provider.schemas import QuestionSchema, GenerateQuestionSchema
+
 
 class CreateQuestionSchema(QuestionSchema):
     document_id: UUID = Field(default_factory=lambda: uuid4())
+
+
+class CreateGenerateQuestionSchema(GenerateQuestionSchema):
+    prompt: str = Field(..., max_length=256)
 
 
 class QueryQuestionSchema(BaseModel):

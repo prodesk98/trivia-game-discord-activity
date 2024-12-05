@@ -86,12 +86,12 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
         // TODO: generate question options using API GenAI
 
         this.roundId = uuid4();
-        this.startGame();
+        this.startGame(message.prompt).then();
     });
     if (process.env.NODE_ENV !== "production") {
       // TODO: remove this
       this.onMessage("testStartGame", (client, message) => {
-        this.startGame();
+          this.startGame(message.prompt).then();
       });
 
       // TODO: remove this
@@ -175,36 +175,31 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     return (correct === response ? 1 : 0) * this.state.currentTimer;
   }
 
-  startGame() {
+  async startGame(prompt: string) {
     this.totalTurns = 0;
 
-    // TODO: generate question options using API GenAI
-    this.questionOptions = [
-        new QuestionOptions(
-            {
-                id: "1",
-                question: "Qual é a capital da França?",
-                options: ["Berlim", "Madrid", "Paris", "Roma"],
-                correct: 2
-            }
-        ),
-        new QuestionOptions(
-            {
-                id: "2",
-                question: "Quem pintou a Mona Lisa?",
-                options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Claude Monet"],
-                correct: 2
-            }
-        ),
-        new QuestionOptions(
-            {
-                id: "3",
-                question: "Qual é o maior oceano do mundo?",
-                options: ["Oceano Atlântico", "Oceano Índico", "Oceano Ártico", "Oceano Pacífico"],
-                correct: 3
-            }
-        ),
-    ]
+    const response = await fetch(
+        `${process.env.QUIZGENAI_ENDPOINT}/generative`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${process.env.QUIZGENAI_API_KEY}`
+            },
+            body: JSON.stringify({
+                prompt: prompt
+            })
+        }
+    )
+    const data = await response.json();
+    this.questionOptions = data.questionnaires.map((q: any) => {
+        return new QuestionOptions({
+            id: q.id,
+            question: q.question,
+            options: q.options,
+            correct: q.answer,
+        });
+    });
 
     this.answerOptions = this.questionOptions.map(q => q.correct);
 
@@ -216,6 +211,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     for (const [sessionId, player] of this.state.players) {
         player.accepted = false;
         player.answered = -1;
+        player.score = 0;
         player.lack = true;
         this.state.players.set(sessionId, player);
     }

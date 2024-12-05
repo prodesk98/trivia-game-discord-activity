@@ -290,6 +290,18 @@ button i {
     justify-content: space-around;
 }
 
+.dialog-textarea {
+    width: 100%;
+    height: 100px;
+    margin: 20px 0;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #ffffff;
+    color: #000;
+    resize: none;
+}
+
 .btn-confirm {
     background-color: #4caf50;
     color: white;
@@ -336,8 +348,46 @@ button i {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    overflow-x: scroll;
+    overflow-x: hidden;
+    overflow-y: hidden;
     height: 350px;
+
+    transition: overflow 0.3s ease; /* Suaviza a transição */
+}
+
+.leaderboard:active {
+    overflow-y: scroll; /* Mostra o scroll ao clicar */
+}
+
+/* Estilo do scroll para navegadores Webkit */
+.leaderboard::-webkit-scrollbar {
+    width: 10px; /* Largura da barra */
+}
+
+.leaderboard::-webkit-scrollbar-track {
+    background: #00aaff; /* Cor do trilho */
+    border-radius: 10px;
+}
+
+.leaderboard::-webkit-scrollbar-thumb {
+    background: #ffd700; /* Cor do "polegar" */
+    border-radius: 10px;
+    border: 2px solid #00aaff; /* Espaço entre o polegar e o trilho */
+}
+
+.leaderboard::-webkit-scrollbar-thumb:hover {
+    background: #ffcc00; /* Cor ao passar o mouse */
+}
+
+/* Compatibilidade com Firefox */
+.leaderboard {
+    scrollbar-width: thin; /* Espessura do scroll */
+    scrollbar-color: #ffd700 #00aaff; /* Polegar e trilho */
+}
+
+/* Animação de suavidade no scroll */
+.leaderboard {
+    scroll-behavior: smooth;
 }
 
 /* Estilo para cada item na leaderboard */

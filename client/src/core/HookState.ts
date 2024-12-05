@@ -19,6 +19,10 @@ export function useHookState() {
     const [answerCorrect, setAnswerCorrect] = useState<number>(-1);
     const [isMuted, setIsMuted] = useState(false);
 
+    // Components
+    const [isGameLoading, setIsGameLoading] = useState(false);
+    const [isDialogPlayGame, setIsDialogPlayGame] = useState(false);
+
     return {
         // getters
         answerCorrect,
@@ -33,6 +37,8 @@ export function useHookState() {
         profile,
         room,
         timeLeft,
+        isGameLoading,
+        isDialogPlayGame,
         // setters
         setPlayers,
         setProfile,
@@ -46,5 +52,7 @@ export function useHookState() {
         setAnswerSelected,
         setAnswerCorrect,
         setIsMuted,
+        setIsGameLoading,
+        setIsDialogPlayGame,
     };
 }

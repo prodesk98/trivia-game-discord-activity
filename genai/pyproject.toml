@@ -13,6 +13,8 @@ pydantic = "^2.10.3"
 weaviate-client = "^4.9.6"
 python-dotenv = "^1.0.1"
 loguru = "^0.7.2"
+langchain = "^0.3.9"
+langchain-openai = "^0.2.11"
 
 
 [build-system]
