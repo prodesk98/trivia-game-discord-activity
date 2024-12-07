@@ -54,7 +54,7 @@ class LLM:
         _prompt = ChatPromptTemplate.from_messages(
             messages=[
                 _system,
-                HumanMessage(content=prompt),
+                HumanMessage(content=f"Generate a questionnaire based on the following prompt:\n\"\"\"{prompt}\"\"\""),
             ]
         )
         structured = self.llm.with_structured_output(
