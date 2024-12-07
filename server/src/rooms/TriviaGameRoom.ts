@@ -14,7 +14,6 @@ import {
     createScore,
     getSumScoreByRoomIdAndUserId
 } from "../database/DBSession";
-import {Prompt} from "./schema/Prompt";
 
 
 export class TriviaGameRoom extends Room<TriviaGameState> {
@@ -28,10 +27,10 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
   timerGame: Delayed;
   timeOut: Delayed;
 
-  // TODO: uncomment this
-  // static onAuth (token: string) {
-  //   return JWT.verify(token);
-  // }
+  static onAuth (token: string) {
+    if (process.env.NODE_ENV !== "production") return;
+    return JWT.verify(token);
+  }
 
   onCreate (options: any) {
     this.setState(new TriviaGameState());
@@ -85,33 +84,6 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
         }
         this.roundId = uuid4();
         this.startGame(message.prompt).then();
-    });
-
-    this.onMessage("like", (client, message) => {
-        const player = this.state.players.get(client.sessionId);
-        if (player.liked !== null) return;
-        if (this.state.prompts.length - 1 < message.index) return;
-        const prompt = this.state.prompts[message.index];
-        prompt.likes += 1;
-        this.state.prompts[message.index] = prompt;
-
-        // @ts-ignore
-        player.liked = prompt.id;
-        this.state.players.set(client.sessionId, player);
-    });
-
-    this.onMessage("prompt", (client, message) => {
-        const player = this.state.players.get(client.sessionId);
-        if (player.prompt !== null) return;
-        player.prompt = message.prompt;
-        this.state.players.set(client.sessionId, player);
-
-        const prompt = new Prompt();
-        prompt.id = uuid4();
-        prompt.playerId = client.sessionId;
-        prompt.prompt = message.prompt;
-        prompt.likes = 0;
-        this.state.prompts.push(prompt);
     });
 
     // create room
@@ -198,7 +170,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
                 })
             }
         )
-        const data = await response.json();
+        const data: any = await response.json();
         this.questionOptions = data.questionnaires.map((q: any) => {
             return new QuestionOptions({
                 id: q.id,
@@ -223,8 +195,6 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
         player.accepted = false;
         player.answered = -1;
         player.lack = true;
-        player.liked = null;
-        player.prompt = null;
         this.state.players.set(sessionId, player);
     }
   }

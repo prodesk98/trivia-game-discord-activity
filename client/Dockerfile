@@ -2,15 +2,14 @@ FROM node:22.11-slim AS builder
 
 WORKDIR /app
 
-RUN rm -rf node_modules
-
 COPY . .
+RUN rm -rf /app/node_modules
 
 RUN npm install
 
 RUN npm run build
 
-FROM nginx:alpine AS production
+FROM nginx:alpine
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 

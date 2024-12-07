@@ -39,7 +39,7 @@ export default config({
          */
         app.post("/colyseus/discord/token", async (req, res) => {
             try {
-                const response = await fetch('https://discord.com/api/oauth2/token', {
+                const response: any = await fetch('https://discord.com/api/oauth2/token', {
                     method: "POST",
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -58,7 +58,7 @@ export default config({
                     return res.status(400).send({ error: "Invalid code" });
                 }
 
-                const profile = await (await fetch('https://discord.com/api/users/@me', {
+                const profile: any = await (await fetch('https://discord.com/api/users/@me', {
                     method: "GET",
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -95,7 +95,7 @@ export default config({
                 );
 
                 // get all guilds
-                const guilds = await (await fetch('https://discord.com/api/users/@me/guilds', {
+                const guilds: any = await (await fetch('https://discord.com/api/users/@me/guilds', {
                     method: "GET",
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',

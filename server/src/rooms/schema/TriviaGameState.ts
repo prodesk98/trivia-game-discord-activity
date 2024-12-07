@@ -1,7 +1,6 @@
-import {Schema, MapSchema, ArraySchema, type} from "@colyseus/schema";
+import {Schema, MapSchema, type} from "@colyseus/schema";
 import {Player} from "./Player";
 import {QuestionOptions} from "./QuestionOptions";
-import {Prompt} from "./Prompt";
 
 export class TriviaGameState extends Schema {
   @type({ map: Player }) players = new MapSchema<Player>();
@@ -15,5 +14,4 @@ export class TriviaGameState extends Schema {
   @type("number") currentAnswer: number = null;
   @type("string") theme: string = null;
   @type(QuestionOptions) currentQuestionOptions: QuestionOptions;
-  @type([Prompt]) prompts = new ArraySchema<Prompt>();
 }

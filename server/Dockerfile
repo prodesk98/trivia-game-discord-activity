@@ -1,15 +1,20 @@
 FROM node:22.11-slim AS builder
 
-ENV PORT 8080
+WORKDIR /app
+
+COPY . .
+RUN rm -rf /app/node_modules
+
+RUN npm install
+
+RUN npm run build
+
+FROM node:22.11-slim
 
 WORKDIR /app
 
-RUN rm -rf node_modules
-
-COPY . .
-
-RUN npm ci --only=production --omit=dev
+COPY --from=builder /app/dist /app/dist
 
 EXPOSE 8080
 
-CMD ["npm", "start"]
+CMD ["npm", "run", "start:prod"]

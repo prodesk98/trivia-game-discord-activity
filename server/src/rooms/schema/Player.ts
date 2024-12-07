@@ -11,6 +11,4 @@ export class Player extends Schema {
     @type("boolean") accepted: boolean = false;
     @type("number") answered: number = -1;
     @type("boolean") lack: boolean = true;
-    @type("string") liked: string = null;
-    @type("string") prompt: string = null;
 }
