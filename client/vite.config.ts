@@ -8,7 +8,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/colyseus': {
-        target: 'http://localhost:2567',
+        target: 'http://game-server:2567', // game-server is the name of the service in the docker-compose file
         changeOrigin: true,
         secure: false,
         ws: true,

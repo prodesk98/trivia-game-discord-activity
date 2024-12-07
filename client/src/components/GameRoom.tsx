@@ -137,7 +137,6 @@ export default function GameRoom(){
             authenticate().then((response) => {
                 const token = response.token;
                 console.log("Authenticated with Discord!");
-                console.log(token);
 
                 // connect to colyseus
                 handleColyseusConnection(token).then();
