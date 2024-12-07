@@ -319,6 +319,16 @@ button i {
     resize: none;
 }
 
+.btn-play-game-lobby {
+    background-color: #225f9b;
+    border: 1px solid #11467b;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
 .btn-confirm {
     background-color: #4caf50;
     color: white;

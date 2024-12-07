@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from ..provider.base import COLLECTION_NAME
+from ..provider.constraints import COLLECTION_NAME
 from ..provider._client import client
 from server.provider import create_collection
 

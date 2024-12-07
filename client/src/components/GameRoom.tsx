@@ -4,6 +4,7 @@ import VolumeUp from "@mui/icons-material/VolumeUp"
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import CloseIcon from '@mui/icons-material/Close';
+import ClockIcon from '@mui/icons-material/QueryBuilder';
 
 // css
 import "../css/GameRoom.css";
@@ -52,15 +53,19 @@ export default function GameRoom(){
         isMuted,
         room,
         profile,
+        ownerProfile,
         owner,
         players,
         timeLeft,
+        theme,
+        timerClock,
         isGameLoading,
         isDialogPlayGame,
         answerSelected,
         // setters
         setPlayers,
         setProfile,
+        setOwnerProfile,
         setOwner,
         setCurrentQuestionOptions,
         setGameEnded,
@@ -68,7 +73,9 @@ export default function GameRoom(){
         setGameStarted,
         setGameLobby,
         setRoom,
+        setTheme,
         setTimeLeft,
+        setTimerClock,
         setAnswerSelected,
         setAnswerCorrect,
         setIsMuted,
@@ -152,6 +159,11 @@ export default function GameRoom(){
 
     // play game
     const handlePlayGame = () => {
+        if (ownerProfile && profile && ownerProfile.sessionId !== profile.sessionId) {
+            handleNotifyError("You are not the owner of the room!");
+            setIsDialogPlayGame(false);
+            return;
+        }
         setIsGameLoading(true);
         const prompt = document.querySelector('.dialog-textarea');
         if (prompt === null) {
@@ -172,7 +184,7 @@ export default function GameRoom(){
 
     const handleColyseusConnection = async (token: string) => {
         colyseusSDK.auth.token = token;
-        const room = await colyseusSDK.joinOrCreate("game", { channelId: discordSDK.channelId });
+        const room = await colyseusSDK.joinOrCreate("game", { channelId: discordSDK.channelId, guildId: discordSDK.guildId });
         setRoom(room);
 
         room.onStateChange.once((state: any) => {
@@ -235,6 +247,9 @@ export default function GameRoom(){
             // listen currentTimer
             state.listen("currentTimer", (currentValue: number) => setTimeLeft(currentValue));
 
+            // listen timerClock
+            state.listen("timerClock", (currentValue: number) => setTimerClock(currentValue));
+
             // listen gameStarted
             state.listen("gameStarted", (currentValue: boolean) => setGameStarted(currentValue));
 
@@ -244,8 +259,18 @@ export default function GameRoom(){
             // listen gameLobby
             state.listen("gameLobby", (currentValue: boolean) => setGameLobby(currentValue));
 
+            // listen prompt
+            state.listen("theme", (currentValue: string) => setTheme(currentValue));
+
             // listen setOwner
-            state.listen("owner", (currentValue: string) => setOwner(currentValue));
+            state.listen("owner", (currentValue: string) => {
+                setOwnerProfile(players.find((player: Player) => player.sessionId === currentValue));
+                if (profile && profile.sessionId !== currentValue) {
+                    // disable dialog
+                    setIsDialogPlayGame(false);
+                }
+                setOwner(currentValue);
+            });
 
             // set timer
             setTimeLeft(state.currentTimer);
@@ -298,6 +323,10 @@ export default function GameRoom(){
 
         room.onMessage("__playground_message_types", (message: any) => {
             console.log(message);
+        });
+
+        room.onMessage("error", (error: any) => {
+            handleNotifyError(error.message);
         });
     }
 
@@ -380,11 +409,73 @@ export default function GameRoom(){
                             (
                                 <>
                                     <div style={{marginTop: '5px'}}>
-                                        {gameLobby ? "Choose a theme to start the game!" : "Game starting..."}
+                                        {
+                                            gameLobby ?
+                                                theme === null ? (
+                                                    profile && profile.sessionId == owner ?
+                                                        (
+                                                            <span>Choose a theme to start the game!</span>
+                                                        ) : (
+                                                            <span>Waiting for <b>{ownerProfile?.username}</b> to choose the theme...</span>
+                                                        )
+                                                ) :
+                                                (
+                                                    <>
+                                                        <div>
+                                                            <b>{ownerProfile?.username}</b> has chosen the theme:
+                                                        </div>
+                                                        <div>
+                                                            <b>{theme}</b>
+                                                        </div>
+                                                    </>
+                                                )
+                                            : ""
+                                        }
+                                        <div>
+                                            {theme === null ?
+                                                (
+                                                    <span style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        color: '#FFF',
+                                                        fontSize: '14px',
+                                                        marginTop: '5px'
+                                                    }}>
+                                                        {
+                                                            timerClock > 0 ?
+                                                            (
+                                                                <>
+                                                                    <ClockIcon style={{marginRight: '5px'}}/>
+                                                                    {timerClock} seconds
+                                                                </>
+                                                            )
+                                                            : ""
+                                                        }
+                                                    </span>
+                                                ) : (
+                                                    <Riple color="#FFF" size="small" text="" textColor=""/>
+                                                )
+                                            }
+                                        </div>
                                     </div>
-                                    <div style={{padding: '15px'}}>
-                                        <OrbitProgress variant="split-disc" color="#FFF" size="small" text="" textColor="" />
-                                    </div>
+                                    {theme === null ?
+                                        (
+                                            <div style={{padding: '15px'}}>
+                                                {
+                                                    profile && profile.sessionId != owner ?
+                                                    (
+                                                        <OrbitProgress variant="split-disc" color="#FFF" size="small" text=""
+                                                                       textColor=""/>
+                                                    ) : (
+                                                        <button className="btn-play-game-lobby" onClick={() => setIsDialogPlayGame(true)}>
+                                                            Choose theme
+                                                        </button>
+                                                    )
+                                                }
+                                            </div>
+                                        ) : ""
+                                    }
                                 </>
                             )
                             : ""
@@ -427,7 +518,7 @@ export default function GameRoom(){
                 </button>
             </div>
 
-            {isDialogPlayGame? (
+            {isDialogPlayGame ? (
                 <div className={'dialog-overlay'}>
                     <div className={'dialog'}>
                         <div className={'dialog-content'}>
@@ -448,6 +539,7 @@ export default function GameRoom(){
                             <div style={{textAlign: 'center', paddingBottom: '5px'}}>
                                 <p style={{margin: '10px 0', fontSize: '14px', color: '#666'}}>- Or -</p>
                                 <button
+                                    onClick={() => handleNotifyError("This feature is not available yet!")}
                                     style={{
                                         backgroundColor: '#007bff',
                                         color: 'white',

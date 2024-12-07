@@ -6,7 +6,7 @@ from config import env
 from server.core.lifespan import lifespan
 
 from .provider import query_question, create_question
-from .provider.base import Category
+from .provider.constraints import Category
 from .schemas.questionnaire import (
     CreateQuestionSchema,
     CreateGenerateQuestionSchema,

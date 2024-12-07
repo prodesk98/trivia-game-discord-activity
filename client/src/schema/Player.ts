@@ -12,8 +12,6 @@ export class Player extends Schema {
     // @ts-ignore
     @type("number") score: number;
     // @ts-ignore
-    @type("boolean") isOwner: boolean;
-    // @ts-ignore
     @type("boolean") isBestPlayer: boolean;
     // @ts-ignore
     @type("boolean") accepted: boolean = false;

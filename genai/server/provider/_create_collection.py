@@ -4,7 +4,7 @@ from loguru import logger
 
 from ._client import client
 from config import env
-from .base import COLLECTION_NAME
+from .constraints import COLLECTION_NAME
 
 
 async def create_collection():
@@ -53,6 +53,11 @@ async def create_collection():
                 ),
                 wvc.config.Property(
                     name="difficulty",
+                    data_type=wvc.config.DataType.TEXT, # noqa
+                    skip_vectorization=True,
+                ),
+                wvc.config.Property(
+                    name="language",
                     data_type=wvc.config.DataType.TEXT, # noqa
                     skip_vectorization=True,
                 ),

@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List
 from uuid import uuid4, UUID
 
-from .base import Category, Difficulty
+from .constraints import Category, Difficulty, Language
 from pydantic import BaseModel, Field
 
 
@@ -12,6 +12,7 @@ class QuestionBase(BaseModel):
     answer: int = Field(..., ge=0, le=3)
     category: Category = Field(Category.GENERAL_KNOWLEDGE)
     difficulty: Difficulty = Field(Difficulty.EASY)
+    language: str = Field(Language.ENGLISH)
 
 
 class QuestionnaireBase(BaseModel):
@@ -19,6 +20,7 @@ class QuestionnaireBase(BaseModel):
     options: List[str] = Field(description="4 options for the question")
     answer: int = Field(description="Index of the correct answer")
     difficulty: Difficulty = Field(Difficulty.EASY, description="Difficulty level of the question")
+    language: Language = Field(Language.ENGLISH, description="Language of the question")
 
 
 class QuestionSchema(QuestionBase):

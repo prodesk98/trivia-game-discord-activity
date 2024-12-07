@@ -8,6 +8,7 @@ class Category(Enum):
     HISTORY = "history"
     SCIENCE = "science"
     TECHNOLOGY = "technology"
+    PROGRAMMING = "programming"
     ART_AND_LITERATURE = "art_and_literature"
     ENTERTAINMENT = "entertainment"
     SPORTS = "sports"
@@ -37,3 +38,8 @@ class Difficulty(Enum):
     HARD = "hard"
     EXPERT = "expert"
     MASTER = "master"
+
+
+class Language(Enum):
+    PORTUGUESE = "portuguese"
+    ENGLISH = "english"

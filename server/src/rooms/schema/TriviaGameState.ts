@@ -13,6 +13,7 @@ export class TriviaGameState extends Schema {
   @type("number") currentTimer = 0;
   @type("number") timerClock = 0;
   @type("number") currentAnswer: number = null;
+  @type("string") theme: string = null;
   @type(QuestionOptions) currentQuestionOptions: QuestionOptions;
   @type([Prompt]) prompts = new ArraySchema<Prompt>();
 }

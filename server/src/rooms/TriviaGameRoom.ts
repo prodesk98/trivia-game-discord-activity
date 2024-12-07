@@ -9,7 +9,7 @@ import {AnswerResponse} from "./schema/messages/AnswerResponse";
 import {Delayed} from "colyseus";
 import {QuestionOptions} from "./schema/QuestionOptions";
 import {ErrorResponse} from "./schema/messages/ErrorResponse";
-import {createScore} from "../database/DBSession";
+import {createRoom, createScore} from "../database/DBSession";
 import {Prompt} from "./schema/Prompt";
 
 
@@ -41,7 +41,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
       let score = this.calculateScore(message.answer, correct);
       let accepted = correct === message.answer;
 
-      if (accepted) createScore(player.userId, this.roundId, score).then();
+      if (accepted) createScore(player.userId, this.roundId, this.roomId, score).then();
 
       player.score += score;
       player.accepted = accepted;
@@ -58,7 +58,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
 
       // check if all players have answered
       let countAnswered = 0;
-      for (const [sessionId, player] of this.state.players) {
+      for (const [_, player] of this.state.players) {
         if (player.lack === false) countAnswered++;
       }
 
@@ -75,18 +75,10 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     this.onMessage("startGame", (client, message) => {
         console.log(`${client.sessionId} started the game!`);
         // check if the client is the owner
-        if (client.sessionId !== this.state.owner && !this.state.gameStarted) {
-            client.send(new ErrorResponse("Only the owner can start the game!"));
+        if (client.sessionId !== this.state.owner && !this.state.gameLobby) {
+            client.send("error", new ErrorResponse({message: "You are not the owner!"}));
             return;
         }
-        // check if there are enough players
-        // TODO: uncomment this
-        // if (this.state.players.size < 2) {
-        //     client.send(new ErrorResponse("Not enough players to start the game!"));
-        //     return;
-        // }
-        // TODO: generate question options using API GenAI
-
         this.roundId = uuid4();
         this.startGame(message.prompt).then();
     });
@@ -116,39 +108,10 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
         prompt.prompt = message.prompt;
         prompt.likes = 0;
         this.state.prompts.push(prompt);
-
-        if (this.state.prompts.length === 1) {
-            this.tickChooseTimer();
-        }
     });
 
-    if (process.env.NODE_ENV !== "production") {
-      // TODO: remove this
-      this.onMessage("testStartGame", (client, message) => {
-          this.startGame(message.prompt).then();
-      });
-
-      // TODO: remove this
-      this.onMessage("testScore", (client, message) => {
-        const player = this.state.players.get(client.sessionId);
-        player.score += 1;
-        // apply score state
-        this.state.players.set(client.sessionId, player);
-      });
-
-      // TODO: remove this
-      this.onMessage("testAccepted", (client, message) => {
-        const player = this.state.players.get(client.sessionId);
-        player.accepted = true;
-      });
-
-      // TODO: remove this
-      this.onMessage("testGameOver", (client, message) => {
-        this.state.gameOver = true;
-        this.state.currentTimer = 0;
-        this.broadcast("gameOver", {});
-      });
-    }
+    // create room
+    createRoom(options.guildId, this.roomId).then();
   }
 
   onJoin (client: Client, options: any) {
@@ -164,17 +127,15 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     player.accepted = false;
     player.answered = -1;
     player.lack = true;
-    player.isOwner = client.sessionId === this.state.owner;
     player.score = 0;
 
-    if (!player.avatar.startsWith("https://")) {
-      player.avatar = `https://cdn.discordapp.com/avatars/${player.id}/${player.avatar}.png?size=256`;
-    }
+    if (!player.avatar.startsWith("https://")) player.avatar = `https://cdn.discordapp.com/avatars/${player.id}/${player.avatar}.png?size=256`;
     this.state.players.set(client.sessionId, player);
 
     // assign the owner if there's no owner
     if (this.state.players.size == 1) {
       this.state.owner = client.sessionId;
+      this.timeOut = this.clock.setTimeout(() => this.nextOwner(), 3000);
       console.log(`${this.state.owner} is the owner!`);
     }
 
@@ -198,6 +159,10 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
       // assign a new owner
       this.state.owner = this.state.players.keys().next().value;
       console.log(`${this.state.owner} is the owner!`);
+
+      if (this.state.gameLobby) {
+          this.nextOwner();
+      }
     }
   }
 
@@ -211,34 +176,41 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
 
   async startGame(prompt: string) {
     this.totalTurns = 0;
+    this.state.theme = prompt;
+    this.stopChoose();
 
-    const response = await fetch(
-        `${process.env.QUIZGENAI_ENDPOINT}/generative`,
-        {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${process.env.QUIZGENAI_API_KEY}`
-            },
-            body: JSON.stringify({
-                prompt: prompt
-            })
-        }
-    )
-    const data = await response.json();
-    this.questionOptions = data.questionnaires.map((q: any) => {
-        return new QuestionOptions({
-            id: q.id,
-            question: q.question,
-            options: q.options,
-            correct: q.answer,
+    try {
+        const response = await fetch(
+            `${process.env.QUIZGENAI_ENDPOINT}/generative`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${process.env.QUIZGENAI_API_KEY}`
+                },
+                body: JSON.stringify({
+                    prompt: prompt
+                })
+            }
+        )
+        const data = await response.json();
+        this.questionOptions = data.questionnaires.map((q: any) => {
+            return new QuestionOptions({
+                id: q.id,
+                question: q.question,
+                options: q.options,
+                correct: q.answer,
+            });
         });
-    });
 
-    this.answerOptions = this.questionOptions.map(q => q.correct);
+        this.answerOptions = this.questionOptions.map(q => q.correct);
 
-    this.nextTurn();
-    this.broadcast("next", {});
+        this.nextTurn();
+    }catch (e) {
+        console.error(e);
+        this.broadcast("error", new ErrorResponse({message: "Error generating questions!"}));
+        this.startLobby();
+    }
   }
 
   resetPlayers() {
@@ -273,6 +245,9 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
       this.state.currentQuestionOptions = null;
       // this.answerOptions = [];
 
+      // start the lobby timer
+      this.timeOut = this.clock.setTimeout(() => this.nextOwner(), 10000);
+
       // broadcast game over
       this.broadcast("gameOver", {});
   }
@@ -281,7 +256,39 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     this.state.timerClock -= 1;
     if (this.state.timerClock <= 0) {
         this.timerChoose.clear();
+        this.nextOwner();
     }
+  }
+
+  startLobby() {
+    this.timeOut.clear();
+    this.state.gameLobby = true;
+    this.state.gameStarted = false;
+    this.state.gameEnded = false;
+    this.state.gameOver = false;
+    this.state.theme = null;
+    this.state.currentAnswer = null;
+    this.state.currentQuestionOptions = null;
+    this.state.timerClock = 30;
+    this.timerChoose = this.clock.setInterval(() => this.tickChooseTimer(), 1000);
+  }
+
+  calculateNextOwner() {
+      const players = Array.from(this.state.players.keys());
+      if (players.length === 1) return players[0];
+
+      const currentIndex = players.findIndex((sessionId) => sessionId === this.state.owner);
+
+      const nextIndex = (currentIndex + 1) % players.length;
+
+      return players[nextIndex];
+  }
+
+  nextOwner() {
+    this.state.owner = this.calculateNextOwner();
+    this.state.timerClock = 30;
+    if(this.timerChoose) this.timerChoose.clear();
+    this.startLobby();
   }
 
   tickGameTimer() {
@@ -290,6 +297,11 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
       this.timerGame.clear();
       this.endTurn();
     }
+  }
+
+  stopChoose() {
+      if (this.timerChoose) this.timerChoose.clear();
+      this.state.owner = this.calculateNextOwner();
   }
 
   endTurn() {
