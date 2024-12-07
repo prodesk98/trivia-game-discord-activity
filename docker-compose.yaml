@@ -1,4 +1,3 @@
-
 services:
   mongodb:
     image: mongo:latest
@@ -7,8 +6,6 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: trivia1
       MONGO_INITDB_DATABASE: trivia
-    ports:
-      - "27108:27017"
     volumes:
       - mongodb_data:/data/db
     restart: on-failure:0
@@ -29,12 +26,24 @@ services:
       ENABLE_API_BASED_MODULES: 'true'
       CLUSTER_HOSTNAME: 'node1'
       ENABLE_MODULES: 'text2vec-openai'
-    ports:
-      - "8080:8080"
-      - "50051:50051"
     volumes:
       - weaviate_data:/var/lib/weaviate
     restart: on-failure:0
+
+  quiz-genai:
+    container_name: quiz-genai
+    build:
+      context: ./genai
+      dockerfile: ./Dockerfile
+    env_file:
+      - genai/.env
+    environment:
+      DEBUG: false
+      WEAVIATE_HOST: weaviate
+      EMBEDDING_MODEL: text-embedding-3-small
+    depends_on:
+      - weaviate
+      - mongodb
 
   game-server:
     container_name: game-server
@@ -45,6 +54,13 @@ services:
         - "8081:8080"
     depends_on:
         - mongodb
+        - quizgenai
+    env_file:
+      - server/.env
+    environment:
+      NODE_ENV: production
+      MONGO_URI: mongodb://root:trivia1@mongodb:27017/trivia
+      QUIZGENAI_ENDPOINT: http://quizgenai:3000
 
   game-client:
     container_name: game-client
@@ -52,9 +68,21 @@ services:
       context: ./client
       dockerfile: ./Dockerfile
     ports:
-        - "3002:80"
+        - "3001:80"
     depends_on:
         - game-server
+
+  reverse-proxy:
+    container_name: reverse-proxy
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+        - ./nginx/nginx.conf:/etc/nginx/sites-available/default
+    depends_on:
+      - game-client
+      - game-server
+      - quizgenai
 
 volumes:
   mongodb_data:

@@ -10,4 +10,4 @@ RUN pip install poetry && \
 
 COPY . .
 
-ENTRYPOINT ["poetry", "run", "fastapi", "run", "server/run.py", "--host", "0.0.0.0", "--port", "3000"]
+ENTRYPOINT ["poetry", "run", "fastapi", "run", "server/run.py", "--host", "0.0.0.0", "--port", "3000", "--workers", "4"]
