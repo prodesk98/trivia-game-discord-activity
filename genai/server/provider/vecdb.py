@@ -19,6 +19,7 @@ async def create_question(data: QuestionSchema, c: CollectionAsync) -> Optional[
                 options=data.options,
                 answer=data.answer,
                 category=data.category.value,
+                difficulty=data.difficulty.value,
             ),
             uuid=data.document_id,
         )

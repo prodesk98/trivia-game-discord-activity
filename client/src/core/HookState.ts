@@ -10,6 +10,7 @@ export function useHookState() {
     const [currentQuestionOptions, setCurrentQuestionOptions] = useState<QuestionOptions>();
     const [gameEnded, setGameEnded] = useState<boolean>(false);
     const [gameStarted, setGameStarted] = useState<boolean>(false);
+    const [gameLobby, setGameLobby] = useState<boolean>(false);
     const [gamePaused, setGamePaused] = useState<boolean>(false);
     const [room, setRoom] = useState<Room>();
 
@@ -31,6 +32,7 @@ export function useHookState() {
         gameEnded,
         gamePaused,
         gameStarted,
+        gameLobby,
         isMuted,
         players,
         owner,
@@ -47,6 +49,7 @@ export function useHookState() {
         setGameEnded,
         setGamePaused,
         setGameStarted,
+        setGameLobby,
         setRoom,
         setTimeLeft,
         setAnswerSelected,

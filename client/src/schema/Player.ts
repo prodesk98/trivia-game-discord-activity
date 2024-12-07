@@ -21,4 +21,8 @@ export class Player extends Schema {
     @type("number") answered: number = -1;
     // @ts-ignore
     @type("boolean") lack: boolean = true;
+    // @ts-ignore
+    @type("string") liked: string = null;
+    // @ts-ignore
+    @type("string") prompt: string = null;
 }

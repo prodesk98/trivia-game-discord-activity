@@ -51,6 +51,16 @@ async def create_collection():
                     data_type=wvc.config.DataType.TEXT, # noqa
                     skip_vectorization=True,
                 ),
+                wvc.config.Property(
+                    name="difficulty",
+                    data_type=wvc.config.DataType.TEXT, # noqa
+                    skip_vectorization=True,
+                ),
+                wvc.config.Property(
+                    name="created_at",
+                    data_type=wvc.config.DataType.DATE, # noqa
+                    skip_vectorization=True,
+                )
             ]
         )
         if env.DEBUG:

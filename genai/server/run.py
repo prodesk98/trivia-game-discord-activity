@@ -45,6 +45,7 @@ async def get_questionnaires(
                 options=obj.properties["options"],
                 answer=obj.properties["answer"],
                 category=obj.properties["category"],
+                difficulty=obj.properties["difficulty"],
                 distance=obj.metadata.distance,
             ) for obj in response.objects
         ]

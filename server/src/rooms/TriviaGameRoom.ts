@@ -10,6 +10,7 @@ import {Delayed} from "colyseus";
 import {QuestionOptions} from "./schema/QuestionOptions";
 import {ErrorResponse} from "./schema/messages/ErrorResponse";
 import {createScore} from "../database/DBSession";
+import {Prompt} from "./schema/Prompt";
 
 
 export class TriviaGameRoom extends Room<TriviaGameState> {
@@ -19,7 +20,8 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
   questionOptions: QuestionOptions[] = new Array<QuestionOptions>();
   currentQuestionIndex = 0;
   answerOptions: number[] = [];
-  timer: Delayed;
+  timerChoose: Delayed;
+  timerGame: Delayed;
   timeOut: Delayed;
 
   // TODO: uncomment this
@@ -88,6 +90,38 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
         this.roundId = uuid4();
         this.startGame(message.prompt).then();
     });
+
+    this.onMessage("like", (client, message) => {
+        const player = this.state.players.get(client.sessionId);
+        if (player.liked !== null) return;
+        if (this.state.prompts.length - 1 < message.index) return;
+        const prompt = this.state.prompts[message.index];
+        prompt.likes += 1;
+        this.state.prompts[message.index] = prompt;
+
+        // @ts-ignore
+        player.liked = prompt.id;
+        this.state.players.set(client.sessionId, player);
+    });
+
+    this.onMessage("prompt", (client, message) => {
+        const player = this.state.players.get(client.sessionId);
+        if (player.prompt !== null) return;
+        player.prompt = message.prompt;
+        this.state.players.set(client.sessionId, player);
+
+        const prompt = new Prompt();
+        prompt.id = uuid4();
+        prompt.playerId = client.sessionId;
+        prompt.prompt = message.prompt;
+        prompt.likes = 0;
+        this.state.prompts.push(prompt);
+
+        if (this.state.prompts.length === 1) {
+            this.tickChooseTimer();
+        }
+    });
+
     if (process.env.NODE_ENV !== "production") {
       // TODO: remove this
       this.onMessage("testStartGame", (client, message) => {
@@ -207,27 +241,30 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     this.broadcast("next", {});
   }
 
-  resetPlayerAnswers() {
+  resetPlayers() {
     for (const [sessionId, player] of this.state.players) {
         player.accepted = false;
         player.answered = -1;
         player.lack = true;
+        player.liked = null;
+        player.prompt = null;
         this.state.players.set(sessionId, player);
     }
   }
 
   endGame() {
       // clear the timer
-      if (this.timer) this.timer.clear();
+      if (this.timerGame) this.timerGame.clear();
       if (this.timeOut) this.timeOut.clear();
 
       // set game over state
       this.state.gameOver = true;
+      this.state.gameLobby = true;
       this.state.gameStarted = false;
       this.state.gameEnded = true;
 
-      // clear player answers
-      this.resetPlayerAnswers();
+      // clear players
+      this.resetPlayers();
 
       // clear local state
       this.totalTurns = 0;
@@ -240,10 +277,17 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
       this.broadcast("gameOver", {});
   }
 
+  tickChooseTimer() {
+    this.state.timerClock -= 1;
+    if (this.state.timerClock <= 0) {
+        this.timerChoose.clear();
+    }
+  }
+
   tickGameTimer() {
     this.state.currentTimer -= 1;
     if (this.state.currentTimer <= 0 && !this.state.gameOver) {
-      this.timer.clear();
+      this.timerGame.clear();
       this.endTurn();
     }
   }
@@ -257,7 +301,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     this.state.currentAnswer = this.answerOptions[this.currentQuestionIndex];
 
     // clear the timer
-    if(this.timer) this.timer.clear();
+    if(this.timerGame) this.timerGame.clear();
 
     // next turn
     this.timeOut = this.clock.setTimeout(() => this.nextTurn(), 3000);
@@ -265,6 +309,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
 
   nextTurn() {
     this.state.gameStarted = true;
+    this.state.gameLobby = false;
     this.state.gameEnded = false;
     this.state.gameOver = false;
     this.currentQuestionIndex = this.totalTurns;
@@ -272,7 +317,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     this.state.currentAnswer = this.answerOptions[this.currentQuestionIndex];
 
     // reset player answers
-    this.resetPlayerAnswers();
+    this.resetPlayers();
 
     // clear the timeout
     if(this.timeOut) this.timeOut.clear();
@@ -282,6 +327,6 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
 
     // start the timer
     if (this.state.currentTimer < 30) this.state.currentTimer = 30;
-    this.timer = this.clock.setInterval(() => this.tickGameTimer(), 1000);
+    this.timerGame = this.clock.setInterval(() => this.tickGameTimer(), 1000);
   }
 }

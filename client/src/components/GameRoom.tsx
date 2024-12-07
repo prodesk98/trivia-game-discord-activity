@@ -2,6 +2,8 @@
 import VolumeOff from "@mui/icons-material/VolumeOff"
 import VolumeUp from "@mui/icons-material/VolumeUp"
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import ShuffleIcon from '@mui/icons-material/Shuffle';
+import CloseIcon from '@mui/icons-material/Close';
 
 // css
 import "../css/GameRoom.css";
@@ -46,6 +48,7 @@ export default function GameRoom(){
         gameEnded,
         gamePaused,
         gameStarted,
+        gameLobby,
         isMuted,
         room,
         profile,
@@ -63,6 +66,7 @@ export default function GameRoom(){
         setGameEnded,
         setGamePaused,
         setGameStarted,
+        setGameLobby,
         setRoom,
         setTimeLeft,
         setAnswerSelected,
@@ -153,11 +157,15 @@ export default function GameRoom(){
         if (prompt === null) {
             handleNotifyError("Please enter a prompt!");
             setIsGameLoading(false);
+            return;
         }
+        // @ts-ignore
         if (prompt?.value === "") {
             handleNotifyError("Please enter a prompt!");
             setIsGameLoading(false);
+            return;
         }
+        // @ts-ignore
         handleSendMessage("startGame", {prompt: prompt?.value});
         setIsDialogPlayGame(false);
     }
@@ -232,6 +240,9 @@ export default function GameRoom(){
 
             // listen gameEnded
             state.listen("gameEnded", (currentValue: boolean) => setGameEnded(currentValue));
+
+            // listen gameLobby
+            state.listen("gameLobby", (currentValue: boolean) => setGameLobby(currentValue));
 
             // listen setOwner
             state.listen("owner", (currentValue: string) => setOwner(currentValue));
@@ -337,9 +348,9 @@ export default function GameRoom(){
                     }
 
                     {/* Lista de jogadores no topo */}
-                    {gameStarted ? (
+                    {gameStarted || gameLobby ? (
                             <div className="players-list">
-                                <PlayerList players={players} answerSelected={answerSelected} hasQuestions={currentQuestionOptions?.question != null} />
+                                <PlayerList players={players} hasQuestions={currentQuestionOptions?.question != null} />
                             </div>
                         ): ""
                     }
@@ -367,9 +378,14 @@ export default function GameRoom(){
                         {
                             !gameEnded && !gameStarted ?
                             (
-                                <div style={{padding: '15px'}}>
-                                    <OrbitProgress variant="split-disc" color="#FFF" size="small" text="" textColor="" />
-                                </div>
+                                <>
+                                    <div style={{marginTop: '5px'}}>
+                                        {gameLobby ? "Choose a theme to start the game!" : "Game starting..."}
+                                    </div>
+                                    <div style={{padding: '15px'}}>
+                                        <OrbitProgress variant="split-disc" color="#FFF" size="small" text="" textColor="" />
+                                    </div>
+                                </>
                             )
                             : ""
                         }
@@ -398,7 +414,7 @@ export default function GameRoom(){
                     !isGameLoading ? (
                         <button className={`btn-play-game ${isMuted ? "muted" : ""}`}
                                 onClick={() => setIsDialogPlayGame(true)}>
-                            <PlayArrowIcon/> Create Game
+                            <PlayArrowIcon/> Choose theme
                         </button>
                     ) : (
                         <button className="btn-play-game" disabled>
@@ -415,17 +431,44 @@ export default function GameRoom(){
                 <div className={'dialog-overlay'}>
                     <div className={'dialog'}>
                         <div className={'dialog-content'}>
+                            <div className={'dialog-close'}>
+                                <button onClick={() => setIsDialogPlayGame(false)}>
+                                    <CloseIcon />
+                                </button>
+                            </div>
                             <h1>Customize your Quiz with a Theme</h1>
                             <p>Artificial intelligence creates personalized questions based on the chosen topic.</p>
-                            <textarea placeholder={'Enter a theme, e.g. Greek Mythology'} className={'dialog-textarea'} maxLength={126}></textarea>
-                        </div>
-                        <div className={'dialog-actions'}>
-                            <button className={'btn-confirm'} onClick={() => handlePlayGame()}>Start Game</button>
-                            <button className={'btn-cancel'} onClick={() => setIsDialogPlayGame(false)}>Cancel</button>
+                            <textarea placeholder={'Enter a theme, e.g. Greek Mythology'} className={'dialog-textarea'}
+                                      maxLength={126}></textarea>
+                            <div className={'dialog-actions'}>
+                                <button className={'btn-confirm'} onClick={() => handlePlayGame()}>
+                                    Choose Theme
+                                </button>
+                            </div>
+                            <div style={{textAlign: 'center', paddingBottom: '5px'}}>
+                                <p style={{margin: '10px 0', fontSize: '14px', color: '#666'}}>- Or -</p>
+                                <button
+                                    style={{
+                                        backgroundColor: '#007bff',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '5px',
+                                        padding: '10px 20px',
+                                        fontSize: '16px',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        margin: 'auto',
+                                    }}>
+                                    <ShuffleIcon style={{marginRight: '8px', fill: 'white'}}/>
+                                    Random Theme
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            ): "" }
+            ) : ""}
         </>
     )
 }

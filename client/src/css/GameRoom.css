@@ -290,6 +290,23 @@ button i {
     justify-content: space-around;
 }
 
+.dialog-close {
+    display: block;
+    width: 100%;
+    text-align: right;
+}
+
+.dialog-close >  button {
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: #000;
+}
+
+.dialog-close >  button:hover {
+    color: #333;
+}
+
 .dialog-textarea {
     width: 100%;
     height: 100px;
@@ -312,6 +329,17 @@ button i {
     transition: background-color 0.3s ease;
 }
 
+.btn-info {
+    background-color: #2196F3;
+    color: white;
+    padding: 10px 20px;
+    margin-top: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
 .btn-confirm:hover {
     background-color: #45a049;
 }
@@ -328,6 +356,14 @@ button i {
 
 .btn-cancel:hover {
     background-color: #d32f2f;
+}
+
+.line {
+    width: 100%;
+    height: 1px;
+    background-color: #ddd;
+    margin: 5px 0 20px 0;
+    display: block;
 }
 
 /* Container do Leaderboard */

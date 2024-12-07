@@ -8,7 +8,7 @@ import {IPlayerList} from "../interfaces/IPlayerList.ts";
 import React from "react";
 
 
-export const PlayerList: React.FC<IPlayerList> = ({ players, answerSelected, hasQuestions }) => {
+export const PlayerList: React.FC<IPlayerList> = ({ players, hasQuestions }) => {
     return (
         players.map((player: Player) => {
             return (
@@ -21,20 +21,22 @@ export const PlayerList: React.FC<IPlayerList> = ({ players, answerSelected, has
                                 className="player-avatar"
                             />
                             {
-                                answerSelected > -1 && hasQuestions ? (
-                                    player.accepted ? (
-                                        <img
-                                            src={accept}
-                                            alt="Correct"
-                                            className="icon-correct"
-                                        />
-                                    ) : (
-                                        <img
-                                            src={incorrect}
-                                            alt="Incorrect"
-                                            className="icon-incorrect"
-                                        />
-                                    )
+                                hasQuestions ? (
+                                    player.answered > -1 ? (
+                                        player.accepted ? (
+                                            <img
+                                                src={accept}
+                                                alt="Correct"
+                                                className="icon-correct"
+                                            />
+                                        ) : (
+                                            <img
+                                                src={incorrect}
+                                                alt="Incorrect"
+                                                className="icon-incorrect"
+                                            />
+                                        )
+                                    ): ""
                                 ) : ""
                             }
                             {

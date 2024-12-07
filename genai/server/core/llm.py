@@ -38,6 +38,7 @@ class LLM:
                     question=q.question,
                     options=q.options,
                     answer=q.options.index(_correct),
+                    difficulty=q.difficulty,
                 )
             )
         return _questionnaires

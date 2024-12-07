@@ -29,3 +29,11 @@ class Category(Enum):
     HUMOR = "humor"
     ARCHITECTURE = "architecture"
     FASHION_AND_STYLE = "fashion_and_style"
+
+
+class Difficulty(Enum):
+    EASY = "easy"
+    MEDIUM = "medium"
+    HARD = "hard"
+    EXPERT = "expert"
+    MASTER = "master"
