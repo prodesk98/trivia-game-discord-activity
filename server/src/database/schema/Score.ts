@@ -17,6 +17,10 @@ const ScoreSchema = new Schema({
         type: Schema.Types.UUID,
         required: true,
     },
+    roomId: {
+        type: String,
+        required: true,
+    },
     value: {
         type: Number,
         required: true,

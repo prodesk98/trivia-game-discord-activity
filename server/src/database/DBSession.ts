@@ -56,9 +56,10 @@ export const getRoomById = async (id: string) => {
     );
 }
 
-export const createRoom = async (guildId: string): Promise<mongoose.Types.UUID> => {
+export const createRoom = async (guildId: string, roomId: string): Promise<mongoose.Types.UUID> => {
     const room = new Room();
     room.guildId = guildId;
+    room.roomId = roomId;
     await room.save();
     return room.id;
 }
@@ -79,12 +80,13 @@ export const updateRoom = async (id: string, guildId: string) => {
 * Score
 */
 
-export const createScore = async (userId: string, roundId: string, value: number) => {
+export const createScore = async (userId: string, roundId: string, roomId: string, value: number) => {
     const score = new Score();
     // @ts-ignore
     score.userId = new mongoose.Types.UUID(userId);
     // @ts-ignore
     score.roundId = new mongoose.Types.UUID(roundId);
+    score.roomId = roomId;
     score.value = value;
     await score.save();
     return score.id;
