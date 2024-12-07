@@ -24,8 +24,8 @@ export function useHookState() {
     const [isMuted, setIsMuted] = useState(false);
 
     // Components
-    const [isGameLoading, setIsGameLoading] = useState(false);
     const [isDialogPlayGame, setIsDialogPlayGame] = useState(false);
+    const [isDialogRanking, setIsDialogRanking] = useState(false);
 
     return {
         // getters
@@ -45,8 +45,8 @@ export function useHookState() {
         theme,
         timeLeft,
         timerClock,
-        isGameLoading,
         isDialogPlayGame,
+        isDialogRanking,
         // setters
         setPlayers,
         setProfile,
@@ -64,7 +64,7 @@ export function useHookState() {
         setAnswerSelected,
         setAnswerCorrect,
         setIsMuted,
-        setIsGameLoading,
         setIsDialogPlayGame,
+        setIsDialogRanking,
     };
 }

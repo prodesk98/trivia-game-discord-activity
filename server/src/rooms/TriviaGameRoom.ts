@@ -9,7 +9,11 @@ import {AnswerResponse} from "./schema/messages/AnswerResponse";
 import {Delayed} from "colyseus";
 import {QuestionOptions} from "./schema/QuestionOptions";
 import {ErrorResponse} from "./schema/messages/ErrorResponse";
-import {createRoom, createScore} from "../database/DBSession";
+import {
+    createRoom,
+    createScore,
+    getSumScoreByRoomIdAndUserId
+} from "../database/DBSession";
 import {Prompt} from "./schema/Prompt";
 
 
@@ -114,7 +118,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     createRoom(options.guildId, this.roomId).then();
   }
 
-  onJoin (client: Client, options: any) {
+  async onJoin (client: Client, options: any) {
     console.log(client.sessionId, "joined!");
 
     const player = new Player();
@@ -127,7 +131,8 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     player.accepted = false;
     player.answered = -1;
     player.lack = true;
-    player.score = 0;
+    // @ts-ignore
+    player.score = await getSumScoreByRoomIdAndUserId(player.userId, this.roomId);
 
     if (!player.avatar.startsWith("https://")) player.avatar = `https://cdn.discordapp.com/avatars/${player.id}/${player.avatar}.png?size=256`;
     this.state.players.set(client.sessionId, player);

@@ -1,10 +1,10 @@
 // icons
 import VolumeOff from "@mui/icons-material/VolumeOff"
 import VolumeUp from "@mui/icons-material/VolumeUp"
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import CloseIcon from '@mui/icons-material/Close';
 import ClockIcon from '@mui/icons-material/QueryBuilder';
+import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 
 // css
 import "../css/GameRoom.css";
@@ -59,8 +59,8 @@ export default function GameRoom(){
         timeLeft,
         theme,
         timerClock,
-        isGameLoading,
         isDialogPlayGame,
+        isDialogRanking,
         answerSelected,
         // setters
         setPlayers,
@@ -79,8 +79,8 @@ export default function GameRoom(){
         setAnswerSelected,
         setAnswerCorrect,
         setIsMuted,
-        setIsGameLoading,
         setIsDialogPlayGame,
+        setIsDialogRanking,
     } = useHookState();
 
     // correct sound effect
@@ -164,17 +164,19 @@ export default function GameRoom(){
             setIsDialogPlayGame(false);
             return;
         }
-        setIsGameLoading(true);
+        if (theme !== null) {
+            handleNotifyError("Theme already chosen!");
+            setIsDialogPlayGame(false);
+            return;
+        }
         const prompt = document.querySelector('.dialog-textarea');
         if (prompt === null) {
             handleNotifyError("Please enter a prompt!");
-            setIsGameLoading(false);
             return;
         }
         // @ts-ignore
         if (prompt?.value === "") {
             handleNotifyError("Please enter a prompt!");
-            setIsGameLoading(false);
             return;
         }
         // @ts-ignore
@@ -305,9 +307,6 @@ export default function GameRoom(){
 
             // set paused
             setGamePaused(false);
-
-            // set isGameLoading
-            setIsGameLoading(false);
         });
 
         room.onMessage("answerFeedback", (message: AnswerResponse) => {
@@ -501,22 +500,43 @@ export default function GameRoom(){
                 </div>
             </div>
             <div className="top-right-buttons">
-                {!gameStarted && typeof room !== 'undefined' && (profile && profile.sessionId == owner) ? (
-                    !isGameLoading ? (
-                        <button className={`btn-play-game ${isMuted ? "muted" : ""}`}
-                                onClick={() => setIsDialogPlayGame(true)}>
-                            <PlayArrowIcon/> Choose theme
-                        </button>
-                    ) : (
-                        <button className="btn-play-game" disabled>
-                            <Riple color="#FFF" size="small" text="" textColor="" style={{fontSize: '5px'}} />
-                        </button>
-                    )
-                ) : ""}
+                <button className={'btn-ranking'} onClick={() => setIsDialogRanking(!isDialogRanking)}>
+                    <LeaderboardIcon/>
+                </button>
                 <button className="btn-mute" onClick={() => handleToggleSound()}>
                     {isMuted ? <VolumeOff/> : <VolumeUp/>}
                 </button>
             </div>
+
+            {isDialogRanking ? (
+                <div className="leaderboard-dialog-overlay">
+                    <div className="leaderboard-dialog">
+                        <div className="leaderboard-dialog-close">
+                            <button onClick={() => setIsDialogRanking(false)}>
+                                <CloseIcon/>
+                            </button>
+                        </div>
+                        <h1>Leaderboard</h1>
+                        <div className="leaderboard">
+                            {players.map((player, index) => (
+                                <div className={`leaderboard-item rank-${index + 1}`} key={player.id}>
+                                    <div className="player-name">
+                                        <div className="player-icon"
+                                             style={
+                                            {
+                                                backgroundImage: `url(${player.avatar})`,
+                                                backgroundSize: 'cover',
+                                            }
+                                        }></div>
+                                        {player.username}
+                                    </div>
+                                    <div className="player-score">{player.score}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            ) : ""}
 
             {isDialogPlayGame ? (
                 <div className={'dialog-overlay'}>
@@ -524,7 +544,7 @@ export default function GameRoom(){
                         <div className={'dialog-content'}>
                             <div className={'dialog-close'}>
                                 <button onClick={() => setIsDialogPlayGame(false)}>
-                                    <CloseIcon />
+                                    <CloseIcon/>
                                 </button>
                             </div>
                             <h1>Customize your Quiz with a Theme</h1>

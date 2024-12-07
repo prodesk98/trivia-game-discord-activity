@@ -127,6 +127,27 @@ export const getSumScoreByUserIdAndRoundId = async (userId: string, roundId: str
     return result.length > 0 ? result[0].total : 0;
 }
 
+
+export const getSumScoreByRoomIdAndUserId = async (userId: string, roomId: string): Promise<Number> => {
+    const result = await Score.aggregate(
+        [
+            {
+                $match: {
+                    userId: new mongoose.Types.UUID(userId),
+                    roomId: roomId
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: "$value" }
+                }
+            }
+        ]
+    );
+    return result.length > 0 ? result[0].total : 0;
+}
+
 /*
 * Guild
 */

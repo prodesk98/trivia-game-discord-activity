@@ -350,6 +350,17 @@ button i {
     transition: background-color 0.3s ease;
 }
 
+.btn-ranking {
+    background-color: #ff9800;
+    color: white;
+    padding: 10px 20px;
+    margin-top: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
 .btn-confirm:hover {
     background-color: #45a049;
 }
@@ -514,4 +525,140 @@ button i {
 /* Estilo de borda e sombra */
 .leaderboard-container {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Overlay exclusivo para o Leaderboard */
+.leaderboard-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8); /* Fundo escuro com transparência */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Caixa principal do diálogo Leaderboard */
+.leaderboard-dialog {
+    background: linear-gradient(135deg, #ffffff, #f7f7f7); /* Gradiente suave */
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Sombra suave */
+    padding: 20px 30px;
+    width: 350px;
+    max-width: 90%;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Animação de entrada */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Cabeçalho do diálogo */
+.leaderboard-dialog h1 {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #222;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Botão de fechar */
+.leaderboard-dialog-close {
+    display: block;
+    width: 100%;
+    text-align: right;
+}
+
+.leaderboard-dialog-close button {
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 1.5rem;
+    transition: color 0.2s ease;
+}
+
+.leaderboard-dialog-close button:hover {
+    color: #000;
+}
+
+/* Subtítulo do Leaderboard */
+.leaderboard-dialog h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #444;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Estilo do Leaderboard */
+.leaderboard {
+    margin-top: 10px;
+}
+
+.leaderboard-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f9f9f9;
+    border-radius: 10px;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra leve */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Destaque para os 3 primeiros colocados */
+.leaderboard-item.rank-1 {
+    background: linear-gradient(135deg, #ffd700, #ffca2c); /* Ouro */
+    color: #fff;
+}
+
+.leaderboard-item.rank-2 {
+    background: linear-gradient(135deg, #c0c0c0, #d9d9d9); /* Prata */
+    color: #fff;
+}
+
+.leaderboard-item.rank-3 {
+    background: linear-gradient(135deg, #cd7f32, #d98942); /* Bronze */
+    color: #fff;
+}
+
+/* Estilo do nome do jogador */
+.player-name {
+    font-weight: bold;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    color: inherit;
+}
+
+/* Ícone do jogador */
+.player-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #ddd;
+    margin-right: 10px;
+}
+
+/* Estilo do score */
+.player-score {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #555;
 }
