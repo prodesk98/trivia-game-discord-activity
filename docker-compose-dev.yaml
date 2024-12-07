@@ -1,0 +1,31 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: trivia1
+      MONGO_INITDB_DATABASE: trivia
+    volumes:
+      - mongodb_data:/data/db
+    restart: on-failure:0
+
+  weaviate:
+    command:
+      - --host
+      - 0.0.0.0
+      - --port
+      - '8080'
+      - --scheme
+      - http
+    image: cr.weaviate.io/semitechnologies/weaviate:1.27.6
+    environment:
+      QUERY_DEFAULTS_LIMIT: 30
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      ENABLE_API_BASED_MODULES: 'true'
+      CLUSTER_HOSTNAME: 'node1'
+      ENABLE_MODULES: 'text2vec-openai'
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    restart: on-failure:0
