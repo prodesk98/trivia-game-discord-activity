@@ -26,10 +26,8 @@ export default config({
         /**
          * Define your room handlers:
          */
-        if (process.env.NODE_ENV !== "production") {
-            gameServer.define('game', TriviaGameRoom)
-                .filterBy(['channelId']);
-        }
+        gameServer.define('game', TriviaGameRoom)
+            .filterBy(['channelId']);
 
     },
 

@@ -70,7 +70,7 @@ services:
     env_file:
       - client/.env
     environment:
-      NODE_ENV: production
+      VITE_NODE_ENV: production
       COLYSEUS_ENDPOINT: http://game-server:2567
     depends_on:
         - game-server

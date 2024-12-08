@@ -1,16 +1,19 @@
 services:
-  mongodb:
+  mongodb-dev:
+    container_name: mongodb-dev
     image: mongo:latest
-    container_name: mongodb
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: trivia1
       MONGO_INITDB_DATABASE: trivia
+    ports:
+      - "27017:27017"
     volumes:
-      - mongodb_data:/data/db
+      - mongodb_dev_data:/data/db
     restart: on-failure:0
 
-  weaviate:
+  weaviate-dev:
+    container_name: weaviate-dev
     command:
       - --host
       - 0.0.0.0
@@ -26,6 +29,13 @@ services:
       ENABLE_API_BASED_MODULES: 'true'
       CLUSTER_HOSTNAME: 'node1'
       ENABLE_MODULES: 'text2vec-openai'
+    ports:
+        - "8080:8080"
+        - "50051:50051"
     volumes:
-      - weaviate_data:/var/lib/weaviate
+      - weaviate_dev_data:/var/lib/weaviate
     restart: on-failure:0
+
+volumes:
+    mongodb_dev_data:
+    weaviate_dev_data:

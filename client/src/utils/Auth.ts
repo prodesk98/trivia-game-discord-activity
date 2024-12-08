@@ -3,7 +3,8 @@ import {colyseusSDK} from "./Colyseus.ts";
 
 
 export async function authenticate() {
-    if (import.meta.env.NODE_ENV !== "production") {
+    console.log(`mode authenticated: ${import.meta.env.VITE_NODE_ENV}`);
+    if (import.meta.env.VITE_NODE_ENV !== "production") {
         console.log("Development mode");
         return {
             access_token: "mock",

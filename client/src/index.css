@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400..800&family=Fredoka:wght@300..700&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+
 :root {
   line-height: 1.5;
   font-weight: 400;
@@ -20,7 +22,7 @@
 }
 
 body {
-  font-family: 'Baloo 2', cursive;
+  font-family: 'Baloo 2', sans-serif;
   /*background: linear-gradient(135deg, #f39c12, #f1c40f);*/
   background-size: 400% 400%; /* Para animação */
   animation: gradientAnimation 10s ease infinite;
