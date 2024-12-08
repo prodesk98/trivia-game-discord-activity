@@ -36,6 +36,18 @@ services:
       - weaviate_dev_data:/var/lib/weaviate
     restart: on-failure:0
 
+  rabbitmq-dev:
+    container_name: rabbitmq-dev
+    image: rabbitmq:3.9.29-alpine
+    restart: always
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_VHOST: "/"
+
 volumes:
     mongodb_dev_data:
     weaviate_dev_data:

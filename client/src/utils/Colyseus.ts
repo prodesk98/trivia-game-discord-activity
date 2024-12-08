@@ -1,7 +1,7 @@
 import { Client } from "colyseus.js";
 
 let client;
-if (import.meta.env.NODE_ENV !== "development") {
+if (import.meta.env.VITE_NODE_ENV !== "development") {
     console.log("Production mode");
     client = new Client("/.proxy/colyseus");
 } else {

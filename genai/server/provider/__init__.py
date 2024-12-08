@@ -1,8 +1,9 @@
-from .vecdb import query_question, create_question
+from .vecdb import aquery_question, acreate_question
 from ._create_collection import create_collection
 
+
 __all__ = [
-    "query_question",
-    "create_question",
+    "aquery_question",
+    "acreate_question",
     "create_collection",
 ]

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, AmqpDsn
 from dotenv import load_dotenv
 from os import getenv
 
@@ -14,5 +14,6 @@ class Environment(BaseModel):
     OPENAI_API_KEY: Optional[str] = getenv("OPENAI_API_KEY")
     EMBEDDING_MODEL: Optional[str] = getenv("EMBEDDING_MODEL", "text-embedding-3-small")
     STRUCTURED_MODEL: Optional[str] = getenv("STRUCTURED_MODEL", "gpt-4o-mini")
+    RABBITMQ_DSN: Optional[AmqpDsn] = getenv("RABBITMQ_DSN", "amqp://guest:guest@localhost:5672//")
 
 env = Environment()

@@ -30,8 +30,17 @@ services:
       - weaviate_data:/var/lib/weaviate
     restart: on-failure:0
 
-  quiz-genai:
-    container_name: quiz-genai
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.9.29-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_VHOST: "/"
+    restart: on-failure:0
+
+  quiz-genai-api:
+    container_name: quiz-genai-api
     build:
       context: ./genai
       dockerfile: ./Dockerfile
@@ -39,12 +48,31 @@ services:
       - genai/.env
     environment:
       DEBUG: false
+      APP_TYPE: api
       WEAVIATE_HOST: weaviate
       EMBEDDING_MODEL: text-embedding-3-small
       STRUCTURED_MODEL: gpt-4o-mini
     depends_on:
       - weaviate
       - mongodb
+      - quiz-genai-worker
+    restart: on-failure:0
+
+  quiz-genai-worker:
+    container_name: quiz-genai-worker
+    build:
+      context: ./genai
+      dockerfile: ./Dockerfile
+    env_file:
+      - genai/.env
+    environment:
+      DEBUG: false
+      APP_TYPE: worker
+      WEAVIATE_HOST: weaviate
+      EMBEDDING_MODEL: text-embedding-3-small
+      STRUCTURED_MODEL: gpt-4o-mini
+    depends_on:
+      - weaviate
     restart: on-failure:0
 
   game-server:
@@ -54,13 +82,13 @@ services:
       dockerfile: ./Dockerfile
     depends_on:
         - mongodb
-        - quiz-genai
+        - quiz-genai-api
     env_file:
       - server/.env
     environment:
       NODE_ENV: production
       MONGO_URI: mongodb://root:trivia1@mongodb:27017/trivia?authSource=admin
-      QUIZGENAI_ENDPOINT: http://quiz-genai:3000
+      QUIZGENAI_ENDPOINT: http://quiz-genai-api:3000
     restart: on-failure:0
 
   game-client:
@@ -87,7 +115,7 @@ services:
     depends_on:
       - game-client
       - game-server
-      - quiz-genai
+      - quiz-genai-api
 
 volumes:
   mongodb_data:

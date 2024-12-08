@@ -8,7 +8,7 @@
 }
 
 .quiz-container {
-    width: 400px;
+    width: 500px;
     text-align: center;
     background: #1E90FF; /* Azul Vibrante */
     border-radius: 15px;
@@ -412,7 +412,7 @@ button i {
     transition: overflow 0.3s ease; /* Suaviza a transição */
 }
 
-.leaderboard:active {
+.leaderboard:hover {
     overflow-y: scroll; /* Mostra o scroll ao clicar */
 }
 
@@ -614,7 +614,8 @@ button i {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #f9f9f9;
+    background: #c6c6c6;
+    color: #FFF;
     border-radius: 10px;
     padding: 10px 15px;
     margin-bottom: 10px;
@@ -624,18 +625,18 @@ button i {
 
 /* Destaque para os 3 primeiros colocados */
 .leaderboard-item.rank-1 {
-    background: linear-gradient(135deg, #ffd700, #ffca2c); /* Ouro */
-    color: #555;
+    background: linear-gradient(135deg, #b39a33, #fbc000); /* Ouro */
+    color: #FFF;
 }
 
 .leaderboard-item.rank-2 {
-    background: linear-gradient(135deg, #c0c0c0, #d9d9d9); /* Prata */
-    color: #555;
+    background: linear-gradient(135deg, #265695, #5d94dc); /* Prata */
+    color: #FFF;
 }
 
 .leaderboard-item.rank-3 {
-    background: linear-gradient(135deg, #cd7f32, #d98942); /* Bronze */
-    color: #555;
+    background: linear-gradient(135deg, #aa6725, #df9652); /* Bronze */
+    color: #FFF;
 }
 
 /* Estilo do nome do jogador */
@@ -660,5 +661,5 @@ button i {
 .player-score {
     font-size: 1rem;
     font-weight: bold;
-    color: #252525;
+    color: #ffffff;
 }

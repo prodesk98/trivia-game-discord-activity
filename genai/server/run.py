@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException, Depends, Request
 from config import env
 from server.core.lifespan import lifespan
 
-from .provider import query_question, create_question
+from .provider import aquery_question, acreate_question
 from .provider.constraints import Category
 from .schemas.questionnaire import (
     CreateQuestionSchema,
@@ -15,6 +15,8 @@ from .schemas.questionnaire import (
     QueryQuestionSchema,
 )
 from .controllers.questionnaire import QuestionnaireController
+from tasks import aupsert_questionnaires
+
 
 app = FastAPI(
     title="QuizGenAI API",
@@ -35,7 +37,7 @@ async def get_questionnaires(
     Get all questionnaires
     :return:
     """
-    response = await query_question(query=payload.query, c=req.app.question_collection)
+    response = await aquery_question(query=payload.query, c=req.app.question_collection)
     if response is None:
         raise HTTPException(status_code=500, detail="Error querying questionnaire")
     return [
@@ -63,7 +65,7 @@ async def post_questionnaires(
     Create a new questionnaire
     :return:
     """
-    document_id = await create_question(data=payload, c=req.app.question_collection)
+    document_id = await acreate_question(data=payload, c=req.app.question_collection)
     if document_id is None:
         raise HTTPException(status_code=500, detail="Error creating questionnaire")
     return CreateQuestionResponse(document_id=document_id)
@@ -75,6 +77,9 @@ async def generative(
 ):
     controller = QuestionnaireController()
     response = await controller.generate(prompt=payload.prompt)
+    if response is None:
+        raise HTTPException(status_code=500, detail="Error generating questionnaire")
+    await aupsert_questionnaires(response)
     return response.model_dump()
 
 
