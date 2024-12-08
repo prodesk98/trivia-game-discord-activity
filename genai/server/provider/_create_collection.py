@@ -2,15 +2,15 @@ import weaviate.classes as wvc
 from weaviate.classes.config import Configure
 from loguru import logger
 
-from ._client import client
+from ._client import vecdbClient
 from config import env
 from .constraints import COLLECTION_NAME
 
 
 async def create_collection():
     try:
-        await client.connect()
-        await client.collections.create(
+        await vecdbClient.connect()
+        await vecdbClient.collections.create(
             name=COLLECTION_NAME,
             vectorizer_config=Configure.Vectorizer.text2vec_openai(
                 model=env.EMBEDDING_MODEL,
@@ -74,4 +74,4 @@ async def create_collection():
         if env.DEBUG:
             logger.debug(f"[{COLLECTION_NAME}] Error creating collection: {e}")
     finally:
-        await client.close()
+        await vecdbClient.close()

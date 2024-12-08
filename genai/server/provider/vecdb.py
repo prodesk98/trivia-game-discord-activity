@@ -8,7 +8,7 @@ from weaviate.collections.classes.internal import QueryReturn
 from weaviate.types import UUID
 
 from .schemas import QuestionSchema
-from .constraints import Category
+
 
 
 _SCORE_THRESHOLD = 0.2
@@ -22,7 +22,7 @@ def query_score(query: str, c: Collection) -> Optional[float]:
             return_metadata=MetadataQuery(distance=True)
         )
         if len(result.objects) == 0:
-            return .0
+            return 1.
         return next(iter(result.objects)).metadata.distance
     except Exception as e:
         logger.error(f"Error querying question: {e}")

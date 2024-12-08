@@ -50,6 +50,7 @@ services:
       DEBUG: false
       APP_TYPE: api
       WEAVIATE_HOST: weaviate
+      RABBITMQ_DSN: amqp://guest:guest@rabbitmq:5672
       EMBEDDING_MODEL: text-embedding-3-small
       STRUCTURED_MODEL: gpt-4o-mini
     depends_on:
@@ -69,6 +70,7 @@ services:
       DEBUG: false
       APP_TYPE: worker
       WEAVIATE_HOST: weaviate
+      RABBITMQ_DSN: amqp://guest:guest@rabbitmq:5672
       EMBEDDING_MODEL: text-embedding-3-small
       STRUCTURED_MODEL: gpt-4o-mini
     depends_on:
