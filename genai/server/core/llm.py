@@ -22,8 +22,7 @@ class LLM:
             model_name=env.STRUCTURED_MODEL,
             openai_api_key=env.OPENAI_API_KEY,
             streaming=False,
-            seed=random.randint(0, 1000),
-            temperature=random.uniform(0.0, 1.0),
+            temperature=random.uniform(0.0, .3),
             top_p=random.uniform(0.0, 1.0),
         )
 
@@ -54,7 +53,7 @@ class LLM:
         _prompt = ChatPromptTemplate.from_messages(
             messages=[
                 _system,
-                HumanMessage(content=f"Generate a questionnaire based on the following prompt:\n\"\"\"{prompt}\"\"\""),
+                HumanMessage(content=prompt),
             ]
         )
         structured = self.llm.with_structured_output(
