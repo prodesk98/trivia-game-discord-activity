@@ -6,9 +6,9 @@ from langchain_core.prompts import PromptTemplate, SystemMessagePromptTemplate, 
 from langchain_openai import ChatOpenAI
 
 from config import env
-from .schemas import Questionnaire, QuestionnaireBase
+from .schemas import Questionnaire, QuestionnaireBase, Enrichment
 
-from ._prompt_engine import QUESTIONNAIRE_PROMPT
+from ._prompt_engine import QUESTIONNAIRE_PROMPT, ENRICHMENT_PROMPT
 
 import warnings
 
@@ -27,7 +27,7 @@ class LLM:
         )
 
     @staticmethod
-    def shuffle(questionnaires: List[QuestionnaireBase]):
+    def shuffle(questionnaires: List[QuestionnaireBase]) -> List[QuestionnaireBase]:
         _questionnaires: List[QuestionnaireBase] = []
         for q in questionnaires:
             _correct = q.options[q.answer]
@@ -41,9 +41,39 @@ class LLM:
                     language=q.language,
                 )
             )
+        random.shuffle(_questionnaires)
         return _questionnaires
 
+    async def enrich(self, theme: str) -> Enrichment:
+        _system = SystemMessagePromptTemplate(
+            prompt=PromptTemplate(
+                template=ENRICHMENT_PROMPT,
+                input_variables=["theme"],
+            )
+        )
+        _prompt = ChatPromptTemplate.from_messages(
+            messages=[
+                _system,
+                HumanMessage(content=theme),
+            ]
+        )
+        structured = self.llm.with_structured_output(
+            Enrichment,
+            method="json_schema",
+        )
+        chain = (
+            _prompt |
+            structured
+        )
+        output = await chain.ainvoke(
+            {
+                "theme": theme,
+            }
+        )
+        return output
+
     async def generate(self, prompt: str) -> Optional[Questionnaire]:
+        _enrichment = await self.enrich(prompt)
         _system = SystemMessagePromptTemplate(
             prompt=PromptTemplate(
                 template=QUESTIONNAIRE_PROMPT,
@@ -53,7 +83,7 @@ class LLM:
         _prompt = ChatPromptTemplate.from_messages(
             messages=[
                 _system,
-                HumanMessage(content=prompt),
+                HumanMessage(content=_enrichment.enriched_theme),
             ]
         )
         structured = self.llm.with_structured_output(
