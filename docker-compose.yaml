@@ -41,6 +41,7 @@ services:
       DEBUG: false
       WEAVIATE_HOST: weaviate
       EMBEDDING_MODEL: text-embedding-3-small
+      STRUCTURED_MODEL: gpt-4o # todo: change to gpt-4o-mini
     depends_on:
       - weaviate
       - mongodb
