@@ -12,7 +12,7 @@ import {ErrorResponse} from "./schema/messages/ErrorResponse";
 import {
     createRoom,
     createScore,
-    getSumScoreByRoomIdAndUserId
+    getSumScoreByRoomIdAndUserId, getSumScoreByUserIdAndRoundId
 } from "../database/DBSession";
 
 
@@ -190,11 +190,13 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     }
   }
 
-  resetPlayers() {
+  async resetPlayers() {
     for (const [sessionId, player] of this.state.players) {
         player.accepted = false;
         player.answered = -1;
         player.lack = true;
+        // @ts-ignore
+        player.score = await getSumScoreByUserIdAndRoundId(player.userId, this.roundId);
         this.state.players.set(sessionId, player);
     }
   }
@@ -211,7 +213,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
       this.state.gameEnded = true;
 
       // clear players
-      this.resetPlayers();
+      this.resetPlayers().then();
 
       // clear local state
       this.totalTurns = 0;
@@ -304,7 +306,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     this.state.currentAnswer = this.answerOptions[this.currentQuestionIndex];
 
     // reset player answers
-    this.resetPlayers();
+    this.resetPlayers().then();
 
     // clear the timeout
     if(this.timeOut) this.timeOut.clear();

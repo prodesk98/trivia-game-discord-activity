@@ -114,7 +114,10 @@ export const getSumScoreByUserIdAndRoundId = async (userId: string, roundId: str
     const result = await Score.aggregate(
         [
             {
-                $match: { userId: new mongoose.Types.UUID(userId), roundId: new mongoose.Types.UUID(roundId) }
+                $match: {
+                    userId: new mongoose.Types.UUID(userId),
+                    roundId: new mongoose.Types.UUID(roundId)
+                }
             },
             {
                 $group: {
