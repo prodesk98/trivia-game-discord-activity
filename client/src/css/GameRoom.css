@@ -625,17 +625,17 @@ button i {
 /* Destaque para os 3 primeiros colocados */
 .leaderboard-item.rank-1 {
     background: linear-gradient(135deg, #ffd700, #ffca2c); /* Ouro */
-    color: #fff;
+    color: #555;
 }
 
 .leaderboard-item.rank-2 {
     background: linear-gradient(135deg, #c0c0c0, #d9d9d9); /* Prata */
-    color: #fff;
+    color: #555;
 }
 
 .leaderboard-item.rank-3 {
     background: linear-gradient(135deg, #cd7f32, #d98942); /* Bronze */
-    color: #fff;
+    color: #555;
 }
 
 /* Estilo do nome do jogador */
@@ -660,5 +660,5 @@ button i {
 .player-score {
     font-size: 1rem;
     font-weight: bold;
-    color: #555;
+    color: #252525;
 }

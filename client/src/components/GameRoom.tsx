@@ -37,6 +37,7 @@ import {QuestionOptions} from "../schema/QuestionOptions.ts";
 import {AnswerResponse} from "../schema/AnswerResponse.ts";
 import {getLocalStorage, setLocalStorage} from "../utils/LocalStorage.ts";
 import {handleConfetti} from "../core/Effect.ts";
+import {RankingDialog} from "./fragments/RankingDialog.tsx";
 
 
 export default function GameRoom(){
@@ -409,28 +410,37 @@ export default function GameRoom(){
                                     <div style={{marginTop: '5px'}}>
                                         {
                                             gameLobby ?
-                                                theme === null ? (
-                                                    profile && profile.sessionId == owner ?
-                                                        (
-                                                            <span>Choose a theme to start the game!</span>
-                                                        ) : (
-                                                            <span>Waiting for <b>{ownerProfile?.username}</b> to choose the theme...</span>
-                                                        )
-                                                ) :
-                                                (
-                                                    <>
+                                                typeof room !== 'undefined' ?
+                                                    theme === null ? (
+                                                        profile && profile.sessionId == owner ?
+                                                            (
+                                                                <span>Choose a theme to start the game!</span>
+                                                            ) : (
+                                                                <span>Waiting for <b>{ownerProfile?.username}</b> to choose the theme...</span>
+                                                            )
+                                                    ) :
+                                                    (
+                                                        <>
+                                                            <div>
+                                                                <b>{ownerProfile?.username}</b> has chosen the theme:
+                                                            </div>
+                                                            <div>
+                                                                <b>{theme}</b>
+                                                            </div>
+                                                        </>
+                                                    )
+                                                : (
                                                         <div>
-                                                            <b>{ownerProfile?.username}</b> has chosen the theme:
+                                                            <div>Connecting...</div>
+                                                            <OrbitProgress variant="split-disc" color="#FFF" size="small"
+                                                                           text=""/>
                                                         </div>
-                                                        <div>
-                                                            <b>{theme}</b>
-                                                        </div>
-                                                    </>
-                                                )
-                                            : ""
+                                                    )
+                                                : ""
                                         }
                                         <div>
-                                            {theme === null ?
+                                            {
+                                                theme === null ?
                                                 (
                                                     <span style={{
                                                         display: 'flex',
@@ -457,7 +467,7 @@ export default function GameRoom(){
                                             }
                                         </div>
                                     </div>
-                                    {theme === null ?
+                                    {theme === null && typeof room !== 'undefined' ?
                                         (
                                             <div style={{padding: '15px'}}>
                                                 {
@@ -499,9 +509,13 @@ export default function GameRoom(){
                 </div>
             </div>
             <div className="top-right-buttons">
-                <button className={'btn-ranking'} onClick={() => setIsDialogRanking(!isDialogRanking)}>
-                    <LeaderboardIcon/>
-                </button>
+                {
+                    typeof room !== 'undefined' ? (
+                        <button className={'btn-ranking'} onClick={() => setIsDialogRanking(!isDialogRanking)}>
+                            <LeaderboardIcon/>
+                        </button>
+                    ): ""
+                }
                 <button className="btn-mute" onClick={() => handleToggleSound()}>
                     {isMuted ? <VolumeOff/> : <VolumeUp/>}
                 </button>
@@ -517,21 +531,7 @@ export default function GameRoom(){
                         </div>
                         <h1>Leaderboard</h1>
                         <div className="leaderboard">
-                            {players.map((player, index) => (
-                                <div className={`leaderboard-item rank-${index + 1}`} key={player.id}>
-                                    <div className="player-name">
-                                        <div className="player-icon"
-                                             style={
-                                            {
-                                                backgroundImage: `url(${player.avatar})`,
-                                                backgroundSize: 'cover',
-                                            }
-                                        }></div>
-                                        {player.username}
-                                    </div>
-                                    <div className="player-score">{player.score}</div>
-                                </div>
-                            ))}
+                            <RankingDialog players={players}/>
                         </div>
                     </div>
                 </div>

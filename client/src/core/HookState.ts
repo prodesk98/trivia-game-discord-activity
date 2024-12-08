@@ -11,7 +11,7 @@ export function useHookState() {
     const [currentQuestionOptions, setCurrentQuestionOptions] = useState<QuestionOptions>();
     const [gameEnded, setGameEnded] = useState<boolean>(false);
     const [gameStarted, setGameStarted] = useState<boolean>(false);
-    const [gameLobby, setGameLobby] = useState<boolean>(false);
+    const [gameLobby, setGameLobby] = useState<boolean>(true);
     const [gamePaused, setGamePaused] = useState<boolean>(false);
     const [theme, setTheme] = useState<string|null>(null);
     const [room, setRoom] = useState<Room>();
