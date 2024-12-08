@@ -11,7 +11,7 @@ export class TriviaGameState extends Schema {
   @type("boolean") gameLobby = true;
   @type("number") currentTimer = 0;
   @type("number") timerClock = 0;
-  @type("number") currentAnswer: number = null;
+  @type("number") currentAnswer: number = -1;
   @type("string") theme: string = null;
   @type(QuestionOptions) currentQuestionOptions: QuestionOptions;
 }

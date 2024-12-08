@@ -242,7 +242,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     this.state.gameEnded = false;
     this.state.gameOver = false;
     this.state.theme = null;
-    this.state.currentAnswer = null;
+    this.state.currentAnswer = -1;
     this.state.currentQuestionOptions = null;
     this.state.timerClock = 30;
     this.timerChoose = this.clock.setInterval(() => this.tickChooseTimer(), 1000);
@@ -276,7 +276,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
 
   stopChoose() {
       if (this.timerChoose) this.timerChoose.clear();
-      this.state.owner = this.calculateNextOwner();
+      // this.state.owner = this.calculateNextOwner();
   }
 
   endTurn() {
