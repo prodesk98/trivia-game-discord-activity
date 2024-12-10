@@ -39,6 +39,8 @@ import {getLocalStorage, setLocalStorage} from "../utils/LocalStorage.ts";
 import {handleConfetti} from "../core/Effect.ts";
 import {RankingDialog} from "./fragments/RankingDialog.tsx";
 
+import {useTranslation} from "react-i18next";
+
 
 export default function GameRoom(){
     const totalTime = 30; // Tempo total da pergunta
@@ -83,6 +85,12 @@ export default function GameRoom(){
         setIsDialogPlayGame,
         setIsDialogRanking,
     } = useHookState();
+
+    const { t, i18n } = useTranslation();
+
+    const changeLanguage = (lng: string) => {
+        i18n.changeLanguage(lng);
+    };
 
     // correct sound effect
     const correctSoundEffect = useRef(() => {
@@ -414,7 +422,7 @@ export default function GameRoom(){
                                                     theme === null ? (
                                                         profile && profile.sessionId == owner ?
                                                             (
-                                                                <span>Choose a theme to start the game!</span>
+                                                                <span>{t('choose_theme_start_game_title')}</span>
                                                             ) : (
                                                                 <span>Waiting for <b>{ownerProfile?.username}</b> to choose the theme...</span>
                                                             )
@@ -455,7 +463,7 @@ export default function GameRoom(){
                                                             (
                                                                 <>
                                                                     <ClockIcon style={{marginRight: '5px'}}/>
-                                                                    {timerClock} seconds
+                                                                    {timerClock} {t('seconds')}
                                                                 </>
                                                             )
                                                             : ""
@@ -477,7 +485,7 @@ export default function GameRoom(){
                                                                        textColor=""/>
                                                     ) : (
                                                         <button className="btn-play-game-lobby" onClick={() => setIsDialogPlayGame(true)}>
-                                                            Choose theme
+                                                            {t('Choose theme')}
                                                         </button>
                                                     )
                                                 }
@@ -546,17 +554,17 @@ export default function GameRoom(){
                                     <CloseIcon/>
                                 </button>
                             </div>
-                            <h1>Customize your Quiz with a Theme</h1>
-                            <p>Artificial intelligence creates personalized questions based on the chosen topic.</p>
-                            <textarea placeholder={'Enter a theme, e.g. Greek Mythology'} className={'dialog-textarea'}
+                            <h1>{t('choose_theme_title')}</h1>
+                            <p>{t('choose_theme_description')}</p>
+                            <textarea placeholder={t('choose_theme_placeholder')} className={'dialog-textarea'}
                                       maxLength={126}></textarea>
                             <div className={'dialog-actions'}>
                                 <button className={'btn-confirm'} onClick={() => handlePlayGame()}>
-                                    Choose Theme
+                                    {t('choose_theme_button')}
                                 </button>
                             </div>
                             <div style={{textAlign: 'center', paddingBottom: '5px'}}>
-                                <p style={{margin: '10px 0', fontSize: '14px', color: '#666'}}>- Or -</p>
+                                <p style={{margin: '10px 0', fontSize: '14px', color: '#666'}}>- {t('Or')} -</p>
                                 <button
                                     onClick={() => handleNotifyError("This feature is not available yet!")}
                                     style={{
@@ -573,7 +581,7 @@ export default function GameRoom(){
                                         margin: 'auto',
                                     }}>
                                     <ShuffleIcon style={{marginRight: '8px', fill: 'white'}}/>
-                                    Random Theme
+                                    {t('choose_theme_random')}
                                 </button>
                             </div>
                         </div>

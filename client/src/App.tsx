@@ -4,6 +4,8 @@ import './App.css'
 import GameRoom from "./components/GameRoom.tsx";
 import {ToastContainer} from "react-toastify";
 
+import "./utils/I18n.ts";
+
 function App() {
   return (
     <>

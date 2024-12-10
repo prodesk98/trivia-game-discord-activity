@@ -25,6 +25,11 @@ const UserSchema = new Schema({
             return `https://cdn.discordapp.com/embed/avatars/${parseInt(Math.floor(Math.random() * 5).toString())}.png`;
         },
     },
+    language: {
+        type: String,
+        required: true,
+        default: 'en',
+    }
 });
 
 export const User = model('User', UserSchema);
