@@ -55,6 +55,7 @@ export default function GameRoom(){
         gameLobby,
         isMuted,
         room,
+        categories,
         profile,
         ownerProfile,
         owner,
@@ -76,6 +77,7 @@ export default function GameRoom(){
         setGameStarted,
         setGameLobby,
         setRoom,
+        setCategories,
         setTheme,
         setTimeLeft,
         setTimerClock,
@@ -86,11 +88,13 @@ export default function GameRoom(){
         setIsDialogRanking,
     } = useHookState();
 
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
 
-    const changeLanguage = (lng: string) => {
-        i18n.changeLanguage(lng);
-    };
+    // const changeLanguage = async (lng: string) => {
+    //     await i18n.changeLanguage(lng, () => {
+    //         console.log("Language changed to: ", lng);
+    //     });
+    // };
 
     // correct sound effect
     const correctSoundEffect = useRef(() => {
@@ -272,6 +276,9 @@ export default function GameRoom(){
             // listen prompt
             state.listen("theme", (currentValue: string) => setTheme(currentValue));
 
+            // listen categories
+            state.listen("categories", (currentValue: string[]) => setCategories(currentValue));
+
             // listen setOwner
             state.listen("owner", (currentValue: string) => {
                 setOwnerProfile(players.find((player: Player) => player.sessionId === currentValue));
@@ -386,7 +393,7 @@ export default function GameRoom(){
                     {/* Lista de jogadores no topo */}
                     {gameStarted || gameLobby ? (
                             <div className="players-list">
-                                <PlayerList players={players} hasQuestions={currentQuestionOptions?.question != null} />
+                                <PlayerList players={players} hasQuestions={currentQuestionOptions?.question != null} t={t} />
                             </div>
                         ): ""
                     }
@@ -424,7 +431,7 @@ export default function GameRoom(){
                                                             (
                                                                 <span>{t('choose_theme_start_game_title')}</span>
                                                             ) : (
-                                                                <span>Waiting for <b>{ownerProfile?.username}</b> to choose the theme...</span>
+                                                                <span>{t('waiting_for', {username: ownerProfile?.username})}</span>
                                                             )
                                                     ) :
                                                     (
@@ -439,7 +446,7 @@ export default function GameRoom(){
                                                     )
                                                 : (
                                                         <div>
-                                                            <div>Connecting...</div>
+                                                            <div>{t('Connecting...')}</div>
                                                             <OrbitProgress variant="split-disc" color="#FFF" size="small"
                                                                            text=""/>
                                                         </div>
@@ -458,16 +465,8 @@ export default function GameRoom(){
                                                         fontSize: '14px',
                                                         marginTop: '5px'
                                                     }}>
-                                                        {
-                                                            timerClock > 0 ?
-                                                            (
-                                                                <>
-                                                                    <ClockIcon style={{marginRight: '5px'}}/>
-                                                                    {timerClock} {t('seconds')}
-                                                                </>
-                                                            )
-                                                            : ""
-                                                        }
+                                                        <ClockIcon style={{marginRight: '5px'}}/>
+                                                        {timerClock == 0 ? 30 : timerClock} {t('seconds')}
                                                     </span>
                                                 ) : (
                                                     <Riple color="#FFF" size="small" text="" textColor=""/>
@@ -484,7 +483,7 @@ export default function GameRoom(){
                                                         <OrbitProgress variant="split-disc" color="#FFF" size="small" text=""
                                                                        textColor=""/>
                                                     ) : (
-                                                        <button className="btn-play-game-lobby" onClick={() => setIsDialogPlayGame(true)}>
+                                                        <button className="btn-play-game-lobby button-pulse" onClick={() => setIsDialogPlayGame(true)}>
                                                             {t('Choose theme')}
                                                         </button>
                                                     )
@@ -500,7 +499,7 @@ export default function GameRoom(){
 
                     {/* Raking */}
                     { gameEnded ? (
-                        <Leaderboard players={players} />
+                        <Leaderboard players={players} t={t} />
                     ) : (
                         gameStarted ? (
                             <div>
@@ -537,9 +536,9 @@ export default function GameRoom(){
                                 <CloseIcon/>
                             </button>
                         </div>
-                        <h1>Leaderboard</h1>
+                        <h1>{t('Leaderboard')}</h1>
                         <div className="leaderboard">
-                            <RankingDialog players={players}/>
+                            <RankingDialog players={players} t={t}/>
                         </div>
                     </div>
                 </div>
@@ -556,6 +555,8 @@ export default function GameRoom(){
                             </div>
                             <h1>{t('choose_theme_title')}</h1>
                             <p>{t('choose_theme_description')}</p>
+                            <p style={{display: 'flex', justifyContent: 'center'}}><ClockIcon style={{marginRight: '5px'}}/>
+                                {timerClock == 0 ? 30 : timerClock} {t('seconds')}</p>
                             <textarea placeholder={t('choose_theme_placeholder')} className={'dialog-textarea'}
                                       maxLength={126}></textarea>
                             <div className={'dialog-actions'}>
@@ -565,6 +566,14 @@ export default function GameRoom(){
                             </div>
                             <div style={{textAlign: 'center', paddingBottom: '5px'}}>
                                 <p style={{margin: '10px 0', fontSize: '14px', color: '#666'}}>- {t('Or')} -</p>
+                                <label htmlFor="category">{t('Category')}</label>
+                                <select id={"category"} className={'dialog-select'}>
+                                    {
+                                        categories.map((category, index) => (
+                                            <option key={index} value={category}>{t(category)}</option>
+                                        ))
+                                    }
+                                </select>
                                 <button
                                     onClick={() => handleNotifyError("This feature is not available yet!")}
                                     style={{
@@ -579,6 +588,7 @@ export default function GameRoom(){
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         margin: 'auto',
+                                        marginTop: '10px'
                                     }}>
                                     <ShuffleIcon style={{marginRight: '8px', fill: 'white'}}/>
                                     {t('choose_theme_random')}

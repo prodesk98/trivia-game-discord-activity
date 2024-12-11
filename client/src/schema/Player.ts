@@ -12,7 +12,11 @@ export class Player extends Schema {
     // @ts-ignore
     @type("number") score: number;
     // @ts-ignore
-    @type("boolean") isBestPlayer: boolean;
+    @type("string") language: string;
+    // @ts-ignore
+    @type("boolean") isMe: boolean = false;
+    // @ts-ignore
+    @type("boolean") isBestPlayer: boolean = false;
     // @ts-ignore
     @type("boolean") accepted: boolean = false;
     // @ts-ignore

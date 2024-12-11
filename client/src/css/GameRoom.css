@@ -277,7 +277,7 @@ button i {
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     text-align: center;
-    width: 300px;
+    width: 500px;
 }
 
 .dialog p {
@@ -319,6 +319,15 @@ button i {
     resize: none;
 }
 
+.dialog-select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #ffffff;
+    color: #000;
+}
+
 .btn-play-game-lobby {
     background-color: #225f9b;
     border: 1px solid #11467b;
@@ -326,7 +335,42 @@ button i {
     padding: 10px 20px;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    animation: border-pulse 4s infinite;
+}
+
+@keyframes border-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgb(51, 106, 179);
+    }
+    50% {
+        box-shadow: 0 0 8px 4px rgb(51, 106, 179);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgb(51, 106, 179);
+    }
+}
+
+.button-pulse {
+    background-color: #225f9b;
+    border: 1px solid #11467b;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    position: relative;
+    animation: border-pulse 1.5s infinite;
+}
+
+.button-pulse::after {
+    content: "";
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border-radius: 7px;
+    animation: border-pulse 1.5s infinite;
+    pointer-events: none;
 }
 
 .btn-confirm {

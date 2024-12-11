@@ -3,7 +3,7 @@ import React from "react";
 import {Player} from "../../schema/Player.ts";
 
 
-export const RankingDialog: React.FC<IRankingDialog> = ({ players }) => {
+export const RankingDialog: React.FC<IRankingDialog> = ({ players, t }) => {
     players.sort((a: Player, b: Player) => b.score - a.score);
     return (
         <>
@@ -17,7 +17,7 @@ export const RankingDialog: React.FC<IRankingDialog> = ({ players }) => {
                                      backgroundSize: 'cover',
                                  }
                              }></div>
-                        {player.username}
+                        <p>{player.isMe ? t("You") : player.username}</p>
                     </div>
                     <div className="player-score">{player.score}</div>
                 </div>

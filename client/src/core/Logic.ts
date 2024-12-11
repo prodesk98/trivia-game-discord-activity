@@ -2,6 +2,9 @@ import {Player} from "../schema/Player.ts";
 
 
 export const handleCalculatePosition = (players: Player[], mySessionId: string) => {
+    // find me
+    players.forEach((player) => player.isMe = player.sessionId == mySessionId);
+
     // my player
     let me: Player | undefined = players.find((player) => player.sessionId === mySessionId);
 

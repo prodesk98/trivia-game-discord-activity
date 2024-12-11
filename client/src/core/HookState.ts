@@ -15,6 +15,7 @@ export function useHookState() {
     const [gamePaused, setGamePaused] = useState<boolean>(false);
     const [theme, setTheme] = useState<string|null>(null);
     const [room, setRoom] = useState<Room>();
+    const [categories, setCategories] = useState<string[]>([]);
 
     // Game logic
     const [timeLeft, setTimeLeft] = useState(0);
@@ -42,6 +43,7 @@ export function useHookState() {
         profile,
         ownerProfile,
         room,
+        categories,
         theme,
         timeLeft,
         timerClock,
@@ -58,6 +60,7 @@ export function useHookState() {
         setGameStarted,
         setGameLobby,
         setRoom,
+        setCategories,
         setTheme,
         setTimeLeft,
         setTimerClock,

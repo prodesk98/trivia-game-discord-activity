@@ -3,7 +3,7 @@ import React from "react";
 import {ILeaderboard} from "../interfaces/ILeaderboard.ts";
 
 
-export const Leaderboard: React.FC<ILeaderboard> = ({ players }) => {
+export const Leaderboard: React.FC<ILeaderboard> = ({ players, t }) => {
     // sort players by score
     players.sort((a: Player, b: Player) => b.score - a.score);
     return (
@@ -20,7 +20,7 @@ export const Leaderboard: React.FC<ILeaderboard> = ({ players }) => {
                                 <span className="rank">{index + 1}</span>
                                 <img src={player.avatar} alt={player.username} className="avatar"/>
                             </div>
-                            <span className="username">{player.username}</span>
+                            <span className="username">{player.isMe ? t('You') : player.username}</span>
                             <span className="points">{player.score}</span>
                         </div>
                     ))}

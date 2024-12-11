@@ -8,7 +8,7 @@ import {IPlayerList} from "../interfaces/IPlayerList.ts";
 import React from "react";
 
 
-export const PlayerList: React.FC<IPlayerList> = ({ players, hasQuestions }) => {
+export const PlayerList: React.FC<IPlayerList> = ({ players, hasQuestions, t }) => {
     return (
         players.map((player: Player) => {
             return (
@@ -49,7 +49,12 @@ export const PlayerList: React.FC<IPlayerList> = ({ players, hasQuestions }) => 
                                 )
                             }
                         </div>
-                        <span className="player-name">{player.username}</span>
+                        <span
+                            className="player-name">
+                            {player.isMe ? t('You') :
+                                player.username.length > 10 ? `${player.username.substring(0, 10)}...` : player.username
+                            }
+                        </span>
                     </div>
                 </div>
             )

@@ -85,4 +85,4 @@ async def generative(
 
 @app.get("/categories", tags=["categories"])
 async def get_categories():
-    return [c.value for c in Category]
+    return {"categories": [c.value for c in Category]}

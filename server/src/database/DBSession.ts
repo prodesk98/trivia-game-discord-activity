@@ -35,11 +35,12 @@ export const existsUser = async (discordId: string) => {
     );
 }
 
-export const createUser = async (discordId: string, username: string, avatar?: string): Promise<mongoose.Types.UUID> => {
+export const createUser = async (discordId: string, username: string, avatar?: string, language?: string): Promise<mongoose.Types.UUID> => {
     const user = new User();
     user.discordId = discordId;
     user.username = username;
     user.avatar = avatar;
+    user.language = language;
     await user.save();
     return user.id;
 }

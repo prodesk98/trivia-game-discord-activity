@@ -74,7 +74,8 @@ export default config({
                 if (!userExists) await createUser(
                     profile.id,
                     profile.username,
-                    profile.avatar
+                    profile.avatar,
+                    profile.locale,
                 );
 
                 const userStorage = await getUserByDiscordId(profile.id);
@@ -111,10 +112,11 @@ export default config({
 
                 const user = {
                     userId: userIdString,
+                    guildId: guildId,
                     discordId: userStorage.discordId,
                     avatar: userStorage.avatar,
                     username: userStorage.username,
-                    guildId: guildId,
+                    language: userStorage.language,
                 }
 
                 res.send({ access_token, token: await JWT.sign(user), user });

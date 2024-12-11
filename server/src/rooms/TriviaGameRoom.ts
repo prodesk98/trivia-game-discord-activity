@@ -32,7 +32,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     return JWT.verify(token);
   }
 
-  onCreate (options: any) {
+  async onCreate (options: any) {
     this.setState(new TriviaGameState());
 
     // player send answer
@@ -86,6 +86,9 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
         this.startGame(message.prompt).then();
     });
 
+    // find all categories
+    this.state.categories = await this.getCategories();
+
     // create room
     createRoom(options.guildId, this.roomId).then();
   }
@@ -99,7 +102,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     player.sessionId = client.sessionId;
     player.username = client.auth?.username || `Guest-${Math.floor(Math.random() * 100)}`;
     player.avatar = client.auth?.avatar || `https://cdn.discordapp.com/embed/avatars/${parseInt(Math.floor(Math.random() * 5).toString())}.png`;
-    player.isBestPlayer = false;
+    player.language = client.auth?.language || "en";
     player.accepted = false;
     player.answered = -1;
     player.lack = true;
@@ -116,11 +119,6 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
       console.log(`${this.state.owner} is the owner!`);
     }
 
-    // lock the room if it's full
-    if (this.state.players.size >= this.maxClients) {
-      this.lock().then();
-      console.log(`${this.roomId} is now locked!`);
-    }
   }
 
   onLeave (client: Client, consented: boolean) {
@@ -141,6 +139,14 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
           this.nextOwner();
       }
     }
+
+    let countAnswered = 0;
+    for (const [sessionId, player] of this.state.players) {
+        if (player.sessionId === client.sessionId) this.state.players.delete(sessionId);
+        if (player.lack === false) countAnswered++;
+    }
+
+    if (countAnswered === this.state.players.size) this.endTurn();
   }
 
   onDispose() {
@@ -187,6 +193,25 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
         console.error(e);
         this.broadcast("error", new ErrorResponse({message: "Error generating questions!"}));
         this.startLobby();
+    }
+  }
+
+  async getCategories(): Promise<string[]> {
+    try {
+        const response = await fetch(
+            `${process.env.QUIZGENAI_ENDPOINT}/categories`,
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${process.env.QUIZGENAI_API_KEY}`
+                }
+            }
+        )
+        const data: any = await response.json();
+        return data.categories;
+    }catch (e) {
+        console.error(e);
     }
   }
 
