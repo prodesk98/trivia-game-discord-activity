@@ -455,7 +455,7 @@ export default function GameRoom(){
                                         }
                                         <div>
                                             {
-                                                theme === null ?
+                                                theme === null && timerClock > 0 ?
                                                 (
                                                     <span style={{
                                                         display: 'flex',
@@ -466,7 +466,7 @@ export default function GameRoom(){
                                                         marginTop: '5px'
                                                     }}>
                                                         <ClockIcon style={{marginRight: '5px'}}/>
-                                                        {timerClock == 0 ? 30 : timerClock} {t('seconds')}
+                                                        {timerClock} {t('seconds')}
                                                     </span>
                                                 ) : (
                                                     <Riple color="#FFF" size="small" text="" textColor=""/>

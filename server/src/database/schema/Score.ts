@@ -26,6 +26,11 @@ const ScoreSchema = new Schema({
         required: true,
         default: 0,
     },
+    createdAt: {
+        type: Date,
+        required: true,
+        default: Date.now,
+    }
 });
 
 export const Score = model("Score", ScoreSchema);

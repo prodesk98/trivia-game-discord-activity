@@ -6,6 +6,8 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: trivia1
       MONGO_INITDB_DATABASE: trivia
+    ports:
+      - "27017:27017"
     volumes:
       - mongodb_data:/data/db
     restart: on-failure:0

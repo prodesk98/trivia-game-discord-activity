@@ -17,6 +17,11 @@ const RoomSchema = new Schema({
         type: String,
         required: true,
     },
+    createdAt: {
+        type: Date,
+        required: true,
+        default: Date.now,
+    }
 });
 
 export const Room = model("Room", RoomSchema);
