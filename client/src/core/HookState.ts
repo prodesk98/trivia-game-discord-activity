@@ -6,6 +6,7 @@ import {Room} from "colyseus.js";
 export function useHookState() {
     const [players, setPlayers] = useState<Player[]>([]);
     const [profile, setProfile] = useState<Player>();
+    const [language, setLanguage] = useState<string>("en");
     const [ownerProfile, setOwnerProfile] = useState<Player>();
     const [owner, setOwner] = useState<string>();
     const [currentQuestionOptions, setCurrentQuestionOptions] = useState<QuestionOptions>();
@@ -41,6 +42,7 @@ export function useHookState() {
         players,
         owner,
         profile,
+        language,
         ownerProfile,
         room,
         categories,
@@ -52,6 +54,7 @@ export function useHookState() {
         // setters
         setPlayers,
         setProfile,
+        setLanguage,
         setOwnerProfile,
         setOwner,
         setCurrentQuestionOptions,

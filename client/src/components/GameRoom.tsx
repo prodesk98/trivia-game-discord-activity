@@ -35,7 +35,7 @@ import {Player} from "../schema/Player.ts";
 import {handleCalculatePosition} from "../core/Logic.ts";
 import {QuestionOptions} from "../schema/QuestionOptions.ts";
 import {AnswerResponse} from "../schema/AnswerResponse.ts";
-import {getLocalStorage, setLocalStorage} from "../utils/LocalStorage.ts";
+import {getLocalStorage, hasLocalStorage, setLocalStorage} from "../utils/LocalStorage.ts";
 import {handleConfetti} from "../core/Effect.ts";
 import {RankingDialog} from "./fragments/RankingDialog.tsx";
 
@@ -57,6 +57,7 @@ export default function GameRoom(){
         room,
         categories,
         profile,
+        language,
         ownerProfile,
         owner,
         players,
@@ -69,6 +70,7 @@ export default function GameRoom(){
         // setters
         setPlayers,
         setProfile,
+        setLanguage,
         setOwnerProfile,
         setOwner,
         setCurrentQuestionOptions,
@@ -158,6 +160,9 @@ export default function GameRoom(){
         }
     }, []);
 
+    // select language
+    useEffect(() => {changeLanguage(language).then()}, [language]);
+
     // sendMessage
     const handleSendMessage = (message: string, data: any = {}) => {
         if (typeof room === 'undefined') {
@@ -190,7 +195,7 @@ export default function GameRoom(){
             return;
         }
         // @ts-ignore
-        handleSendMessage("startGame", {prompt: prompt?.value});
+        handleSendMessage("startGame", {prompt: prompt?.value, language: language});
         setIsDialogPlayGame(false);
     }
 
@@ -212,7 +217,11 @@ export default function GameRoom(){
 
                 if (player.sessionId === room.sessionId) {
                     setProfile(player);
-                    changeLanguage(player.language);
+
+                    let lng: string = "pt-BR";
+                    if (lng.includes("-")) lng = lng.split("-")[0];
+                    if (!hasLocalStorage("language")) setLocalStorage("language", lng);
+                    setLanguage(getLocalStorage("language"));
                 }
 
                 player.onChange(() => {
@@ -427,9 +436,9 @@ export default function GameRoom(){
                                                     theme === null ? (
                                                         profile && profile.sessionId == owner ?
                                                             (
-                                                                <span>{i18n.t('choose_theme_start_game_title')}</span>
+                                                                <span>{i18n.t('Choose a theme to start the game!')}</span>
                                                             ) : (
-                                                                <span>{i18n.t('waiting_for', {username: ownerProfile?.username})}</span>
+                                                                <span>{i18n.t('Waiting for {{username}} to choose the theme...": "Waiting for {{username}} to choose the theme...', {username: ownerProfile?.username})}</span>
                                                             )
                                                     ) :
                                                     (
@@ -445,8 +454,9 @@ export default function GameRoom(){
                                                 : (
                                                         <div>
                                                             <div>{i18n.t('Connecting...')}</div>
-                                                            <OrbitProgress variant="split-disc" color="#FFF" size="small"
-                                                                           text=""/>
+                                                            <div style={{paddingBottom: '5px', paddingTop: '5px'}}>
+                                                                <Riple color="#FFF" size="small" text=""/>
+                                                            </div>
                                                         </div>
                                                     )
                                                 : ""
@@ -466,10 +476,10 @@ export default function GameRoom(){
                                                         <ClockIcon style={{marginRight: '5px'}}/>
                                                         {timerClock} {i18n.t('seconds')}
                                                     </span>
-                                                ) : (
-                                                    <Riple color="#FFF" size="small" text="" textColor=""/>
-                                                )
-                                            }
+                                                ) : typeof room !== 'undefined' ? (
+                                                        <Riple color="#FFF" size="small" text="" textColor=""/>
+                                                    ): ""
+                                                }
                                         </div>
                                     </div>
                                     {theme === null && typeof room !== 'undefined' ?
@@ -482,7 +492,7 @@ export default function GameRoom(){
                                                                        textColor=""/>
                                                     ) : (
                                                         <button className="btn-play-game-lobby button-pulse" onClick={() => setIsDialogPlayGame(true)}>
-                                                            {i18n.t('Choose theme')}
+                                                            {i18n.t('Choose Theme')}
                                                         </button>
                                                     )
                                                 }
@@ -551,15 +561,15 @@ export default function GameRoom(){
                                     <CloseIcon/>
                                 </button>
                             </div>
-                            <h1>{i18n.t('choose_theme_title')}</h1>
-                            <p>{i18n.t('choose_theme_description')}</p>
+                            <h1>{i18n.t('Customize your Quiz with a Theme')}</h1>
+                            <p>{i18n.t('Artificial intelligence creates personalized questions based on the chosen topic.')}</p>
                             <p style={{display: 'flex', justifyContent: 'center'}}><ClockIcon style={{marginRight: '5px'}}/>
                                 {timerClock == 0 ? 30 : timerClock} {i18n.t('seconds')}</p>
-                            <textarea placeholder={i18n.t('choose_theme_placeholder')} className={'dialog-textarea'}
+                            <textarea placeholder={i18n.t('Enter a theme, e.g. Greek Mythology...')} className={'dialog-textarea'}
                                       maxLength={126}></textarea>
                             <div className={'dialog-actions'}>
                                 <button className={'btn-confirm'} onClick={() => handlePlayGame()}>
-                                    {i18n.t('choose_theme_button')}
+                                    {i18n.t('Choose Theme')}
                                 </button>
                             </div>
                             <div style={{textAlign: 'center', paddingBottom: '5px'}}>
@@ -589,7 +599,7 @@ export default function GameRoom(){
                                         marginTop: '10px'
                                     }}>
                                     <ShuffleIcon style={{marginRight: '8px', fill: 'white'}}/>
-                                    {i18n.t('choose_theme_random')}
+                                    {i18n.t('Random Theme')}
                                 </button>
                             </div>
                         </div>

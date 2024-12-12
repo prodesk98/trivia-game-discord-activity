@@ -12,7 +12,7 @@ export class Player extends Schema {
     // @ts-ignore
     @type("number") score: number;
     // @ts-ignore
-    @type("string") language: string;
+    @type("string") language: string = 'en';
     // @ts-ignore
     @type("boolean") isMe: boolean = false;
     // @ts-ignore
