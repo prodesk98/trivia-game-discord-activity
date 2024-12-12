@@ -218,7 +218,7 @@ export default function GameRoom(){
                 if (player.sessionId === room.sessionId) {
                     setProfile(player);
 
-                    let lng: string = "pt-BR";
+                    let lng: string = player.language;
                     if (lng.includes("-")) lng = lng.split("-")[0];
                     if (!hasLocalStorage("language")) setLocalStorage("language", lng);
                     setLanguage(getLocalStorage("language"));

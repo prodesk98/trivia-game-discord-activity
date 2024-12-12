@@ -9,3 +9,12 @@ export function getLocalStorage(key: string): any | null {
     }
     return JSON.parse(value);
 }
+
+export function hasLocalStorage(key: string): boolean {
+    return localStorage.getItem(key) !== null;
+}
+
+export function removeLocalStorage(key: string): void {
+    localStorage.removeItem(key);
+}
+
