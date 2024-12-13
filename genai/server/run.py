@@ -43,12 +43,12 @@ async def get_questionnaires(
     return [
         r for r in [
             ObjectsQuestionResponse(
-                question=obj.properties["question"],
-                options=obj.properties["options"],
-                answer=obj.properties["answer"],
-                category=obj.properties["category"],
-                difficulty=obj.properties["difficulty"],
-                language=obj.properties["language"],
+                question=obj.properties["q"],
+                options=obj.properties["o"],
+                answer=obj.properties["a"],
+                category=obj.properties["c"],
+                difficulty=obj.properties["d"],
+                language=obj.properties["l"],
                 distance=obj.metadata.distance,
             ) for obj in response.objects
         ]

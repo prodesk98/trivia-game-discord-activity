@@ -4,6 +4,7 @@ from typing import Optional, List
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import PromptTemplate, SystemMessagePromptTemplate, ChatPromptTemplate
 from langchain_openai import ChatOpenAI
+from loguru import logger
 
 from config import env
 from .schemas import (
@@ -11,12 +12,14 @@ from .schemas import (
     QuestionnaireBase,
     Enrichment,
     Translations,
-    QuestionnaireResponse
+    QuestionnaireResponse, QuestionnaireData
 )
 
 from ._prompt_engine import QUESTIONNAIRE_PROMPT, ENRICHMENT_PROMPT
 
 import warnings
+
+from ..provider.schemas import QuestionBase
 
 warnings.filterwarnings("ignore", category=UserWarning, module="langchain_openai")
 
@@ -33,18 +36,18 @@ class LLM:
         )
 
     @staticmethod
-    def shuffle(questionnaires: List[QuestionnaireBase]) -> List[QuestionnaireBase]:
-        _questionnaires: List[QuestionnaireBase] = []
+    def shuffle(questionnaires: List[QuestionnaireBase]) -> List[QuestionBase]:
+        _questionnaires: List[QuestionBase] = []
         for q in questionnaires:
-            _correct = q.options[q.answer]
-            random.shuffle(q.options)
+            _correct = q.o[q.a]
+            random.shuffle(q.o)
             _questionnaires.append(
-                QuestionnaireBase(
-                    question=q.question,
-                    options=q.options,
-                    answer=q.options.index(_correct),
-                    difficulty=q.difficulty,
-                    language=q.language,
+                QuestionBase(
+                    question=q.q,
+                    options=q.o,
+                    answer=q.o.index(_correct),
+                    difficulty=q.d,
+                    language=q.l.value,
                 )
             )
         random.shuffle(_questionnaires)
@@ -102,13 +105,13 @@ class LLM:
         )
         output: Translations = await chain.ainvoke({"quantities": self._quantities})
         return QuestionnaireResponse(
-            pt=Questionnaire(
+            pt=QuestionnaireData(
                 questionnaires=self.shuffle([
                     q for q in output.pt.questionnaires
                 ]),
                 category=output.category,
             ),
-            en=Questionnaire(
+            en=QuestionnaireData(
                 questionnaires=self.shuffle([
                     q for q in output.en.questionnaires
                 ]),

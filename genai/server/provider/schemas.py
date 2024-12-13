@@ -16,11 +16,11 @@ class QuestionBase(BaseModel):
 
 
 class QuestionnaireBase(BaseModel):
-    question: str
-    options: List[str] = Field(description="4 options for the question")
-    answer: int = Field(description="Index of the correct answer")
-    difficulty: Difficulty = Field(Difficulty.EASY, description="Difficulty level of the question")
-    language: Language = Field(Language.ENGLISH, description="Language of the question")
+    q: str = Field(description="Question")
+    o: List[str] = Field(description="4 options for the question")
+    a: int = Field(description="Index of the correct answer")
+    d: Difficulty = Field(Difficulty.EASY, description="Difficulty level of the question")
+    l: Language = Field(Language.ENGLISH, description="Language of the question")
 
 
 class QuestionSchema(QuestionBase):

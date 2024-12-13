@@ -2,7 +2,7 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
-from ..provider.schemas import QuestionnaireBase, Category
+from ..provider.schemas import QuestionnaireBase, Category, QuestionBase
 
 
 class Questionnaire(BaseModel):
@@ -16,9 +16,14 @@ class Translations(BaseModel):
     category: Category = Field(..., description="Category of the questionnaires")
 
 
+class QuestionnaireData(BaseModel):
+    questionnaires: List[QuestionBase]
+    category: Category
+
+
 class QuestionnaireResponse(BaseModel):
-    pt: Questionnaire
-    en: Questionnaire
+    pt: QuestionnaireData
+    en: QuestionnaireData
 
 
 class Enrichment(BaseModel):
