@@ -79,7 +79,8 @@ async def generative(
     response = await controller.generate(prompt=payload.prompt)
     if response is None:
         raise HTTPException(status_code=500, detail="Error generating questionnaire")
-    await aupsert_questionnaires(response)
+    await aupsert_questionnaires(response.en)
+    await aupsert_questionnaires(response.pt)
     return response.model_dump()
 
 

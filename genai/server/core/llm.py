@@ -6,7 +6,13 @@ from langchain_core.prompts import PromptTemplate, SystemMessagePromptTemplate, 
 from langchain_openai import ChatOpenAI
 
 from config import env
-from .schemas import Questionnaire, QuestionnaireBase, Enrichment
+from .schemas import (
+    Questionnaire,
+    QuestionnaireBase,
+    Enrichment,
+    Translations,
+    QuestionnaireResponse
+)
 
 from ._prompt_engine import QUESTIONNAIRE_PROMPT, ENRICHMENT_PROMPT
 
@@ -72,7 +78,7 @@ class LLM:
         )
         return output
 
-    async def generate(self, prompt: str) -> Optional[Questionnaire]:
+    async def generate(self, prompt: str) -> Optional[QuestionnaireResponse]:
         _enrichment = await self.enrich(prompt)
         _system = SystemMessagePromptTemplate(
             prompt=PromptTemplate(
@@ -87,15 +93,25 @@ class LLM:
             ]
         )
         structured = self.llm.with_structured_output(
-            Questionnaire,
+            Translations,
             method="json_schema",
         )
         chain = (
             _prompt |
             structured
         )
-        output = await chain.ainvoke({"quantities": self._quantities})
-        return Questionnaire(
-            questionnaires=self.shuffle(output.questionnaires),
-            category=output.category,
+        output: Translations = await chain.ainvoke({"quantities": self._quantities})
+        return QuestionnaireResponse(
+            pt=Questionnaire(
+                questionnaires=self.shuffle([
+                    q for q in output.pt.questionnaires
+                ]),
+                category=output.category,
+            ),
+            en=Questionnaire(
+                questionnaires=self.shuffle([
+                    q for q in output.en.questionnaires
+                ]),
+                category=output.category,
+            ),
         )
