@@ -5,7 +5,7 @@ WORKDIR /app
 COPY . .
 RUN rm -rf /app/node_modules
 
-RUN npm install
+RUN npm --loglevel verbose install
 
 RUN npm run build
 
