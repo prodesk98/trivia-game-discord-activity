@@ -4,11 +4,9 @@ from typing import Optional, List
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import PromptTemplate, SystemMessagePromptTemplate, ChatPromptTemplate
 from langchain_openai import ChatOpenAI
-from loguru import logger
 
 from config import env
 from .schemas import (
-    Questionnaire,
     QuestionnaireBase,
     Enrichment,
     Translations,
@@ -57,7 +55,7 @@ class LLM:
         _system = SystemMessagePromptTemplate(
             prompt=PromptTemplate(
                 template=ENRICHMENT_PROMPT,
-                input_variables=["theme"],
+                input_variables=[],
             )
         )
         _prompt = ChatPromptTemplate.from_messages(
@@ -74,11 +72,7 @@ class LLM:
             _prompt |
             structured
         )
-        output = await chain.ainvoke(
-            {
-                "theme": theme,
-            }
-        )
+        output = await chain.ainvoke({})
         return output
 
     async def generate(self, prompt: str) -> Optional[QuestionnaireResponse]:
@@ -118,3 +112,7 @@ class LLM:
                 category=output.category,
             ),
         )
+
+
+    async def random(self, prompt: str) -> Optional[QuestionnaireResponse]:
+        return await self.generate(prompt)

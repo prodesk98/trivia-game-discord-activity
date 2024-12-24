@@ -1,3 +1,4 @@
+import random
 from typing import List
 
 from fastapi import FastAPI, HTTPException, Depends, Request
@@ -81,7 +82,19 @@ async def generative(
         raise HTTPException(status_code=500, detail="Error generating questionnaire")
     await aupsert_questionnaires(response.en)
     await aupsert_questionnaires(response.pt)
-    return response.model_dump()
+    return response.pt.model_dump()
+
+
+@app.post("/random", tags=["random"])
+async def generative_random():
+    controller = QuestionnaireController()
+    prompt = random.choice(env.THEMES)
+    response = await controller.random(prompt=prompt)
+    if response is None:
+        raise HTTPException(status_code=500, detail="Error generating questionnaire")
+    await aupsert_questionnaires(response.en)
+    await aupsert_questionnaires(response.pt)
+    return response.pt.model_dump()
 
 
 @app.get("/categories", tags=["categories"])

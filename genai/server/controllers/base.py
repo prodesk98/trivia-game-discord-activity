@@ -8,3 +8,6 @@ class Controller(ABC):
 
     async def generate(self, prompt: str):
         return await self.llm.generate(prompt)
+
+    async def random(self, prompt: str):
+        return await self.llm.random(prompt)

@@ -7,3 +7,6 @@ class QuestionnaireController(Controller):
 
     async def generate(self, prompt: str):
         return await super().generate(prompt)
+
+    async def random(self, prompt: str):
+        return await super().random(prompt)

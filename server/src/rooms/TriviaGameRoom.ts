@@ -12,12 +12,13 @@ import {ErrorResponse} from "./schema/messages/ErrorResponse";
 import {
     createRoom,
     createScore,
-    getSumScoreByRoomIdAndUserId, getSumScoreByUserIdAndRoundId
+    getSumScoreByRoomIdAndUserId,
+    getSumScoreByUserIdAndRoundId
 } from "../database/DBSession";
 
 
 export class TriviaGameRoom extends Room<TriviaGameState> {
-  maxClients = 5;
+  maxClients = 10;
   totalTurns = 0;
   roundId: string;
   questionOptions: QuestionOptions[] = new Array<QuestionOptions>();
@@ -164,7 +165,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
 
     try {
         const response = await fetch(
-            `${process.env.QUIZGENAI_ENDPOINT}/generative`,
+            `${process.env.QUIZGENAI_ENDPOINT}/` + (prompt !== "random" ? `generative` : "random"),
             {
                 method: "POST",
                 headers: {

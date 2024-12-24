@@ -55,7 +55,7 @@ export default function GameRoom(){
         gameLobby,
         isMuted,
         room,
-        categories,
+        // categories,
         profile,
         language,
         ownerProfile,
@@ -170,6 +170,16 @@ export default function GameRoom(){
             return;
         }
         room.send(message, data);
+    }
+
+    const handlePlayGameRandom = () => {
+        if (ownerProfile && profile && ownerProfile.sessionId !== profile.sessionId) {
+            handleNotifyError("You are not the owner of the room!");
+            setIsDialogPlayGame(false);
+            return;
+        }
+        handleSendMessage("startGame", {prompt: 'random', language: language});
+        setIsDialogPlayGame(false);
     }
 
     // play game
@@ -574,16 +584,16 @@ export default function GameRoom(){
                             </div>
                             <div style={{textAlign: 'center', paddingBottom: '5px'}}>
                                 <p style={{margin: '10px 0', fontSize: '14px', color: '#666'}}>- {i18n.t('Or')} -</p>
-                                <label htmlFor="category">{i18n.t('Category')}</label>
-                                <select id={"category"} className={'dialog-select'}>
-                                    {
-                                        categories.map((category, index) => (
-                                            <option key={index} value={category}>{i18n.t(category)}</option>
-                                        ))
-                                    }
-                                </select>
+                                {/*<label htmlFor="category">{i18n.t('Category')}</label>*/}
+                                {/*<select id={"category"} className={'dialog-select'}>*/}
+                                {/*    {*/}
+                                {/*        categories.map((category, index) => (*/}
+                                {/*            <option key={index} value={category}>{i18n.t(category)}</option>*/}
+                                {/*        ))*/}
+                                {/*    }*/}
+                                {/*</select>*/}
                                 <button
-                                    onClick={() => handleNotifyError("This feature is not available yet!")}
+                                    onClick={() => handlePlayGameRandom()}
                                     style={{
                                         backgroundColor: '#007bff',
                                         color: 'white',
