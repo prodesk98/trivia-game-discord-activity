@@ -6,8 +6,6 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: trivia1
       MONGO_INITDB_DATABASE: trivia
-    ports:
-      - "27017:27017"
     volumes:
       - mongodb_data:/data/db
     restart: on-failure:0
@@ -28,10 +26,6 @@ services:
       ENABLE_API_BASED_MODULES: 'true'
       CLUSTER_HOSTNAME: 'node1'
       ENABLE_MODULES: 'text2vec-openai'
-    ports:
-      - "8080:8080"
-      - "8081:8081"
-      - "50051:50051"
     volumes:
       - weaviate_data:/var/lib/weaviate
     restart: on-failure:0
@@ -43,8 +37,6 @@ services:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
       RABBITMQ_DEFAULT_VHOST: "/"
-    ports:
-        - "5672:5672"
     restart: on-failure:0
 
   quiz-genai-api:

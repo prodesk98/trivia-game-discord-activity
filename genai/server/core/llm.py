@@ -100,15 +100,11 @@ class LLM:
         output: Translations = await chain.ainvoke({"quantities": self._quantities})
         return QuestionnaireResponse(
             pt=QuestionnaireData(
-                questionnaires=self.shuffle([
-                    q for q in output.pt.questionnaires
-                ]),
+                questionnaires=self.shuffle([q for q in output.pt.questionnaires]),
                 category=output.category,
             ),
             en=QuestionnaireData(
-                questionnaires=self.shuffle([
-                    q for q in output.en.questionnaires
-                ]),
+                questionnaires=self.shuffle([q for q in output.en.questionnaires]),
                 category=output.category,
             ),
         )

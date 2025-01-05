@@ -1,3 +1,7 @@
+import warnings
+
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 import weaviate.classes as wvc
 from weaviate.classes.config import Configure
 from loguru import logger
