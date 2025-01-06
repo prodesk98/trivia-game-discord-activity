@@ -585,7 +585,7 @@ export default function GameRoom(){
                         onChange={handleLanguageChange}
                     >
                         <option value="en">🇺🇸 English</option>
-                        <option value="pt">🇧🇷 Português</option>
+                        <option value="pt">🇧🇷 Portuguese</option>
                     </select>
                 </div>
             </div>
