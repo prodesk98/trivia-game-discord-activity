@@ -81,12 +81,11 @@ async def generative(
     response = await controller.generate(prompt=payload.prompt)
     if response is None:
         raise HTTPException(status_code=500, detail="Error generating questionnaire")
-    await aupsert_questionnaires(response.en)
-    await aupsert_questionnaires(response.pt)
+    await aupsert_questionnaires(response.questionnaires)
     return ORJSONResponse(
         dict(
-            questionnaires=response.en.model_dump(mode="json")["questionnaires"],
-            translations=response.translations
+            response.questionnaires.model_dump(mode="json"),
+            **dict(translations=response.translations)
         )
     )
 
@@ -98,12 +97,11 @@ async def generative_random():
     response = await controller.random(prompt=prompt)
     if response is None:
         raise HTTPException(status_code=500, detail="Error generating questionnaire")
-    await aupsert_questionnaires(response.en)
-    await aupsert_questionnaires(response.pt)
+    await aupsert_questionnaires(response.questionnaires)
     return ORJSONResponse(
         dict(
-            questionnaires=response.en.model_dump(mode="json")["questionnaires"],
-            translations=response.translations
+            response.questionnaires.model_dump(mode="json"),
+            **dict(translations=response.translations)
         )
     )
 

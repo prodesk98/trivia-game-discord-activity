@@ -146,12 +146,8 @@ class LLM:
 
         # response
         return QuestionnaireResponse(
-            en=QuestionnaireData(
+            questionnaires=QuestionnaireData(
                 questionnaires=en_questionnaires,
-                category=output.category,
-            ),
-            pt=QuestionnaireData(
-                questionnaires=pt_questionnaires,
                 category=output.category,
             ),
             translations=self.translations,

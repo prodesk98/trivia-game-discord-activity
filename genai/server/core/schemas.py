@@ -22,8 +22,7 @@ class QuestionnaireData(BaseModel):
 
 
 class QuestionnaireResponse(BaseModel):
-    en: QuestionnaireData
-    pt: QuestionnaireData
+    questionnaires: QuestionnaireData
     translations: Dict[str, str | dict]
 
 
