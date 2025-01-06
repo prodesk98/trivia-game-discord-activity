@@ -52,7 +52,7 @@ services:
       WEAVIATE_HOST: weaviate
       RABBITMQ_DSN: amqp://guest:guest@rabbitmq:5672
       EMBEDDING_MODEL: text-embedding-3-small
-      STRUCTURED_MODEL: gpt-4o-mini
+      STRUCTURED_MODEL: deepseek-chat
     depends_on:
       - weaviate
       - mongodb
@@ -72,7 +72,7 @@ services:
       WEAVIATE_HOST: weaviate
       RABBITMQ_DSN: amqp://guest:guest@rabbitmq:5672
       EMBEDDING_MODEL: text-embedding-3-small
-      STRUCTURED_MODEL: gpt-4o-mini
+      STRUCTURED_MODEL: deepseek-chat
     depends_on:
       - weaviate
     restart: on-failure:0
