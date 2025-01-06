@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
@@ -14,6 +15,10 @@ class CreateQuestionSchema(QuestionSchema):
 
 class CreateGenerateQuestionSchema(GenerateQuestionSchema):
     prompt: str = Field(..., max_length=256)
+
+
+class CreateGenerateRandomQuestionSchema(BaseModel):
+    category: Optional[Category] = Field(Category.GENERAL_KNOWLEDGE)
 
 
 class QueryQuestionSchema(BaseModel):

@@ -12,6 +12,7 @@ from .provider.constraints import Category
 from .schemas.questionnaire import (
     CreateQuestionSchema,
     CreateGenerateQuestionSchema,
+    CreateGenerateRandomQuestionSchema,
     CreateQuestionResponse,
     ObjectsQuestionResponse,
     QueryQuestionSchema,
@@ -91,9 +92,11 @@ async def generative(
 
 
 @app.post("/random", tags=["random"], response_class=ORJSONResponse)
-async def generative_random():
+async def generative_random(
+    payload: CreateGenerateRandomQuestionSchema
+):
     controller = QuestionnaireController()
-    prompt = random.choice(env.THEMES)
+    prompt = "%s\nCategory: %s" % (random.choice(env.THEMES), payload.category.value)
     response = await controller.random(prompt=prompt)
     if response is None:
         raise HTTPException(status_code=500, detail="Error generating questionnaire")

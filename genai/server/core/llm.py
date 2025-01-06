@@ -2,6 +2,7 @@ import random
 from typing import Optional, List
 
 from langchain_core.messages import HumanMessage
+from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import PromptTemplate, SystemMessagePromptTemplate, ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
@@ -29,9 +30,10 @@ class LLM:
         self._quantities = quantities
         self.llm = ChatOpenAI(
             model_name=env.STRUCTURED_MODEL,
+            base_url=env.OPENAI_API_ENDPOINT, # noqa
             openai_api_key=env.OPENAI_API_KEY,
             streaming=False,
-            temperature=random.uniform(0.0, .1),
+            temperature=.0,
             top_p=random.uniform(0.0, 1.0),
         )
         self.translations: dict[str, str | dict] = {
@@ -39,7 +41,7 @@ class LLM:
         }
 
     @staticmethod
-    def _default_questions_base(n: int = 10) -> List[QuestionBase]:
+    def _default_questions_base(n: int = 10, c: Category = Category.GENERAL_KNOWLEDGE) -> List[QuestionBase]:
         _questionnaires = []
         for _ in range(n):
             _questionnaires.append(
@@ -47,7 +49,7 @@ class LLM:
                     question="",
                     options=["" for _ in range(4)],
                     answer=0,
-                    category=Category.GENERAL_KNOWLEDGE,
+                    category=c,
                     difficulty=Difficulty.EASY,
                     language=Language.ENGLISH.value
                 )
@@ -67,6 +69,7 @@ class LLM:
                     options=q.o,
                     answer=q.o.index(_correct),
                     difficulty=q.d,
+                    category=q.c,
                     language=q.l.value,
                 )
             )
@@ -74,10 +77,12 @@ class LLM:
         return _questionnaires
 
     async def enrich(self, theme: str) -> Enrichment:
+        parser = JsonOutputParser(pydantic_object=Enrichment)
         _system = SystemMessagePromptTemplate(
             prompt=PromptTemplate(
                 template=ENRICHMENT_PROMPT,
                 input_variables=[],
+                partial_variables={"format_instructions": parser.get_format_instructions()},
             )
         )
         _prompt = ChatPromptTemplate.from_messages(
@@ -88,7 +93,7 @@ class LLM:
         )
         structured = self.llm.with_structured_output(
             Enrichment,
-            method="json_schema",
+            method="json_mode",
         )
         chain = (
             _prompt |
@@ -99,10 +104,12 @@ class LLM:
 
     async def generate(self, prompt: str) -> Optional[QuestionnaireResponse]:
         _enrichment = await self.enrich(prompt)
+        parser = JsonOutputParser(pydantic_object=Translations)
         _system = SystemMessagePromptTemplate(
             prompt=PromptTemplate(
                 template=QUESTIONNAIRE_PROMPT,
                 input_variables=["quantities"],
+                partial_variables={"format_instructions": parser.get_format_instructions()},
             )
         )
         _prompt = ChatPromptTemplate.from_messages(
@@ -113,7 +120,7 @@ class LLM:
         )
         structured = self.llm.with_structured_output(
             Translations,
-            method="json_schema",
+            method="json_mode",
         )
         chain = (_prompt | structured)
 
@@ -122,32 +129,15 @@ class LLM:
 
         # set translations
         for i, q in enumerate(output.en.questionnaires):
-            self.translations['pt'][q.q] = output.pt.questionnaires[i].q
+            # Portuguese
+            self.translations['pt'][q.q] = output.t.pt[i].q
             for n, o in enumerate(q.o):
-                self.translations['pt'][o] = output.pt.questionnaires[i].o[n]
-
-        # shuffle questionnaires
-        en_questionnaires = self.shuffle([q for q in output.en.questionnaires])
-
-        # pt questionnaires
-        pt_questionnaires = self._default_questions_base(self._quantities)
-
-        # fill pt questionnaires
-        for n, q in enumerate(en_questionnaires):
-            options = output.pt.questionnaires[q.index].o
-            answer_index = output.pt.questionnaires[q.index].o[output.pt.questionnaires[q.index].a]
-            random.shuffle(options)
-            pt_questionnaires[n].id = q.id
-            pt_questionnaires[n].question = output.pt.questionnaires[q.index].q
-            pt_questionnaires[n].options = options
-            pt_questionnaires[n].answer = options.index(answer_index)
-            pt_questionnaires[n].difficulty = output.pt.questionnaires[q.index].d
-            pt_questionnaires[n].language = output.pt.questionnaires[q.index].l.value
+                self.translations['pt'][o] = output.t.pt[i].o[n]
 
         # response
         return QuestionnaireResponse(
             questionnaires=QuestionnaireData(
-                questionnaires=en_questionnaires,
+                questionnaires=self.shuffle([q for q in output.en.questionnaires]),
                 category=output.category,
             ),
             translations=self.translations,

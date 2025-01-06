@@ -25,6 +25,7 @@ class QuestionnaireBase(BaseModel):
     o: List[str] = Field(description="4 options for the question")
     a: int = Field(description="Index of the correct answer")
     d: Difficulty = Field(Difficulty.EASY, description="Difficulty level of the question")
+    c: Category = Field(Category.GENERAL_KNOWLEDGE, description="Category of the question")
     l: Language = Field(Language.ENGLISH, description="Language of the question")
 
 

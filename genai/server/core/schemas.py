@@ -7,12 +7,21 @@ from ..provider.schemas import QuestionnaireBase, Category, QuestionBase
 
 class Questionnaire(BaseModel):
     questionnaires: List[QuestionnaireBase]
-    category: Category
+    category: Category = Field(..., description="Category of the questionnaires")
+
+
+class PT(BaseModel):
+    q: str = Field(description="Question translated")
+    o: List[str] = Field(description="4 options for the question translated")
+
+
+class TranslationQuestionnaire(BaseModel):
+    pt: List[PT] = Field(..., description="Portuguese translations")
 
 
 class Translations(BaseModel):
-    pt: Questionnaire = Field(..., description="Portuguese translations")
     en: Questionnaire = Field(..., description="English translations")
+    t: TranslationQuestionnaire = Field(..., description="Portuguese translations")
     category: Category = Field(..., description="Category of the questionnaires")
 
 
