@@ -15,6 +15,7 @@ import {
     getSumScoreByRoomIdAndUserId,
     getSumScoreByUserIdAndRoundId
 } from "../database/DBSession";
+import {MapSchema} from "@colyseus/schema";
 
 
 export class TriviaGameRoom extends Room<TriviaGameState> {
@@ -84,7 +85,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
             return;
         }
         this.roundId = uuid4();
-        this.startGame(message.prompt).then();
+        this.startGame(message.prompt, message?.category).then();
     });
 
     // find all categories
@@ -158,10 +159,11 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     return (correct === response ? 1 : 0) * this.state.currentTimer;
   }
 
-  async startGame(prompt: string) {
+  async startGame(prompt: string, category?: string) {
     this.totalTurns = 0;
     this.state.theme = prompt;
     this.stopChoose();
+    this.state.awaitingGeneration = true;
 
     try {
         const response = await fetch(
@@ -173,7 +175,8 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
                     "Authorization": `Bearer ${process.env.QUIZGENAI_API_KEY}`
                 },
                 body: JSON.stringify({
-                    prompt: prompt
+                    prompt: prompt,
+                    category: category,
                 })
             }
         )
@@ -189,12 +192,23 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
             });
         });
 
+        const parse = (obj: Record<string, string>): MapSchema<string> => {
+            const mapSchema = new MapSchema<string>();
+
+            for (const [key, value] of Object.entries(obj)) {
+                mapSchema.set(key, value);
+            }
+
+            return mapSchema;
+        };
+
         // translations
-        // {"olá": "hello"}
-        this.state.translations = data.translations.pt || {};
+        this.state.translations = parse(data.translations.pt);
 
         // set the answer options
         this.answerOptions = this.questionOptions.map(q => q.correct);
+
+        this.state.awaitingGeneration = false;
 
         this.nextTurn();
     }catch (e) {
@@ -244,6 +258,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
       this.state.gameLobby = true;
       this.state.gameStarted = false;
       this.state.gameEnded = true;
+      this.state.awaitingGeneration = false;
 
       // clear players
       this.resetPlayers().then();

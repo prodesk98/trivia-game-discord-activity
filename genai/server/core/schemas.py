@@ -6,7 +6,7 @@ from ..provider.schemas import QuestionnaireBase, Category, QuestionBase
 
 
 class Questionnaire(BaseModel):
-    questionnaires: List[QuestionnaireBase]
+    questionnaires: List[QuestionnaireBase] = Field(..., description="10 Questionnaires")
     category: Category = Field(..., description="Category of the questionnaires")
 
 

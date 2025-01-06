@@ -24,6 +24,8 @@ export function useHookState() {
     const [answerSelected, setAnswerSelected] = useState<number>(-1);
     const [answerCorrect, setAnswerCorrect] = useState<number>(-1);
     const [isMuted, setIsMuted] = useState(false);
+    const [awaitingGeneration, setAwaitingGeneration] = useState(false);
+    const [translations, setTranslations] = useState<Map<string, string>>(new Map());
 
     // Components
     const [isDialogPlayGame, setIsDialogPlayGame] = useState(false);
@@ -51,6 +53,8 @@ export function useHookState() {
         timerClock,
         isDialogPlayGame,
         isDialogRanking,
+        awaitingGeneration,
+        translations,
         // setters
         setPlayers,
         setProfile,
@@ -72,5 +76,7 @@ export function useHookState() {
         setIsMuted,
         setIsDialogPlayGame,
         setIsDialogRanking,
+        setAwaitingGeneration,
+        setTranslations,
     };
 }

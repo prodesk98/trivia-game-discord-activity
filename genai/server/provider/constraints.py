@@ -4,15 +4,15 @@ COLLECTION_NAME = "Questionnaires"
 
 
 class Category(Enum):
+    GENERAL_KNOWLEDGE = "general_knowledge"
+    PROGRAMMING = "programming"
     GEOGRAPHY = "geography"
     HISTORY = "history"
     SCIENCE = "science"
     TECHNOLOGY = "technology"
-    PROGRAMMING = "programming"
     ART_AND_LITERATURE = "art_and_literature"
     ENTERTAINMENT = "entertainment"
     SPORTS = "sports"
-    GENERAL_KNOWLEDGE = "general_knowledge"
     MATHEMATICS = "mathematics"
     HEALTH = "health"
     NATURE = "nature"

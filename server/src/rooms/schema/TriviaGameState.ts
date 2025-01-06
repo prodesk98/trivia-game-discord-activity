@@ -13,6 +13,7 @@ export class TriviaGameState extends Schema {
   @type("number") timerClock = 0;
   @type("number") currentAnswer: number = -1;
   @type("string") theme: string = null;
+  @type("boolean") awaitingGeneration = false;
   @type(["string"]) categories: string[] = [];
   @type(QuestionOptions) currentQuestionOptions: QuestionOptions;
   // translations

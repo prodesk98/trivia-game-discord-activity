@@ -2,7 +2,7 @@ import {IOptionsGameProps} from "../interfaces/IOptions.ts";
 import React from "react";
 
 
-export const OptionsGame: React.FC<IOptionsGameProps> = ({ options, answerCorrect, answerSelected, handleAnswer }) => {
+export const OptionsGame: React.FC<IOptionsGameProps> = ({ options, answerCorrect, answerSelected, handleAnswer, translate }) => {
     return (
         <>
             <div className="options">
@@ -24,7 +24,7 @@ export const OptionsGame: React.FC<IOptionsGameProps> = ({ options, answerCorrec
                                 onClick={(e) => handleAnswer(e, index)}
                                 disabled={answerSelected > -1} // Desativa os botões após a escolha
                             >
-                                {option}
+                                {translate(option)}
                             </button>
                         )
                     ) : ""

@@ -707,3 +707,34 @@ button i {
     font-weight: bold;
     color: #ffffff;
 }
+
+.language-select-container {
+    position: relative;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.language-select {
+    padding: 15px 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #2e2e2e;
+    color: #ffffff;
+    font-size: 14px;
+    cursor: pointer;
+    appearance: none; /* Remove o estilo padrão do select */
+}
+
+.language-select:hover {
+    background-color: #444;
+}
+
+.language-select option {
+    padding: 5px;
+}
+
+/* Adiciona um espaçamento para as bandeiras */
+.language-select option::before {
+    content: "";
+    margin-right: 8px;
+}

@@ -67,6 +67,9 @@ export default function GameRoom(){
         isDialogPlayGame,
         isDialogRanking,
         answerSelected,
+        awaitingGeneration,
+        translations,
+        categories,
         // setters
         setPlayers,
         setProfile,
@@ -88,6 +91,8 @@ export default function GameRoom(){
         setIsMuted,
         setIsDialogPlayGame,
         setIsDialogRanking,
+        setAwaitingGeneration,
+        setTranslations,
     } = useHookState();
 
     const changeLanguage = async (lng: string) => {
@@ -204,8 +209,13 @@ export default function GameRoom(){
             handleNotifyError("Please enter a prompt!");
             return;
         }
+        const category = document.getElementById('category');
+        if (category === null) {
+            handleNotifyError("Please select a category!");
+            return;
+        }
         // @ts-ignore
-        handleSendMessage("startGame", {prompt: prompt?.value, language: language});
+        handleSendMessage("startGame", {prompt: prompt?.value, category: category?.value, language: language});
         setIsDialogPlayGame(false);
     }
 
@@ -296,6 +306,12 @@ export default function GameRoom(){
 
             // listen categories
             state.listen("categories", (currentValue: string[]) => setCategories(currentValue));
+
+            // listen awaitingGeneration
+            state.listen("awaitingGeneration", (currentValue: boolean) => setAwaitingGeneration(currentValue));
+
+            // listen translations
+            state.listen("translations", (currentValue: Map<string, string>) => setTranslations(currentValue));
 
             // listen setOwner
             state.listen("owner", (currentValue: string) => {
@@ -389,6 +405,19 @@ export default function GameRoom(){
         // set paused
         setGamePaused(true);
         setTimeLeft(30);
+    }
+
+    const translate = (key: string | undefined) => {
+        if (!key) return "";
+        if (language === "en") return key;
+        return translations.get(key) ?? key;
+    }
+
+    const handleLanguageChange = (e: any) => {
+        const lng = e.target.value;
+        setLanguage(lng);
+        changeLanguage(lng).then();
+        setLocalStorage("language", lng);
     }
 
     return (
@@ -492,7 +521,7 @@ export default function GameRoom(){
                                                 }
                                         </div>
                                     </div>
-                                    {theme === null && typeof room !== 'undefined' ?
+                                    {theme === null && typeof room !== 'undefined' && !awaitingGeneration ?
                                         (
                                             <div style={{padding: '15px'}}>
                                                 {
@@ -501,9 +530,11 @@ export default function GameRoom(){
                                                         <OrbitProgress variant="split-disc" color="#FFF" size="small" text=""
                                                                        textColor=""/>
                                                     ) : (
+                                                       timerClock > 0 ? (
                                                         <button className="btn-play-game-lobby button-pulse" onClick={() => setIsDialogPlayGame(true)}>
                                                             {i18n.t('Choose Theme')}
                                                         </button>
+                                                        ): ""
                                                     )
                                                 }
                                             </div>
@@ -522,11 +553,13 @@ export default function GameRoom(){
                         gameStarted ? (
                             <div>
                                 <div className="question">
-                                    {currentQuestionOptions?.question}
+                                    {translate(currentQuestionOptions?.question)}
                                 </div>
                                 <OptionsGame options={currentQuestionOptions?.options || []}
                                              answerCorrect={answerCorrect}
-                                             answerSelected={answerSelected} handleAnswer={handleAnswer}/>
+                                             answerSelected={answerSelected}
+                                             handleAnswer={handleAnswer}
+                                             translate={translate}/>
                             </div>
                         ) : ""
                     )
@@ -539,11 +572,22 @@ export default function GameRoom(){
                         <button className={'btn-ranking'} onClick={() => setIsDialogRanking(!isDialogRanking)}>
                             <LeaderboardIcon/>
                         </button>
-                    ): ""
+                    ) : ""
                 }
                 <button className="btn-mute" onClick={() => handleToggleSound()}>
                     {isMuted ? <VolumeOff/> : <VolumeUp/>}
                 </button>
+
+                <div className="language-select-container">
+                    <select
+                        className="language-select"
+                        value={language}
+                        onChange={handleLanguageChange}
+                    >
+                        <option value="en">🇺🇸 English</option>
+                        <option value="pt">🇧🇷 Português</option>
+                    </select>
+                </div>
             </div>
 
             {isDialogRanking ? (
@@ -584,14 +628,14 @@ export default function GameRoom(){
                             </div>
                             <div style={{textAlign: 'center', paddingBottom: '5px'}}>
                                 <p style={{margin: '10px 0', fontSize: '14px', color: '#666'}}>- {i18n.t('Or')} -</p>
-                                {/*<label htmlFor="category">{i18n.t('Category')}</label>*/}
-                                {/*<select id={"category"} className={'dialog-select'}>*/}
-                                {/*    {*/}
-                                {/*        categories.map((category, index) => (*/}
-                                {/*            <option key={index} value={category}>{i18n.t(category)}</option>*/}
-                                {/*        ))*/}
-                                {/*    }*/}
-                                {/*</select>*/}
+                                <label htmlFor="category">{i18n.t('Category')}</label>
+                                <select id={"category"} className={'dialog-select'}>
+                                    {
+                                        categories.map((category, index) => (
+                                            <option key={index} value={category}>{i18n.t(category)}</option>
+                                        ))
+                                    }
+                                </select>
                                 <button
                                     onClick={() => handlePlayGameRandom()}
                                     style={{
