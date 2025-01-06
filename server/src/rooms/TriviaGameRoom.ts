@@ -178,7 +178,9 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
             }
         )
         const data: any = await response.json();
-        this.questionOptions = data.questionnaires.map((q: any) => {
+
+        // options
+        this.questionOptions = data.en.questionnaires.map((q: any) => {
             return new QuestionOptions({
                 id: q.id,
                 question: q.question,
@@ -187,6 +189,17 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
             });
         });
 
+        // english questionnaires
+        data.en.questionnaires.map((q: any) => {
+            this.state.translations.set(q.question, data.pt.questionnaires.find((pt: any) => pt.id === q.id).question);
+            for (let i = 0; i < q.options.length; i++) {
+                this.state.translations.set(q.options[i], data.pt.questionnaires.find((pt: any) => pt.id === q.id).options[i]);
+            }
+        });
+
+        console.log(this.state.translations);
+
+        // set the answer options
         this.answerOptions = this.questionOptions.map(q => q.correct);
 
         this.nextTurn();

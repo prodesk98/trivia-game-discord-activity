@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 from pydantic import BaseModel, Field
 
@@ -22,8 +22,9 @@ class QuestionnaireData(BaseModel):
 
 
 class QuestionnaireResponse(BaseModel):
-    pt: QuestionnaireData
     en: QuestionnaireData
+    pt: QuestionnaireData
+    translations: Dict[str, str | dict]
 
 
 class Enrichment(BaseModel):

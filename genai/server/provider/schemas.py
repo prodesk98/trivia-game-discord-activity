@@ -7,12 +7,17 @@ from pydantic import BaseModel, Field
 
 
 class QuestionBase(BaseModel):
+    id: UUID = Field(default_factory=lambda: uuid4())
     question: str = Field(..., max_length=126)
     options: List[str] = Field(..., min_length=4, max_length=4)
     answer: int = Field(..., ge=0, le=3)
     category: Category = Field(Category.GENERAL_KNOWLEDGE)
     difficulty: Difficulty = Field(Difficulty.EASY)
     language: str = Field(Language.ENGLISH)
+
+
+class QuestionnaireIndex(QuestionBase):
+    index: int = Field(..., ge=0)
 
 
 class QuestionnaireBase(BaseModel):

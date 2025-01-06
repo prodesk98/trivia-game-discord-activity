@@ -6,7 +6,6 @@ from fastapi.responses import ORJSONResponse
 
 from config import env
 from server.core.lifespan import lifespan
-from .core.schemas import QuestionnaireResponse
 
 from .provider import aquery_question, acreate_question
 from .provider.constraints import Category
@@ -84,7 +83,12 @@ async def generative(
         raise HTTPException(status_code=500, detail="Error generating questionnaire")
     await aupsert_questionnaires(response.en)
     await aupsert_questionnaires(response.pt)
-    return ORJSONResponse(response.model_dump(mode="json"))
+    return ORJSONResponse(
+        dict(
+            questionnaires=response.en.model_dump(mode="json")["questionnaires"],
+            translations=response.translations
+        )
+    )
 
 
 @app.post("/random", tags=["random"], response_class=ORJSONResponse)
@@ -96,7 +100,12 @@ async def generative_random():
         raise HTTPException(status_code=500, detail="Error generating questionnaire")
     await aupsert_questionnaires(response.en)
     await aupsert_questionnaires(response.pt)
-    return ORJSONResponse(response.model_dump(mode="json"))
+    return ORJSONResponse(
+        dict(
+            questionnaires=response.en.model_dump(mode="json")["questionnaires"],
+            translations=response.translations
+        )
+    )
 
 
 @app.get("/categories", tags=["categories"])
