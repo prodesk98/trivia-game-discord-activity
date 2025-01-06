@@ -24,5 +24,5 @@ npm start
 ## GenAI
 ```bash
 cd genai
-fastapi dev server/main.py
+fastapi dev server/main.py --port 8000 --reload
 ```
