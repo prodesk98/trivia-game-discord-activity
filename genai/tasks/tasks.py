@@ -4,7 +4,7 @@ from ._client import app
 from server.provider.vecdb import create_questionaries
 from server.provider.constraints import COLLECTION_NAME
 from server.provider.schemas import QuestionSchema
-from server.core.schemas import Questionnaire
+from server.core.schemas import QuestionnaireData
 from loguru import logger
 
 
@@ -12,7 +12,7 @@ from loguru import logger
 def upsert_questionnaires(self, data: Dict) -> None:
     from ._vectordb import vecdbClient
     try:
-        questionnaire = Questionnaire(**data)
+        questionnaire = QuestionnaireData(**data)
         create_questionaries(
             data=[
                 QuestionSchema(
