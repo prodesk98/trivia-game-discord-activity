@@ -8,6 +8,8 @@ services:
       MONGO_INITDB_DATABASE: trivia
     volumes:
       - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
     restart: on-failure:0
 
   weaviate:
