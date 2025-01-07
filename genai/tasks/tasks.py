@@ -17,7 +17,6 @@ def upsert_questionnaires(self, data: Dict) -> None:
             data=[
                 QuestionSchema(
                     **q.model_dump(),
-                    category=questionnaire.category,
                 )
                 for q in questionnaire.questionnaires
             ],
