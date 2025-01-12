@@ -203,7 +203,6 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
              */
             for (const [language, translations] of Object.entries(translated)) {
                 for (const [key, value] of Object.entries(translations)) {
-                    console.log(`||${language}||:${key}`, value);
                     if (typeof value === "string") {
                         mapSchema.set(`||${language}||:${key}`, value);
                     }
@@ -270,6 +269,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
       this.state.gameStarted = false;
       this.state.gameEnded = true;
       this.state.awaitingGeneration = false;
+      this.state.translations = new MapSchema<string>();
 
       // clear players
       this.resetPlayers().then();
