@@ -9,7 +9,7 @@ export const Leaderboard: React.FC<ILeaderboard> = ({ players, t }) => {
     return (
         <>
             <div className="leaderboard-container">
-                <h2>Result</h2>
+                <h2>{t('Result')}</h2>
                 <div className="leaderboard">
                     {players.map((player: Player, index: number) => (
                         <div

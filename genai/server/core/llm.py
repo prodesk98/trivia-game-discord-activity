@@ -1,6 +1,7 @@
 import random
 from typing import Optional, List
 
+from langchain.chains.moderation import OpenAIModerationChain
 from langchain_core.messages import HumanMessage
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import PromptTemplate, SystemMessagePromptTemplate, ChatPromptTemplate
@@ -30,14 +31,19 @@ class LLM:
         self._quantities = quantities
         self.llm = ChatOpenAI(
             model_name=env.STRUCTURED_MODEL,
-            base_url=env.OPENAI_API_ENDPOINT, # noqa
-            openai_api_key=env.OPENAI_API_KEY,
+            base_url=env.DEEPSEEK_API_ENDPOINT, # noqa
+            openai_api_key=env.DEEPSEEK_API_KEY,
             streaming=False,
             temperature=.0,
             top_p=random.uniform(0.0, 1.0),
         )
+        self.llm_moderation = ChatOpenAI(
+            model_name=env.MODERATION_MODEL,
+            openai_api_key=env.OPENAI_API_KEY,
+        )
         self.translations: dict[str, str | dict] = {
             "pt": {},
+            "es": {},
         }
 
     @staticmethod
@@ -75,6 +81,12 @@ class LLM:
             )
         random.shuffle(_questionnaires)
         return _questionnaires
+
+    async def moderation(self, content: str) -> Optional[QuestionnaireResponse]:
+        moderate = OpenAIModerationChain()
+        prompt = ChatPromptTemplate.from_messages([("system", content)])
+        chain = prompt | self.llm_moderation
+        moderated_chain = chain | moderate
 
     async def enrich(self, theme: str) -> Enrichment:
         parser = JsonOutputParser(pydantic_object=Enrichment)
@@ -133,6 +145,10 @@ class LLM:
             self.translations['pt'][q.q] = output.t.pt[i].q
             for n, o in enumerate(q.o):
                 self.translations['pt'][o] = output.t.pt[i].o[n]
+            # Spanish
+            self.translations['es'][q.q] = output.t.es[i].q
+            for n, o in enumerate(q.o):
+                self.translations['es'][o] = output.t.es[i].o[n]
 
         # response
         return QuestionnaireResponse(

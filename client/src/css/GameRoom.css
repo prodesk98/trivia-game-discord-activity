@@ -711,11 +711,11 @@ button i {
 .language-select-container {
     position: relative;
     display: inline-block;
-    margin-left: 10px;
+    z-index: 9999;
 }
 
 .language-select {
-    padding: 15px 10px;
+    padding: 5px 10px;
     border-radius: 5px;
     border: 1px solid #ccc;
     background-color: #2e2e2e;
@@ -737,4 +737,44 @@ button i {
 .language-select option::before {
     content: "";
     margin-right: 8px;
+}
+
+.selected-option {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+}
+
+.flag {
+    width: 20px;
+    height: 15px;
+    margin-right: 10px;
+}
+
+.dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: white;
+    z-index: 1000;
+}
+
+.language-select:hover .dropdown {
+    display: block;
+}
+
+.dropdown-option {
+    color: black;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.dropdown-option:hover {
+    background-color: #f0f0f0;
 }

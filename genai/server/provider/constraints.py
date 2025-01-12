@@ -5,6 +5,7 @@ COLLECTION_NAME = "Questionnaires"
 
 class Category(Enum):
     GENERAL_KNOWLEDGE = "general_knowledge"
+    ANIME = "anime"
     PROGRAMMING = "programming"
     GEOGRAPHY = "geography"
     HISTORY = "history"

@@ -1,5 +1,6 @@
+from typing import List
 
-THEMES = """Order, Blacksmith, Animal
+THEMES: List[str] = """Order, Blacksmith, Animal
 Wine, Happiness, Youth
 Stripes, Youth, Sacred
 Stars, Restrained, Venus

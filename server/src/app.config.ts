@@ -102,10 +102,12 @@ export default config({
                     },
                 })).json();
 
-                for (const guild of guilds) {
-                    const guildExists = await existsGuild(guild.id, userIdString);
-                    if (!guildExists) await createGuild(guild.id, userIdString, guild.name, guild.icon)
+                async function _createGuild(id: string, userId: string, name: string, icon: string) {
+                    if(await existsGuild(id, userId)) await createGuild(id, userId, name, icon);
                 }
+
+                const tasks = guilds.map((guild: any) => _createGuild(guild.id, userIdString, guild.name, guild.icon));
+                await Promise.all(tasks);
 
                 // get current guildId using referrer
                 const guildId = req.headers.referer?.split("&").find((x: string) => x.includes("guild_id"))?.split("=")[1];

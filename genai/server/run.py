@@ -96,7 +96,7 @@ async def generative_random(
     payload: CreateGenerateRandomQuestionSchema
 ):
     controller = QuestionnaireController()
-    prompt = "%s\nCategory: %s" % (random.choice(env.THEMES), payload.category.value)
+    prompt = ("\n-".join(random.choices(env.SUBTOPICS[payload.category.value], k=3))).lstrip("\n")
     response = await controller.random(prompt=prompt)
     if response is None:
         raise HTTPException(status_code=500, detail="Error generating questionnaire")

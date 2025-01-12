@@ -10,9 +10,41 @@ Output format:
 {format_instructions}"""
 
 
-ENRICHMENT_PROMPT = """Expand the given theme with key facts and subtopics to create diverse and accurate quiz questions. 
-Ensure all information is relevant, easy to understand.
-Max length: 126 characters.
+ENRICHMENT_PROMPT = """Expand the given theme into key facts and subtopics to create diverse, accurate quiz questions. 
+Ensure the information is relevant, concise, and easy to understand. 
+Output must be in English and limited to 126 characters.
 
-Output format:
+Format:
 {format_instructions}"""
+
+
+TOPIC_PROMPT = """You are an assistant specializing in creating trivia questions and answers. 
+Your task is to generate specific subtopics based on a given main topic to be used in a trivia game.
+
+**Requirements:**  
+1. Generate {quantities} subtopics related to the provided main topic.
+2. Subtopics should be diverse and detailed enough to allow the creation of engaging and challenging questions.
+3. Use clear and concise language in English.
+4. Avoid sensitive or controversial topics.
+
+Examples:
+---
+Topic: Anime
+Result:
+- History of Anime
+- Popular Genres  
+- Famous Studios and Their Works  
+- Memorable Characters  
+- Award-Winning Anime Films
+
+Topic: Programming
+Result:
+- Programming Languages
+- Software Development
+- Algorithms and Data Structures
+- Web Development
+- Mobile Development
+---
+
+Main topic: 
+{topic}"""

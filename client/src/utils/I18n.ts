@@ -18,7 +18,9 @@ const resources = {
             "Leaderboard": "Leaderboard",
             "Connecting...": "Connecting...",
             "Waiting for {{username}} to choose the theme...": "Waiting for {{username}} to choose the theme...",
+            "has chosen the theme": "has chosen the theme",
             "Category": "Category",
+            "Result": "Result",
             "You": "You",
             "geography": "Geography",
             "history": "History",
@@ -45,7 +47,8 @@ const resources = {
             "space": "Space",
             "humor": "Humor",
             "architecture": "Architecture",
-            "fashion_and_style": "Fashion and Style"
+            "fashion_and_style": "Fashion and Style",
+            "anime": "Anime",
         }
     },
     pt: {
@@ -62,7 +65,9 @@ const resources = {
             "Leaderboard": "Classificação",
             "Connecting...": "Conectando...",
             "Waiting for {{username}} to choose the theme...": "Aguardando {{username}} escolher o tema...",
+            "has chosen the theme": "escolheu o tema",
             "Category": "Categoria",
+            "Result": "Resultado",
             "You": "Você",
             "geography": "Geografia",
             "history": "História",
@@ -89,7 +94,8 @@ const resources = {
             "space": "Espaço",
             "humor": "Humor",
             "architecture": "Arquitetura",
-            "fashion_and_style": "Moda e Estilo"
+            "fashion_and_style": "Moda e Estilo",
+            "anime": "Anime",
         }
     },
     es: {
@@ -106,7 +112,9 @@ const resources = {
             "Leaderboard": "Tabla de Clasificación",
             "Connecting...": "Conectando...",
             "Waiting for {{username}} to choose the theme...": "Esperando a que {{username}} elija el tema...",
+            "has chosen the theme": "ha elegido el tema",
             "Category": "Categoría",
+            "Result": "Resultado",
             "You": "Tú",
             "geography": "Geografía",
             "history": "Historia",
@@ -133,7 +141,8 @@ const resources = {
             "space": "Espacio",
             "humor": "Humor",
             "architecture": "Arquitectura",
-            "fashion_and_style": "Moda y Estilo"
+            "fashion_and_style": "Moda y Estilo",
+            "anime": "Anime",
         }
     }
 };

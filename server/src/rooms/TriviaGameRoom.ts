@@ -161,7 +161,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
 
   async startGame(prompt: string, category?: string) {
     this.totalTurns = 0;
-    this.state.theme = prompt;
+    this.state.theme = prompt !== "random" ? prompt : category;
     this.stopChoose();
     this.state.awaitingGeneration = true;
 
@@ -192,18 +192,29 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
             });
         });
 
-        const parse = (obj: Record<string, string>): MapSchema<string> => {
+        const translations = (translated: Record<string, any>): MapSchema<string> => {
             const mapSchema = new MapSchema<string>();
 
-            for (const [key, value] of Object.entries(obj)) {
-                mapSchema.set(key, value);
+            /*
+            {
+                "pt": {}
+                "es": {}
+            }
+             */
+            for (const [language, translations] of Object.entries(translated)) {
+                for (const [key, value] of Object.entries(translations)) {
+                    console.log(`||${language}||:${key}`, value);
+                    if (typeof value === "string") {
+                        mapSchema.set(`||${language}||:${key}`, value);
+                    }
+                }
             }
 
             return mapSchema;
         };
 
         // translations
-        this.state.translations = parse(data.translations.pt);
+        this.state.translations = translations(data.translations);
 
         // set the answer options
         this.answerOptions = this.questionOptions.map(q => q.correct);

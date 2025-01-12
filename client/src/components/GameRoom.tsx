@@ -40,6 +40,7 @@ import {handleConfetti} from "../core/Effect.ts";
 import {RankingDialog} from "./fragments/RankingDialog.tsx";
 
 import i18n from "../utils/I18n.ts";
+import LanguageSelect from "./fragments/LanguageSelect.tsx";
 
 
 export default function GameRoom(){
@@ -183,7 +184,19 @@ export default function GameRoom(){
             setIsDialogPlayGame(false);
             return;
         }
-        handleSendMessage("startGame", {prompt: 'random', language: language});
+        const category = document.getElementById('category') as HTMLInputElement;
+        if (category === null) {
+            handleNotifyError("Please select a category!");
+            setIsDialogPlayGame(false);
+            return;
+        }
+        let value = category?.value;
+        if (value === "") {
+            handleNotifyError("Please select a category!");
+            setIsDialogPlayGame(false);
+            return
+        }
+        handleSendMessage("startGame", {prompt: 'random', category: value, language: language});
         setIsDialogPlayGame(false);
     }
 
@@ -209,13 +222,8 @@ export default function GameRoom(){
             handleNotifyError("Please enter a prompt!");
             return;
         }
-        const category = document.getElementById('category');
-        if (category === null) {
-            handleNotifyError("Please select a category!");
-            return;
-        }
         // @ts-ignore
-        handleSendMessage("startGame", {prompt: prompt?.value, category: category?.value, language: language});
+        handleSendMessage("startGame", {prompt: prompt?.value, category: null, language: language});
         setIsDialogPlayGame(false);
     }
 
@@ -408,16 +416,19 @@ export default function GameRoom(){
     }
 
     const translate = (key: string | undefined) => {
+        const prefix = `||${language}||:`;
+        function removePrefix(value: string): string {
+            return value.replace(`${prefix}`, "");
+        }
         if (!key) return "";
-        if (language === "en") return key;
-        return translations.get(key) ?? key;
+        if (language === "en") return removePrefix(key);
+        return removePrefix(translations.get(`${prefix}${key}`) ?? key);
     }
 
-    const handleLanguageChange = (e: any) => {
-        const lng = e.target.value;
-        setLanguage(lng);
-        changeLanguage(lng).then();
-        setLocalStorage("language", lng);
+    const handleLanguageChange = (l: any) => {
+        setLanguage(l);
+        changeLanguage(l).then();
+        setLocalStorage("language", l);
     }
 
     return (
@@ -477,16 +488,16 @@ export default function GameRoom(){
                                                             (
                                                                 <span>{i18n.t('Choose a theme to start the game!')}</span>
                                                             ) : (
-                                                                <span>{i18n.t('Waiting for {{username}} to choose the theme...": "Waiting for {{username}} to choose the theme...', {username: ownerProfile?.username})}</span>
+                                                                <span>{i18n.t('Waiting for {{username}} to choose the theme...', {username: ownerProfile?.username})}</span>
                                                             )
-                                                    ) :
+                                                        ) :
                                                     (
                                                         <>
                                                             <div>
-                                                                <b>{ownerProfile?.username}</b> has chosen the theme:
+                                                                <b>{ownerProfile?.username}</b> {i18n.t('has chosen the theme')}:
                                                             </div>
                                                             <div>
-                                                                <b>{theme}</b>
+                                                                <b>{i18n.t(theme)}</b>
                                                             </div>
                                                         </>
                                                     )
@@ -578,16 +589,7 @@ export default function GameRoom(){
                     {isMuted ? <VolumeOff/> : <VolumeUp/>}
                 </button>
 
-                <div className="language-select-container">
-                    <select
-                        className="language-select"
-                        value={language}
-                        onChange={handleLanguageChange}
-                    >
-                        <option value="en">🇺🇸 English</option>
-                        <option value="pt">🇧🇷 Portuguese</option>
-                    </select>
-                </div>
+                <LanguageSelect selectedLanguage={language} handleLanguageChange={handleLanguageChange}/>
             </div>
 
             {isDialogRanking ? (

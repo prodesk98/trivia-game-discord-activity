@@ -10,18 +10,19 @@ class Questionnaire(BaseModel):
     category: Category = Field(..., description="Category of the questionnaires")
 
 
-class PT(BaseModel):
+class TranslationData(BaseModel):
     q: str = Field(description="Question translated")
     o: List[str] = Field(description="4 options for the question translated")
 
 
 class TranslationQuestionnaire(BaseModel):
-    pt: List[PT] = Field(..., description="Portuguese translations")
+    pt: List[TranslationData] = Field(..., description="Portuguese translations")
+    es: List[TranslationData] = Field(..., description="Spanish translations")
 
 
 class Translations(BaseModel):
     en: Questionnaire = Field(..., description="English translations")
-    t: TranslationQuestionnaire = Field(..., description="Portuguese translations")
+    t: TranslationQuestionnaire = Field(..., description="Portuguese translations and Spanish translations")
     category: Category = Field(..., description="Category of the questionnaires")
 
 
@@ -36,5 +37,5 @@ class QuestionnaireResponse(BaseModel):
 
 
 class Enrichment(BaseModel):
-    theme: str
-    enriched_theme: str
+    theme: str = Field(..., description="Theme to be enriched")
+    enriched_theme: str = Field(..., description="Enriched theme enriched with key facts and subtopics")
