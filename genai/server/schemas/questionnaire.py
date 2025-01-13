@@ -15,12 +15,12 @@ class CreateQuestionSchema(QuestionSchema):
 
 class CreateGenerateQuestionSchema(GenerateQuestionSchema):
     prompt: str = Field(..., max_length=256)
-    languages: List[Literal["pt", "es", "fr"]] = Field(default_factory=list) # noqa
+    languages: List[Literal["pt", "es", "fr", "de"]] = Field(default_factory=list, max_length=2) # noqa
 
 
 class CreateGenerateRandomQuestionSchema(BaseModel):
     category: Optional[Category] = Field(Category.GENERAL_KNOWLEDGE)
-    languages: List[Literal["pt", "es", "fr"]] = Field(default_factory=list)  # noqa
+    languages: List[Literal["pt", "es", "fr", "de"]] = Field(default_factory=list, max_length=2)  # noqa
 
 
 class QueryQuestionSchema(BaseModel):

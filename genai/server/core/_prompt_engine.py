@@ -2,8 +2,9 @@ QUESTIONNAIRE_PROMPT = """Generate a quiz with {quantities} multiple-choice ques
 
 1. Questions should start easy and progressively become more challenging.
 2. The quiz must strictly adhere to the chosen theme, ensuring questions are relevant and accurate without deviating from the topic.
-3. Answer options must be short, clear, and concise, limited to a maximum of 5 words each.
-4. Each question must have only one correct answer. Options like "all of the above" or "none of the above" are not allowed.
+3. Translations for questions and options are required in the following languages: {languages}.
+4. Answer options must be short, clear, and concise, limited to a maximum of 5 words each.
+5. Each question must have only one correct answer. Options like "all of the above" or "none of the above" are not allowed.
 
 Output format:
 {format_instructions}"""

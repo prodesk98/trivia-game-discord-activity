@@ -14,7 +14,6 @@ from config import env
 from .schemas import (
     QuestionnaireBase,
     Enrichment,
-    Translations,
     QuestionnaireResponse,
     QuestionnaireData,
     Questionnaire,
@@ -50,6 +49,7 @@ class LLM:
             "pt": {},
             "es": {},
             "fr": {},
+            "de": {},
         }
 
     @staticmethod
@@ -89,23 +89,26 @@ class LLM:
         return _questionnaires
 
     @staticmethod
+    def title_from_language(language: str) -> str:
+        return {
+            "pt": "Portuguese",
+            "es": "Spanish",
+            "fr": "French",
+            "de": "German",
+        }.get(language, "")
+
+    @staticmethod
     async def moderation(content: str) -> str:
         moderate = OpenAIModerationChain()
         output = (await moderate.ainvoke({"input": content}))['output']
         return output
 
-    @staticmethod
-    def _create_dynamic_translation_model(languages: List[str]) ->  dict[str, tuple[Type[list[TranslationData]], Any]]:
+    def _create_dynamic_translation_model(self, languages: List[str]) ->  dict[str, tuple[Type[list[TranslationData]], Any]]:
         _fields = {}
-        _languages_title = {
-            "pt": "Portuguese",
-            "es": "Spanish",
-            "fr": "French",
-        }
         for l in languages:
             _fields[l] = (
                 List[TranslationData],
-                Field(..., description=f"{_languages_title[l]} translations", title=_languages_title[l]))
+                Field(..., description=f"{self.title_from_language(l)} translations", title=self.title_from_language(l)))
         return _fields
 
     async def enrich(self, theme: str) -> Enrichment:
@@ -134,7 +137,7 @@ class LLM:
         output = await chain.ainvoke({})
         return output
 
-    async def generate(self, prompt: str, languages: List[Literal["pt", "es", "fr"]]) -> Optional[QuestionnaireResponse]:
+    async def generate(self, prompt: str, languages: List[Literal["pt", "es", "fr", "de"]]) -> Optional[QuestionnaireResponse]:
         if "violates" in (await self.moderation(prompt)):
             logger.error("Prompt violates moderation policy")
             return
@@ -158,7 +161,7 @@ class LLM:
         _system = SystemMessagePromptTemplate(
             prompt=PromptTemplate(
                 template=QUESTIONNAIRE_PROMPT,
-                input_variables=["quantities"],
+                input_variables=["quantities", "languages"],
                 partial_variables={"format_instructions": parser.get_format_instructions()},
             )
         )
@@ -175,7 +178,10 @@ class LLM:
         chain = (_prompt | structured)
 
         # result
-        output: QuestionnaireModel = await chain.ainvoke({"quantities": self._quantities})
+        output: QuestionnaireModel = await chain.ainvoke({
+            "quantities": self._quantities,
+            "languages": ", ".join([self.title_from_language(l) for l in languages]) if len(languages) > 1 else "English Only.",
+        })
 
         # set translations
         for i, q in enumerate(output.questionnaire.questionnaires):
@@ -206,6 +212,15 @@ class LLM:
                 except (IndexError, KeyError, AttributeError):
                     logger.error(f"IndexError in translations for French {q.q}")
                     pass
+            if "de" in languages:
+                try:
+                    # German
+                    self.translations['de'][q.q] = output.translations.de[i].q
+                    for n, o in enumerate(q.o):
+                        self.translations['de'][o] = output.translations.de[i].o[n]
+                except (IndexError, KeyError, AttributeError):
+                    logger.error(f"IndexError in translations for German {q.q}")
+                    pass
 
         # response
         return QuestionnaireResponse(
@@ -217,5 +232,5 @@ class LLM:
         )
 
 
-    async def random(self, prompt: str, languages: List[Literal["pt", "es", "fr"]]) -> Optional[QuestionnaireResponse]:
+    async def random(self, prompt: str, languages: List[Literal["pt", "es", "fr", "de"]]) -> Optional[QuestionnaireResponse]:
         return await self.generate(prompt, languages)

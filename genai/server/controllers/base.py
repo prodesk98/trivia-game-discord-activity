@@ -8,8 +8,8 @@ class Controller(ABC):
     def __init__(self):
         self.llm = LLM()
 
-    async def generate(self, prompt: str, languages: List[Literal["pt", "es", "fr"]]):
+    async def generate(self, prompt: str, languages: List[Literal["pt", "es", "fr", "de"]]):
         return await self.llm.generate(prompt, languages)
 
-    async def random(self, prompt: str, languages: List[Literal["pt", "es", "fr"]]):
+    async def random(self, prompt: str, languages: List[Literal["pt", "es", "fr", "de"]]):
         return await self.llm.random(prompt, languages)

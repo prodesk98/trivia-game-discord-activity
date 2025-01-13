@@ -15,17 +15,6 @@ class TranslationData(BaseModel):
     o: List[str] = Field(description="4 options for the question translated")
 
 
-class TranslationQuestionnaire(BaseModel):
-    pt: List[TranslationData] = Field(..., description="Portuguese translations")
-    es: List[TranslationData] = Field(..., description="Spanish translations")
-    fr: List[TranslationData] = Field(..., description="French translations")
-
-
-class Translations(BaseModel):
-    data: Questionnaire = Field(..., description="English questionnaires")
-    translations: TranslationQuestionnaire = Field(..., description="Portuguese translations, Spanish translations and French translations")
-
-
 class QuestionnaireData(BaseModel):
     questionnaires: List[QuestionBase]
     category: Category
