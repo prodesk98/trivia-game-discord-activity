@@ -56,7 +56,7 @@ export default config({
                     return res.status(400).send({ error: "Invalid code" });
                 }
 
-                const profile: any = await (await fetch('https://discord.com/api/users/@me', {
+                const discordProfile: any = await (await fetch('https://discord.com/api/users/@me', {
                     method: "GET",
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -64,21 +64,23 @@ export default config({
                     },
                 })).json();
 
-                if (typeof profile.id === 'undefined') {
+                if (typeof discordProfile.id === 'undefined') {
                     return res.status(400).send({ error: "Invalid profile" });
                 }
 
                 // create user if not exists
-                const userExists = await existsUser(profile.id);
+                const userExists = await existsUser(discordProfile.id);
 
+                let language = discordProfile.locale;
+                if (language.includes("-")) language = language.split("-")[0];
                 if (!userExists) await createUser(
-                    profile.id,
-                    profile.username,
-                    profile.avatar,
-                    profile.locale,
+                    discordProfile.id,
+                    discordProfile.username,
+                    discordProfile.avatar,
+                    language,
                 );
 
-                const userStorage = await getUserByDiscordId(profile.id);
+                const userStorage = await getUserByDiscordId(discordProfile.id);
 
                 if (userStorage == null) {
                     return res.status(400).send({ error: "Invalid user" });
@@ -87,11 +89,8 @@ export default config({
                 // parse userId(uuid) to string
                 const userIdString: string = userStorage.id.toString();
 
-                await upsertTokens(
-                    userIdString,
-                    access_token,
-                    refresh_token,
-                );
+                // upsert tokens
+                upsertTokens(userIdString, access_token, refresh_token).then();
 
                 // get all guilds
                 const guilds: any = await (await fetch('https://discord.com/api/users/@me/guilds', {
@@ -112,16 +111,17 @@ export default config({
                 // get current guildId using referrer
                 const guildId = req.headers.referer?.split("&").find((x: string) => x.includes("guild_id"))?.split("=")[1];
 
-                const user = {
+                const payload = {
                     userId: userIdString,
                     guildId: guildId,
                     discordId: userStorage.discordId,
                     avatar: userStorage.avatar,
                     username: userStorage.username,
                     language: userStorage.language,
+                    isAnonymous: userStorage.isAnonymous,
                 }
 
-                res.send({ access_token, token: await JWT.sign(user), user });
+                res.send({ access_token, token: await JWT.sign(payload), payload });
             } catch (e: any) {
                 res.status(400).send({ error: e.message })
             }

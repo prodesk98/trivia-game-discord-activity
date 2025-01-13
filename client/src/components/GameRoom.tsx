@@ -26,7 +26,7 @@ import backgroundMusicGameTimer from "../assets/sounds/music-game-timer.ogg";
 import correctSound from "../assets/sounds/correct-answer.ogg";
 import incorrectSound from "../assets/sounds/incorrect-answer.ogg";
 
-import logo from "../assets/images/logo.png";
+import discordLogoWhite from "../assets/images/discord-mark-white.svg";
 
 import {useHookState} from "../core/HookState.ts";
 import {colyseusSDK} from "../utils/Colyseus.ts";
@@ -339,9 +339,7 @@ export default function GameRoom(){
         });
 
         // listener onError
-        room.onError((code: any, message: any) => {
-            handleNotifyError(`[${code}] Error Connection: ${message}`);
-        });
+        room.onError((code: any, message: any) => handleNotifyError(`[${code}] Error Connection: ${message}`));
 
         room.onMessage("gameOver", (message: any) => {
             console.log(`GameOver: ${message}`);
@@ -429,30 +427,21 @@ export default function GameRoom(){
         setLanguage(l);
         changeLanguage(l).then();
         setLocalStorage("language", l);
+
+        if (typeof room !== 'undefined' && room !== null) room.send("changeLanguage", {language: l});
     }
 
     return (
         <>
             <div className="quiz-wrapper">
                 <div className="quiz-container">
-                    {/* Logo */}
-                    {!gameStarted ? (
-                        <div className="quiz-header">
-                            <img src={logo} width={130} style={
-                                {
-                                    padding: "10px",
-                                }
-                            } alt={"logo"}/>
-                        </div>
-                        ): ""
-                    }
-
                     {/* Lista de jogadores no topo */}
                     {gameStarted || gameLobby ? (
-                            <div className="players-list">
-                                <PlayerList players={players} hasQuestions={currentQuestionOptions?.question != null} t={i18n.t} />
-                            </div>
-                        ): ""
+                        <div className="players-list">
+                            <PlayerList players={players} hasQuestions={currentQuestionOptions?.question != null}
+                                        t={i18n.t}/>
+                        </div>
+                    ) : ""
                     }
 
                     {/* Barra de progresso */}
@@ -477,89 +466,91 @@ export default function GameRoom(){
                     <>
                         {
                             !gameEnded && !gameStarted ?
-                            (
-                                <>
-                                    <div style={{marginTop: '5px'}}>
-                                        {
-                                            gameLobby ?
-                                                typeof room !== 'undefined' ?
-                                                    theme === null ? (
-                                                        profile && profile.sessionId == owner ?
-                                                            (
-                                                                <span>{i18n.t('Choose a theme to start the game!')}</span>
-                                                            ) : (
-                                                                <span>{i18n.t('Waiting for {{username}} to choose the theme...', {username: ownerProfile?.username})}</span>
-                                                            )
-                                                        ) :
-                                                    (
-                                                        <>
-                                                            <div>
-                                                                <b>{ownerProfile?.username}</b> {i18n.t('has chosen the theme')}:
-                                                            </div>
-                                                            <div>
-                                                                <b>{i18n.t(theme)}</b>
-                                                            </div>
-                                                        </>
-                                                    )
-                                                : (
-                                                        <div>
-                                                            <div>{i18n.t('Connecting...')}</div>
-                                                            <div style={{paddingBottom: '5px', paddingTop: '5px'}}>
-                                                                <Riple color="#FFF" size="small" text=""/>
-                                                            </div>
-                                                        </div>
-                                                    )
-                                                : ""
-                                        }
-                                        <div>
+                                (
+                                    <>
+                                        <div style={{marginTop: '5px'}}>
                                             {
-                                                theme === null && timerClock > 0 ?
-                                                (
-                                                    <span style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        color: '#FFF',
-                                                        fontSize: '14px',
-                                                        marginTop: '5px'
-                                                    }}>
-                                                        <ClockIcon style={{marginRight: '5px'}}/>
-                                                        {timerClock} {i18n.t('seconds')}
-                                                    </span>
-                                                ) : typeof room !== 'undefined' ? (
-                                                        <Riple color="#FFF" size="small" text="" textColor=""/>
-                                                    ): ""
-                                                }
-                                        </div>
-                                    </div>
-                                    {theme === null && typeof room !== 'undefined' && !awaitingGeneration ?
-                                        (
-                                            <div style={{padding: '15px'}}>
+                                                gameLobby ?
+                                                    typeof room !== 'undefined' ?
+                                                        theme === null ? (
+                                                                profile && profile.sessionId == owner ?
+                                                                    (
+                                                                        <span>{i18n.t('Choose a theme to start the game!')}</span>
+                                                                    ) : (
+                                                                        <span>{i18n.t('Waiting for {{username}} to choose the theme...', {username: ownerProfile?.username})}</span>
+                                                                    )
+                                                            ) :
+                                                            (
+                                                                <>
+                                                                    <div>
+                                                                        <b>{ownerProfile?.username}</b> {i18n.t('has chosen the theme')}:
+                                                                    </div>
+                                                                    <div>
+                                                                        <b>{i18n.t(theme)}</b>
+                                                                    </div>
+                                                                </>
+                                                            )
+                                                        : (
+                                                            <div>
+                                                                <div>{i18n.t('Connecting...')}</div>
+                                                                <div style={{paddingBottom: '5px', paddingTop: '5px'}}>
+                                                                    <Riple color="#FFF" size="small" text=""/>
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    : ""
+                                            }
+                                            <div>
                                                 {
-                                                    profile && profile.sessionId != owner ?
-                                                    (
-                                                        <OrbitProgress variant="split-disc" color="#FFF" size="small" text=""
-                                                                       textColor=""/>
-                                                    ) : (
-                                                       timerClock > 0 ? (
-                                                        <button className="btn-play-game-lobby button-pulse" onClick={() => setIsDialogPlayGame(true)}>
-                                                            {i18n.t('Choose Theme')}
-                                                        </button>
-                                                        ): ""
-                                                    )
+                                                    theme === null && timerClock > 0 ?
+                                                        (
+                                                            <span style={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'center',
+                                                                color: '#FFF',
+                                                                fontSize: '14px',
+                                                                marginTop: '5px'
+                                                            }}>
+                                                        <ClockIcon style={{marginRight: '5px'}}/>
+                                                                {timerClock} {i18n.t('seconds')}
+                                                    </span>
+                                                        ) : typeof room !== 'undefined' ? (
+                                                            <Riple color="#FFF" size="small" text="" textColor=""/>
+                                                        ) : ""
                                                 }
                                             </div>
-                                        ) : ""
-                                    }
-                                </>
-                            )
-                            : ""
+                                        </div>
+                                        {theme === null && typeof room !== 'undefined' && !awaitingGeneration ?
+                                            (
+                                                <div style={{padding: '15px'}}>
+                                                    {
+                                                        profile && profile.sessionId != owner ?
+                                                            (
+                                                                <OrbitProgress variant="split-disc" color="#FFF"
+                                                                               size="small" text=""
+                                                                               textColor=""/>
+                                                            ) : (
+                                                                timerClock > 0 ? (
+                                                                    <button className="btn-play-game-lobby button-pulse"
+                                                                            onClick={() => setIsDialogPlayGame(true)}>
+                                                                        {i18n.t('Choose Theme')}
+                                                                    </button>
+                                                                ) : ""
+                                                            )
+                                                    }
+                                                </div>
+                                            ) : ""
+                                        }
+                                    </>
+                                )
+                                : ""
                         }
                     </>
 
                     {/* Raking */}
-                    { gameEnded ? (
-                        <Leaderboard players={players} t={i18n.t} />
+                    {gameEnded ? (
+                        <Leaderboard players={players} t={i18n.t}/>
                     ) : (
                         gameStarted ? (
                             <div>
@@ -619,9 +610,11 @@ export default function GameRoom(){
                             </div>
                             <h1>{i18n.t('Customize your Quiz with a Theme')}</h1>
                             <p>{i18n.t('Artificial intelligence creates personalized questions based on the chosen topic.')}</p>
-                            <p style={{display: 'flex', justifyContent: 'center'}}><ClockIcon style={{marginRight: '5px'}}/>
+                            <p style={{display: 'flex', justifyContent: 'center'}}><ClockIcon
+                                style={{marginRight: '5px'}}/>
                                 {timerClock == 0 ? 30 : timerClock} {i18n.t('seconds')}</p>
-                            <textarea placeholder={i18n.t('Enter a theme, e.g. Greek Mythology...')} className={'dialog-textarea'}
+                            <textarea placeholder={i18n.t('Enter a theme, e.g. Greek Mythology...')}
+                                      className={'dialog-textarea'}
                                       maxLength={126}></textarea>
                             <div className={'dialog-actions'}>
                                 <button className={'btn-confirm'} onClick={() => handlePlayGame()}>
@@ -662,6 +655,12 @@ export default function GameRoom(){
                     </div>
                 </div>
             ) : ""}
+            <div className={'footer'}>
+                <a href={"#"}>
+                    <img src={discordLogoWhite} alt={'Discord Logo'} className={'logo'}/>
+                    <p>{i18n.t('Official Discord Server')}</p>
+                </a>
+            </div>
         </>
     )
 }

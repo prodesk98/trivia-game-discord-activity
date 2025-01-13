@@ -12,16 +12,20 @@ import {ErrorResponse} from "./schema/messages/ErrorResponse";
 import {
     createRoom,
     createScore,
+    updateLanguage,
+    updateDisposed,
     getSumScoreByRoomIdAndUserId,
     getSumScoreByUserIdAndRoundId
 } from "../database/DBSession";
 import {MapSchema} from "@colyseus/schema";
+import * as crypto from "node:crypto";
 
 
 export class TriviaGameRoom extends Room<TriviaGameState> {
   maxClients = 10;
   totalTurns = 0;
   roundId: string;
+  roomIdUUID: string | null = null;
   questionOptions: QuestionOptions[] = new Array<QuestionOptions>();
   currentQuestionIndex = 0;
   answerOptions: number[] = [];
@@ -88,22 +92,32 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
         this.startGame(message.prompt, message?.category).then();
     });
 
+    this.onMessage("changeLanguage", async (client, message) => {
+        const player = this.state.players.get(client.sessionId);
+        player.language = message.language;
+        this.state.players.set(client.sessionId, player);
+        await updateLanguage(player.userId, message.language);
+    });
+
     // find all categories
     this.state.categories = await this.getCategories();
 
     // create room
-    createRoom(options.guildId, this.roomId).then();
+    this.roomIdUUID = (await createRoom(options.guildId, this.roomId)).toString("hex");
   }
 
   async onJoin (client: Client, options: any) {
     console.log(client.sessionId, "joined!");
 
+    const usernameHashed = crypto.createHash('sha256').update(`${Math.floor(Math.random() * 10000)}`).digest('hex').slice(0, 8);
+    const profile = `https://cdn.discordapp.com/embed/avatars/${parseInt(Math.floor(Math.random() * 5).toString())}.png`;
+
     const player = new Player();
     player.id = client.auth?.discordId || null;
     player.userId = client.auth?.userId || null;
     player.sessionId = client.sessionId;
-    player.username = client.auth?.username || `Guest-${Math.floor(Math.random() * 100)}`;
-    player.avatar = client.auth?.avatar || `https://cdn.discordapp.com/embed/avatars/${parseInt(Math.floor(Math.random() * 5).toString())}.png`;
+    player.username = !client.auth?.isAnonymous ? client.auth?.username || usernameHashed : usernameHashed;
+    player.avatar = client.auth?.avatar && !client.auth?.isAnonymous ? client.auth?.avatar : profile;
     player.language = client.auth?.language || "en";
     player.accepted = false;
     player.answered = -1;
@@ -153,10 +167,22 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
 
   onDispose() {
     console.log(`${this.roomId} disposed!`);
+    if (this.roomIdUUID !== null) updateDisposed(this.roomIdUUID, true).then();
   }
 
   calculateScore(response: number, correct: number) {
     return (correct === response ? 1 : 0) * this.state.currentTimer;
+  }
+
+  getLanguages(): string[] {
+      const languages = Array.from(
+          new Set(
+              Array.from(this.state.players.values())
+                  .map(p => p.language)
+                  .filter(language => language && language !== "en")
+          )
+      );
+      return languages.slice(0, 2);
   }
 
   async startGame(prompt: string, category?: string) {
@@ -177,6 +203,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
                 body: JSON.stringify({
                     prompt: prompt,
                     category: category,
+                    languages: this.getLanguages(),
                 })
             }
         )

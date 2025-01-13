@@ -45,6 +45,17 @@ export const createUser = async (discordId: string, username: string, avatar?: s
     return user.id;
 }
 
+export const updateLanguage = async (userId: string, language: string) => {
+    return User.updateOne(
+        {
+            id: new mongoose.Types.UUID(userId),
+        },
+        {
+            language: language,
+        }
+    );
+}
+
 /*
 * Room
 */
@@ -65,14 +76,13 @@ export const createRoom = async (guildId: string, roomId: string): Promise<mongo
     return room.id;
 }
 
-
-export const updateRoom = async (id: string, guildId: string) => {
+export const updateDisposed = async (roomId: string, isDisposed: boolean) => {
     return Room.updateOne(
         {
-            id: new mongoose.Types.UUID(id),
+            id: new mongoose.Types.UUID(roomId),
         },
         {
-            guildId: guildId,
+            isDisposed: isDisposed,
         }
     );
 }

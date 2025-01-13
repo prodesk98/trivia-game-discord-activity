@@ -9,6 +9,11 @@ const RoomSchema = new Schema({
         unique: true,
         default: () => uuid4(),
     },
+    isDisposed: {
+        type: Boolean,
+        required: true,
+        default: true,
+    },
     roomId: {
         type: String,
         required: true,

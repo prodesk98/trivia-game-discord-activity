@@ -778,3 +778,33 @@ button i {
 .dropdown-option:hover {
     background-color: #f0f0f0;
 }
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    margin-bottom: 10px;
+    margin-right: 10px;
+}
+
+.footer a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    background-color: #2C2F33; /* Fundo do footer */
+    font-size: 14px;
+    border-top: 1px solid #202225; /* Linha sutil no topo */
+}
+
+.footer img {
+    width: 24px; /* Tamanho do ícone */
+    height: 24px;
+    margin-right: 10px; /* Espaço entre ícone e texto */
+}
+
+.footer p {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}

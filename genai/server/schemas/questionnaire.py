@@ -2,6 +2,9 @@ from datetime import datetime
 from typing import Optional, List, Literal
 from uuid import UUID, uuid4
 
+import warnings
+warnings.filterwarnings("ignore", category=ResourceWarning)
+
 from pydantic import BaseModel, Field
 
 from ..provider.constraints import Category

@@ -178,10 +178,12 @@ class LLM:
         chain = (_prompt | structured)
 
         # result
-        output: QuestionnaireModel = await chain.ainvoke({
-            "quantities": self._quantities,
-            "languages": ", ".join([self.title_from_language(l) for l in languages]) if len(languages) > 1 else "English Only.",
-        })
+        output: QuestionnaireModel = await chain.ainvoke(
+            {
+                "quantities": self._quantities,
+                "languages": ", ".join([self.title_from_language(l) for l in languages]) if len(languages) > 1 else "English Only.",
+            }
+        )
 
         # set translations
         for i, q in enumerate(output.questionnaire.questionnaires):
