@@ -6,7 +6,7 @@ QUESTIONNAIRE_PROMPT = """Generate a quiz with {quantities} multiple-choice ques
 4. Answer options must be short, clear, and concise, limited to a maximum of 5 words each.
 5. Each question must have only one correct answer. Options like "all of the above" or "none of the above" are not allowed.
 
-Output format:
+FORMAT INSTRUCTIONS:
 {format_instructions}"""
 
 

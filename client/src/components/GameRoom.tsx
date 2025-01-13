@@ -41,7 +41,6 @@ import {RankingDialog} from "./fragments/RankingDialog.tsx";
 
 import i18n from "../utils/I18n.ts";
 import LanguageSelect from "./fragments/LanguageSelect.tsx";
-import {ToastContainer} from "react-toastify";
 
 
 export default function GameRoom(){
@@ -662,20 +661,6 @@ export default function GameRoom(){
                     <p>{i18n.t('Official Discord Server')}</p>
                 </a>
             </div>
-
-            <ToastContainer
-                position="top-right"
-                autoClose={5000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light" />
-            {/* Same as */}
-            <ToastContainer />
         </>
     )
 }

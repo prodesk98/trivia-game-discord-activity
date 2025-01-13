@@ -11,8 +11,8 @@ class Questionnaire(BaseModel):
 
 
 class TranslationData(BaseModel):
-    q: str = Field(description="Question translated")
-    o: List[str] = Field(description="4 options for the question translated")
+    q: str = Field(description="Question translated", title="Question")
+    o: List[str] = Field(description="4 options for the question translated", title="Options")
 
 
 class QuestionnaireData(BaseModel):
@@ -26,5 +26,5 @@ class QuestionnaireResponse(BaseModel):
 
 
 class Enrichment(BaseModel):
-    theme: str = Field(..., description="Theme to be enriched")
-    enriched_theme: str = Field(..., description="Enriched theme enriched with key facts and subtopics")
+    theme: str = Field(..., description="Theme to be enriched", title="Theme")
+    enriched_theme: str = Field(..., description="Enriched theme enriched with key facts and subtopics", title="Enriched Theme")

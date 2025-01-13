@@ -782,9 +782,9 @@ button i {
 .footer {
     position: absolute;
     bottom: 0;
-    right: 0;
+    left: 0;
     margin-bottom: 10px;
-    margin-right: 10px;
+    margin-left: 10px;
 }
 
 .footer a {

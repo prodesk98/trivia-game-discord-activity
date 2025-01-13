@@ -44,3 +44,6 @@ class Difficulty(Enum):
 class Language(Enum):
     PORTUGUESE = "portuguese"
     ENGLISH = "english"
+    SPANISH = "spanish"
+    FRENCH = "french"
+    GERMAN = "german"
