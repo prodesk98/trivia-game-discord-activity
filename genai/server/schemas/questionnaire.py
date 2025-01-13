@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Literal
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
@@ -15,10 +15,12 @@ class CreateQuestionSchema(QuestionSchema):
 
 class CreateGenerateQuestionSchema(GenerateQuestionSchema):
     prompt: str = Field(..., max_length=256)
+    languages: List[Literal["pt", "es", "fr"]] = Field(default_factory=list) # noqa
 
 
 class CreateGenerateRandomQuestionSchema(BaseModel):
     category: Optional[Category] = Field(Category.GENERAL_KNOWLEDGE)
+    languages: List[Literal["pt", "es", "fr"]] = Field(default_factory=list)  # noqa
 
 
 class QueryQuestionSchema(BaseModel):

@@ -1,11 +1,14 @@
 import random
-from typing import Optional, List
+from typing import Optional, List, Type, Any, Literal
 
 from langchain.chains.moderation import OpenAIModerationChain
 from langchain_core.messages import HumanMessage
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import PromptTemplate, SystemMessagePromptTemplate, ChatPromptTemplate
 from langchain_openai import ChatOpenAI
+from langchain.chains import OpenAIModerationChain
+from loguru import logger
+from pydantic import create_model, Field
 
 from config import env
 from .schemas import (
@@ -14,6 +17,8 @@ from .schemas import (
     Translations,
     QuestionnaireResponse,
     QuestionnaireData,
+    Questionnaire,
+    TranslationData,
 )
 
 from ._prompt_engine import QUESTIONNAIRE_PROMPT, ENRICHMENT_PROMPT
@@ -37,13 +42,14 @@ class LLM:
             temperature=.0,
             top_p=random.uniform(0.0, 1.0),
         )
-        self.llm_moderation = ChatOpenAI(
+        self.moderate = OpenAIModerationChain(
             model_name=env.MODERATION_MODEL,
             openai_api_key=env.OPENAI_API_KEY,
         )
         self.translations: dict[str, str | dict] = {
             "pt": {},
             "es": {},
+            "fr": {},
         }
 
     @staticmethod
@@ -82,11 +88,25 @@ class LLM:
         random.shuffle(_questionnaires)
         return _questionnaires
 
-    async def moderation(self, content: str) -> Optional[QuestionnaireResponse]:
+    @staticmethod
+    async def moderation(content: str) -> str:
         moderate = OpenAIModerationChain()
-        prompt = ChatPromptTemplate.from_messages([("system", content)])
-        chain = prompt | self.llm_moderation
-        moderated_chain = chain | moderate
+        output = (await moderate.ainvoke({"input": content}))['output']
+        return output
+
+    @staticmethod
+    def _create_dynamic_translation_model(languages: List[str]) ->  dict[str, tuple[Type[list[TranslationData]], Any]]:
+        _fields = {}
+        _languages_title = {
+            "pt": "Portuguese",
+            "es": "Spanish",
+            "fr": "French",
+        }
+        for l in languages:
+            _fields[l] = (
+                List[TranslationData],
+                Field(..., description=f"{_languages_title[l]} translations", title=_languages_title[l]))
+        return _fields
 
     async def enrich(self, theme: str) -> Enrichment:
         parser = JsonOutputParser(pydantic_object=Enrichment)
@@ -114,9 +134,27 @@ class LLM:
         output = await chain.ainvoke({})
         return output
 
-    async def generate(self, prompt: str) -> Optional[QuestionnaireResponse]:
+    async def generate(self, prompt: str, languages: List[Literal["pt", "es", "fr"]]) -> Optional[QuestionnaireResponse]:
+        if "violates" in (await self.moderation(prompt)):
+            logger.error("Prompt violates moderation policy")
+            return
+
         _enrichment = await self.enrich(prompt)
-        parser = JsonOutputParser(pydantic_object=Translations)
+
+        TranslationQuestionnaireModel = create_model(
+            "TranslationQuestionnaireModel",
+            **self._create_dynamic_translation_model([l for l in languages]),
+        )
+
+        QuestionnaireModel = create_model(
+            "QuestionnaireModel",
+            questionnaire=(
+            Questionnaire, Field(..., title="Questionnaire", description="A list of questionnaire items.")),
+            translations=(TranslationQuestionnaireModel,
+                          Field(..., title="Translations", description="Translations for the questionnaire.")),
+        )
+
+        parser = JsonOutputParser(pydantic_object=QuestionnaireModel)
         _system = SystemMessagePromptTemplate(
             prompt=PromptTemplate(
                 template=QUESTIONNAIRE_PROMPT,
@@ -131,34 +169,53 @@ class LLM:
             ]
         )
         structured = self.llm.with_structured_output(
-            Translations,
+            QuestionnaireModel,
             method="json_mode",
         )
         chain = (_prompt | structured)
 
         # result
-        output: Translations = await chain.ainvoke({"quantities": self._quantities})
+        output: QuestionnaireModel = await chain.ainvoke({"quantities": self._quantities})
 
         # set translations
-        for i, q in enumerate(output.en.questionnaires):
-            # Portuguese
-            self.translations['pt'][q.q] = output.t.pt[i].q
-            for n, o in enumerate(q.o):
-                self.translations['pt'][o] = output.t.pt[i].o[n]
-            # Spanish
-            self.translations['es'][q.q] = output.t.es[i].q
-            for n, o in enumerate(q.o):
-                self.translations['es'][o] = output.t.es[i].o[n]
+        for i, q in enumerate(output.questionnaire.questionnaires):
+            if "pt" in languages:
+                try:
+                    # Portuguese
+                    self.translations['pt'][q.q] = output.translations.pt[i].q
+                    for n, o in enumerate(q.o):
+                        self.translations['pt'][o] = output.translations.pt[i].o[n]
+                except (IndexError, KeyError, AttributeError):
+                    logger.error(f"IndexError in translations for Portuguese {q.q}")
+                    pass
+            if "es" in languages:
+                try:
+                    # Spanish
+                    self.translations['es'][q.q] = output.translations.es[i].q
+                    for n, o in enumerate(q.o):
+                        self.translations['es'][o] = output.translations.es[i].o[n]
+                except (IndexError, KeyError, AttributeError):
+                    logger.error(f"IndexError in translations for Spanish {q.q}")
+                    pass
+            if "fr" in languages:
+                try:
+                    # French
+                    self.translations['fr'][q.q] = output.translations.fr[i].q
+                    for n, o in enumerate(q.o):
+                        self.translations['fr'][o] = output.translations.fr[i].o[n]
+                except (IndexError, KeyError, AttributeError):
+                    logger.error(f"IndexError in translations for French {q.q}")
+                    pass
 
         # response
         return QuestionnaireResponse(
             questionnaires=QuestionnaireData(
-                questionnaires=self.shuffle([q for q in output.en.questionnaires]),
-                category=output.category,
+                questionnaires=self.shuffle([q for q in output.questionnaire.questionnaires]),
+                category=output.questionnaire.category,
             ),
             translations=self.translations,
         )
 
 
-    async def random(self, prompt: str) -> Optional[QuestionnaireResponse]:
-        return await self.generate(prompt)
+    async def random(self, prompt: str, languages: List[Literal["pt", "es", "fr"]]) -> Optional[QuestionnaireResponse]:
+        return await self.generate(prompt, languages)

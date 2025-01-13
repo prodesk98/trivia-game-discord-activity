@@ -79,7 +79,7 @@ async def generative(
     payload: CreateGenerateQuestionSchema
 ):
     controller = QuestionnaireController()
-    response = await controller.generate(prompt=payload.prompt)
+    response = await controller.generate(prompt=payload.prompt, languages=payload.languages)
     if response is None:
         raise HTTPException(status_code=500, detail="Error generating questionnaire")
     await aupsert_questionnaires(response.questionnaires)
@@ -97,7 +97,7 @@ async def generative_random(
 ):
     controller = QuestionnaireController()
     prompt = ("\n-".join(random.choices(env.SUBTOPICS[payload.category.value], k=3))).lstrip("\n")
-    response = await controller.random(prompt=prompt)
+    response = await controller.random(prompt=prompt, languages=payload.languages)
     if response is None:
         raise HTTPException(status_code=500, detail="Error generating questionnaire")
     await aupsert_questionnaires(response.questionnaires)
