@@ -4,12 +4,20 @@ import {useGame} from "./GameProvider.tsx";
 import {discordSDK} from "../utils/DiscordSDK.ts";
 import { useNavigate } from "react-router-dom";
 
+import rocketIcon from "../assets/gifs/rocket.gif";
+import logoDiscord from "../assets/images/discord-mark-white.svg";
+
+
 export default function Auth() {
 
-    const {setTokenDiscord} = useGame();
+    const {tokenDiscord, setTokenDiscord} = useGame();
     const navigate = useNavigate();
 
     useEffect(() => {
+        if (tokenDiscord) {
+            navigate("/lobby/" + discordSDK.channelId);
+            return;
+        }
         authenticate().then((response) => {
             const token = response.token;
             console.log("Authenticated with Discord!");
@@ -23,7 +31,7 @@ export default function Auth() {
         <>
             <div>
                 <div>
-                    <img src={"/src/assets/gifs/rocket.gif"} alt={"Rocket"} width={"150px"} style={
+                    <img src={rocketIcon} alt={"Rocket"} width={"150px"} style={
                         {
                             display: "block",
                             marginLeft: "auto",
@@ -44,7 +52,7 @@ export default function Auth() {
                         fontWeight: "bold",
                     }
                 }>
-                    <img src={"/src/assets/images/discord-mark-white.svg"} width={"20px"} alt={"Discord Logo"}/>
+                    <img src={logoDiscord} width={"20px"} alt={"Discord Logo"}/>
                     <p>Authenticating with Discord...</p>
                 </div>
             </div>
