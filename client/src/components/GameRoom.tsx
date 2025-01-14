@@ -564,12 +564,12 @@ export default function GameRoom(){
 
                 <LanguageSelect selectedLanguage={language} handleLanguageChange={handleLanguageChange}/>
             </div>
-            <div className="top-left-buttons">
-                <button className="btn-home" onClick={() => setIsDialogHome(true)}>
-                    <HomeIcon/>
-                    {i18n.t('Home')}
-                </button>
-            </div>
+            {/*<div className="top-left-buttons">*/}
+            {/*    <button className="btn-home" onClick={() => setIsDialogHome(true)}>*/}
+            {/*        <HomeIcon/>*/}
+            {/*        {i18n.t('Home')}*/}
+            {/*    </button>*/}
+            {/*</div>*/}
 
             {isDialogHome ? (
                 <div className="home-dialog-overlay">
