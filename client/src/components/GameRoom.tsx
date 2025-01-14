@@ -668,8 +668,8 @@ export default function GameRoom(){
                 </div>
             ) : ""}
             <div className={'footer'}>
-                <a href={`https://discord.gg/${import.meta.env.VITE_DISCORD_INVITE_CODE}`}>
-                    <img src={discordLogoWhite} alt={'Discord Logo'} className={'logo'}/>
+                <a href={`https://discord.gg/${import.meta.env.VITE_DISCORD_INVITE_CODE}`} target={"_blank"}>
+                    <img src={discordLogoWhite} alt={'Discord Logo'} className={'logo'} />
                     <p>{i18n.t('Official Discord Server')}</p>
                 </a>
             </div>
