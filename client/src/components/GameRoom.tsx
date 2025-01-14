@@ -672,7 +672,7 @@ export default function GameRoom(){
                 </div>
             ) : ""}
             <div className={'footer'}>
-                <a onClick={openDiscord}>
+                <a onClick={openDiscord} style={{cursor: 'pointer'}}>
                     <img src={discordLogoWhite} alt={'Discord Logo'} className={'logo'} />
                     <p>{i18n.t('Official Discord Server')}</p>
                 </a>
