@@ -413,6 +413,10 @@ export default function GameRoom(){
         if (typeof room !== 'undefined' && room !== null) room.send("changeLanguage", {language: l});
     }
 
+    const openDiscord = () => {
+        window.open(`https://discord.gg/${import.meta.env.VITE_DISCORD_INVITE_CODE}`, '_blank')
+    }
+
     return (
         <>
             <div className="quiz-wrapper">
@@ -668,7 +672,7 @@ export default function GameRoom(){
                 </div>
             ) : ""}
             <div className={'footer'}>
-                <a href={`discord://discord.gg/${import.meta.env.VITE_DISCORD_INVITE_CODE}`} target={"_blank"}>
+                <a onClick={openDiscord}>
                     <img src={discordLogoWhite} alt={'Discord Logo'} className={'logo'} />
                     <p>{i18n.t('Official Discord Server')}</p>
                 </a>
