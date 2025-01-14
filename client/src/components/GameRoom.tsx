@@ -5,7 +5,7 @@ import ShuffleIcon from '@mui/icons-material/Shuffle';
 import CloseIcon from '@mui/icons-material/Close';
 import ClockIcon from '@mui/icons-material/QueryBuilder';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
-import HomeIcon from '@mui/icons-material/Home';
+// import HomeIcon from '@mui/icons-material/Home';
 
 // css
 import "../css/GameRoom.css";
