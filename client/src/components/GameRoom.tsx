@@ -41,6 +41,7 @@ import {RankingDialog} from "./fragments/RankingDialog.tsx";
 import i18n from "../utils/I18n.ts";
 import LanguageSelect from "./fragments/LanguageSelect.tsx";
 import {useGame} from "./GameProvider.tsx";
+import {useNavigate} from "react-router-dom";
 
 
 export default function GameRoom(){
@@ -49,6 +50,8 @@ export default function GameRoom(){
     const [isDialogPlayGame, setIsDialogPlayGame] = useState(false);
     const [isDialogHome, setIsDialogHome] = useState(false);
     const [isDialogRanking, setIsDialogRanking] = useState(false);
+
+    const navigate = useNavigate();
 
     const {
         isMuted, setIsMuted, playAudio, pauseAudio,
@@ -583,7 +586,7 @@ export default function GameRoom(){
                                 <button className="btn-cancel" onClick={() => setIsDialogHome(false)}>
                                     {i18n.t('Cancel')}
                                 </button>
-                                <button className="btn-confirm" onClick={() => window.location.href = '/'}>
+                                <button className="btn-confirm" onClick={() => navigate('/')}>
                                     {i18n.t('Leave')}
                                 </button>
                             </div>
