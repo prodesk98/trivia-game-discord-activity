@@ -15,7 +15,7 @@ const LanguageSelect: React.FC<ILanguageSelect> = ({selectedLanguage, handleLang
             <div className="language-select">
                 <div className="selected-option">
                     <img
-                        src={`src/assets/flags/${selectedLanguage}.svg`}
+                        src={`/src/assets/flags/${selectedLanguage}.svg`}
                         alt={selectedLanguage}
                         className="flag"
                     />

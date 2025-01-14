@@ -5,6 +5,7 @@ import ShuffleIcon from '@mui/icons-material/Shuffle';
 import CloseIcon from '@mui/icons-material/Close';
 import ClockIcon from '@mui/icons-material/QueryBuilder';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
+import HomeIcon from '@mui/icons-material/Home';
 
 // css
 import "../css/GameRoom.css";
@@ -16,19 +17,17 @@ import {OrbitProgress, Riple} from "react-loading-indicators";
 // notifications
 import {handleNotifyError, handleNotifyGameStatus} from "../core/Notification.ts";
 
-import {authenticate} from "../utils/Auth.ts";
 import {PlayerList} from "./fragments/PlayerList.tsx";
 import {Leaderboard} from "./fragments/Leaderboard.tsx";
 import {OptionsGame} from "./fragments/OptionsGame.tsx";
-import {useEffect, useRef} from "react";
+import {useEffect, useRef, useState} from "react";
 
-import backgroundMusicGameTimer from "../assets/sounds/music-game-timer.ogg";
+import notificationSound from "../assets/sounds/notification.ogg";
 import correctSound from "../assets/sounds/correct-answer.ogg";
 import incorrectSound from "../assets/sounds/incorrect-answer.ogg";
 
 import discordLogoWhite from "../assets/images/discord-mark-white.svg";
 
-import {useHookState} from "../core/HookState.ts";
 import {colyseusSDK} from "../utils/Colyseus.ts";
 import {discordSDK} from "../utils/DiscordSDK.ts";
 import {Player} from "../schema/Player.ts";
@@ -41,60 +40,29 @@ import {RankingDialog} from "./fragments/RankingDialog.tsx";
 
 import i18n from "../utils/I18n.ts";
 import LanguageSelect from "./fragments/LanguageSelect.tsx";
+import {useGame} from "./GameProvider.tsx";
 
 
 export default function GameRoom(){
     const totalTime = 30; // Tempo total da pergunta
 
+    const [isDialogPlayGame, setIsDialogPlayGame] = useState(false);
+    const [isDialogHome, setIsDialogHome] = useState(false);
+    const [isDialogRanking, setIsDialogRanking] = useState(false);
+
     const {
-        // getters
-        answerCorrect,
-        currentQuestionOptions,
-        gameEnded,
-        gamePaused,
-        gameStarted,
-        gameLobby,
-        isMuted,
-        room,
-        // categories,
-        profile,
-        language,
-        ownerProfile,
-        owner,
-        players,
-        timeLeft,
-        theme,
-        timerClock,
-        isDialogPlayGame,
-        isDialogRanking,
-        answerSelected,
-        awaitingGeneration,
-        translations,
-        categories,
-        // setters
-        setPlayers,
-        setProfile,
-        setLanguage,
-        setOwnerProfile,
-        setOwner,
-        setCurrentQuestionOptions,
-        setGameEnded,
-        setGamePaused,
-        setGameStarted,
-        setGameLobby,
-        setRoom,
-        setCategories,
-        setTheme,
-        setTimeLeft,
-        setTimerClock,
-        setAnswerSelected,
-        setAnswerCorrect,
-        setIsMuted,
-        setIsDialogPlayGame,
-        setIsDialogRanking,
-        setAwaitingGeneration,
-        setTranslations,
-    } = useHookState();
+        isMuted, setIsMuted, playAudio, pauseAudio,
+        toggleAudio, authLobbyId, setLanguage,
+        language, room, setRoom, ownerProfile, setOwnerProfile,
+        profile, setProfile, theme, setTheme, players, setPlayers,
+        currentQuestionOptions, setCurrentQuestionOptions,
+        timeLeft, setTimeLeft, timerClock, setTimerClock,
+        gameStarted, setGameStarted, gameEnded, setGameEnded,
+        gameLobby, setGameLobby, gamePaused, setGamePaused,
+        answerSelected, setAnswerSelected, answerCorrect, setAnswerCorrect,
+        awaitingGeneration, setAwaitingGeneration, translations, setTranslations,
+        categories, setCategories, owner, setOwner, tokenDiscord
+    } = useGame();
 
     const changeLanguage = async (lng: string) => {
         await i18n.changeLanguage(lng, () => {
@@ -103,63 +71,61 @@ export default function GameRoom(){
     };
 
     // correct sound effect
-    const correctSoundEffect = useRef(() => {
-        const audio = new Audio(correctSound);
-        audio.volume = !isMuted ? 0.2 : 0;
-        audio.currentTime = 0;
-        audio.loop = false;
-        return audio;
-    });
+    const correctSoundEffect = useRef<HTMLAudioElement|null>(null);
 
+    // alert sound effect
+    const notificationSoundEffect = useRef<HTMLAudioElement|null>(null);
 
     // incorrect sound effect
-    const incorrectSoundEffect = useRef(() => {
-        const audio = new Audio(incorrectSound);
-        audio.volume = !isMuted ? 0.3 : 0;
-        audio.currentTime = 0;
-        audio.loop = false;
-        return audio;
-    });
+    const incorrectSoundEffect = useRef<HTMLAudioElement|null>(null);
+
+
+    const playSoundCorrect = () => {
+        if (isMuted) return;
+        if (correctSoundEffect.current === null) {
+            correctSoundEffect.current = new Audio(correctSound);
+            correctSoundEffect.current.volume = 0.2;
+        }
+        correctSoundEffect.current.play().then(() => console.log("Correct answer!"));
+    }
+
+    const playSoundIncorrect = () => {
+        if (isMuted) return;
+        if (incorrectSoundEffect.current === null) {
+            incorrectSoundEffect.current = new Audio(incorrectSound);
+            incorrectSoundEffect.current.volume = 0.3;
+        }
+        incorrectSoundEffect.current.play().then(() => console.log("Incorrect answer!"));
+    }
+
+    const playSoundNotification = () => {
+        if (isMuted) return;
+        if (notificationSoundEffect.current === null) {
+            notificationSoundEffect.current = new Audio(notificationSound);
+            notificationSoundEffect.current.volume = 0.3;
+        }
+        notificationSoundEffect.current.play().then(() => console.log("Notification!"));
+    }
 
     const handleToggleSound = () => {
         const toggle = !isMuted;
         setIsMuted(toggle);
         setLocalStorage("isMuted", toggle);
 
-        if (toggle) {
-            correctSoundEffect.current().pause();
-            incorrectSoundEffect.current().pause();
-        }
+        toggleAudio();
     };
-
-    // background music
-    // TODO: Purchase the full track: https://1.envato.market/WDQBgA
-    useEffect(() => {
-        const isMutedStorage = getLocalStorage("isMuted");
-        setIsMuted(isMutedStorage);
-
-        const audio = new Audio(backgroundMusicGameTimer);
-        audio.loop = true;
-        audio.volume = isMuted ? 0 : 0.08; // Define o volume com base no estado 'isMuted'
-        if (gameStarted) audio.play().then(() => console.log("Background music started!"));
-        if (gameEnded) audio.pause();
-
-        audio.currentTime = totalTime - timeLeft; // Define o tempo atual com base no tempo restante
-
-        return () => {audio.pause()};
-    }, [isMuted, gameStarted, gameEnded]);
 
     // Discord Embedded SDK: Retrieve user token when under Discord/Embed
     useEffect(() => {
         try {
             console.log("Authenticating with Discord...");
-            authenticate().then((response) => {
-                const token = response.token;
-                console.log("Authenticated with Discord!");
-
-                // connect to colyseus
-                handleColyseusConnection(token).then();
-            });
+            const lobbyId = typeof authLobbyId !== 'undefined' ? authLobbyId : "default";
+            if (tokenDiscord === null) {
+                handleNotifyError(
+                    "Failed to authenticate with Discord. Please try again or contact the support team.");
+                return;
+            }
+            handleColyseusConnection(tokenDiscord, lobbyId).then();
         }catch (e) {
             console.error(e);
             handleNotifyError(`Failed to authenticate with Discord. ${e}`);
@@ -227,9 +193,11 @@ export default function GameRoom(){
         setIsDialogPlayGame(false);
     }
 
-    const handleColyseusConnection = async (token: string) => {
+    const handleColyseusConnection = async (token: string, lobbyId: string) => {
         colyseusSDK.auth.token = token;
-        const room = await colyseusSDK.joinOrCreate("game", { channelId: discordSDK.channelId, guildId: discordSDK.guildId });
+
+        const room = await colyseusSDK.joinOrCreate("lobby",
+            {lobbyId: lobbyId, guildId: discordSDK.guildId});
         setRoom(room);
 
         room.onStateChange.once((state: any) => {
@@ -246,9 +214,7 @@ export default function GameRoom(){
                 if (player.sessionId === room.sessionId) {
                     setProfile(player);
 
-                    let lng: string = player.language;
-                    if (lng.includes("-")) lng = lng.split("-")[0];
-                    if (!hasLocalStorage("language")) setLocalStorage("language", lng);
+                    if (!hasLocalStorage("language")) setLocalStorage("language", player.language);
                     setLanguage(getLocalStorage("language"));
                 }
 
@@ -323,8 +289,9 @@ export default function GameRoom(){
 
             // listen setOwner
             state.listen("owner", (currentValue: string) => {
-                setOwnerProfile(players.find((player: Player) => player.sessionId === currentValue));
-                if (profile && profile.sessionId !== currentValue) {
+                const profile = players.find((player: Player) => player.sessionId === currentValue);
+                setOwnerProfile(profile);
+                if (typeof profile !== 'undefined' && profile.sessionId !== currentValue) {
                     // disable dialog
                     setIsDialogPlayGame(false);
                 }
@@ -351,6 +318,9 @@ export default function GameRoom(){
             // reset answer
             setAnswerSelected(-1);
             setAnswerCorrect(-1);
+
+            // stop background music
+            pauseAudio();
         });
 
         room.onMessage("next", (message: any) => {
@@ -362,17 +332,26 @@ export default function GameRoom(){
 
             // set paused
             setGamePaused(false);
+
+            // sent sound effect
+            playSoundNotification();
+
+            // play background music
+            playAudio();
         });
 
         room.onMessage("answerFeedback", (message: AnswerResponse) => {
             if (message.accepted) {
-                if (!isMuted) correctSoundEffect.current().play().then(() => console.log("Correct answer!"));
+                playSoundCorrect();
                 handleConfetti({rectTop: message.rectTop, rectHeight: message.rectHeight});
             } else {
-                if (!isMuted) incorrectSoundEffect.current().play().then(() => console.log("Incorrect answer!"));
+                playSoundIncorrect();
             }
             setAnswerSelected(message.answered);
             setAnswerCorrect(message.correct);
+
+            // stop background music
+            pauseAudio();
         });
 
         room.onMessage("__playground_message_types", (message: any) => {
@@ -582,6 +561,36 @@ export default function GameRoom(){
 
                 <LanguageSelect selectedLanguage={language} handleLanguageChange={handleLanguageChange}/>
             </div>
+            <div className="top-left-buttons">
+                <button className="btn-home" onClick={() => setIsDialogHome(true)}>
+                    <HomeIcon/>
+                    {i18n.t('Home')}
+                </button>
+            </div>
+
+            {isDialogHome ? (
+                <div className="home-dialog-overlay">
+                    <div className="home-dialog">
+                        <div className="home-dialog-close">
+                            <button onClick={() => setIsDialogHome(false)}>
+                                <CloseIcon/>
+                            </button>
+                        </div>
+                        <div className="home-dialog-content">
+                            <b>{i18n.t('Go to home!')}</b>
+                            <p>{i18n.t('Do you want to leave the game?')}</p>
+                            <div className="home-dialog-actions">
+                                <button className="btn-cancel" onClick={() => setIsDialogHome(false)}>
+                                    {i18n.t('Cancel')}
+                                </button>
+                                <button className="btn-confirm" onClick={() => window.location.href = '/'}>
+                                    {i18n.t('Leave')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ) : ""}
 
             {isDialogRanking ? (
                 <div className="leaderboard-dialog-overlay">

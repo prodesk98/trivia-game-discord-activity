@@ -192,15 +192,23 @@
     }
 }
 
+.top-left-buttons {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 12px;
+}
+
 .top-right-buttons {
     position: absolute;
     top: 10px;
     right: 10px;
     display: flex;
-    gap: 12px; /* Ajuste no espaçamento para maior clareza */
+    gap: 12px;
 }
 
-.top-right-buttons > button {
+.top-right-buttons > button, .top-left-buttons > button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -213,6 +221,11 @@
     font-weight: bold;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Adiciona profundidade */
     transition: all 0.3s ease; /* Animações suaves para hover e clique */
+}
+
+.top-right-buttons > button:hover, .top-left-buttons > button:hover {
+    transform: translateY(-2px); /* Efeito de levitar */
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2); /* Efeito de foco */
 }
 
 /* Botão Sair */
@@ -236,10 +249,19 @@
     color: #fff;
 }
 
+.btn-home {
+    background-color: #2196F3; /* Azul mais suave */
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* Botão Mutar */
 .btn-mute {
     background-color: #b0b8c1; /* Cinza mais claro */
     color: #fff;
+    padding: 10px;
 }
 
 .btn-mute:hover {
@@ -571,8 +593,39 @@ button i {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
+.home-dialog {
+    background: linear-gradient(135deg, #ffffff, #f7f7f7); /* Gradiente suave */
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); /* Sombra suave */
+    padding: 20px 30px;
+    width: 350px;
+    max-width: 90%;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.home-dialog > .home-dialog-close {
+    display: block;
+    width: 100%;
+    text-align: right;
+}
+
+.home-dialog-actions {
+    display: flex;
+    justify-content: space-around;
+}
+
+.home-dialog-content {
+    color: black;
+}
+
+.home-dialog-content > p {
+    margin-bottom: 20px;
+    font-size: 1rem;
+}
+
 /* Overlay exclusivo para o Leaderboard */
-.leaderboard-dialog-overlay {
+.leaderboard-dialog-overlay, .home-dialog-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -626,7 +679,7 @@ button i {
     text-align: right;
 }
 
-.leaderboard-dialog-close button {
+.leaderboard-dialog-close > button, .home-dialog-close > button {
     cursor: pointer;
     background: none;
     border: none;

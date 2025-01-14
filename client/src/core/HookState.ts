@@ -2,8 +2,12 @@ import {useState} from "react";
 import {QuestionOptions} from "../schema/QuestionOptions.ts";
 import {Player} from "../schema/Player.ts";
 import {Room} from "colyseus.js";
+import {useParams} from "react-router-dom";
 
 export function useHookState() {
+
+    const { lobbyId } = useParams();
+
     const [players, setPlayers] = useState<Player[]>([]);
     const [profile, setProfile] = useState<Player>();
     const [language, setLanguage] = useState<string>("en");
@@ -23,60 +27,66 @@ export function useHookState() {
     const [timerClock, setTimerClock] = useState(0);
     const [answerSelected, setAnswerSelected] = useState<number>(-1);
     const [answerCorrect, setAnswerCorrect] = useState<number>(-1);
-    const [isMuted, setIsMuted] = useState(false);
     const [awaitingGeneration, setAwaitingGeneration] = useState(false);
     const [translations, setTranslations] = useState<Map<string, string>>(new Map());
 
     // Components
     const [isDialogPlayGame, setIsDialogPlayGame] = useState(false);
+    const [isDialogHome, setIsDialogHome] = useState(false);
     const [isDialogRanking, setIsDialogRanking] = useState(false);
 
+    // Auth
+    const [authLobbyId, setAuthLobbyId] = useState<string | undefined>(lobbyId);
+
     return {
-        // getters
+        // Getters
         answerCorrect,
         answerSelected,
+        authLobbyId,
+        awaitingGeneration,
+        categories,
         currentQuestionOptions,
         gameEnded,
+        gameLobby,
         gamePaused,
         gameStarted,
-        gameLobby,
-        isMuted,
-        players,
-        owner,
-        profile,
+        isDialogHome,
+        isDialogPlayGame,
+        isDialogRanking,
         language,
+        owner,
         ownerProfile,
+        players,
+        profile,
         room,
-        categories,
         theme,
         timeLeft,
         timerClock,
-        isDialogPlayGame,
-        isDialogRanking,
-        awaitingGeneration,
         translations,
-        // setters
-        setPlayers,
-        setProfile,
-        setLanguage,
-        setOwnerProfile,
-        setOwner,
+
+        // Setters
+        setAnswerCorrect,
+        setAnswerSelected,
+        setAuthLobbyId,
+        setAwaitingGeneration,
+        setCategories,
         setCurrentQuestionOptions,
         setGameEnded,
+        setGameLobby,
         setGamePaused,
         setGameStarted,
-        setGameLobby,
+        setIsDialogHome,
+        setIsDialogPlayGame,
+        setIsDialogRanking,
+        setLanguage,
+        setOwner,
+        setOwnerProfile,
+        setPlayers,
+        setProfile,
         setRoom,
-        setCategories,
         setTheme,
         setTimeLeft,
         setTimerClock,
-        setAnswerSelected,
-        setAnswerCorrect,
-        setIsMuted,
-        setIsDialogPlayGame,
-        setIsDialogRanking,
-        setAwaitingGeneration,
         setTranslations,
     };
 }

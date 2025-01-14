@@ -26,8 +26,8 @@ export default config({
         /**
          * Define your room handlers:
          */
-        gameServer.define('game', TriviaGameRoom)
-            .filterBy(['channelId']);
+        gameServer.define('lobby', TriviaGameRoom)
+            .filterBy(['lobbyId']);
 
     },
 
@@ -71,13 +71,11 @@ export default config({
                 // create user if not exists
                 const userExists = await existsUser(discordProfile.id);
 
-                let language = discordProfile.locale;
-                if (language.includes("-")) language = language.split("-")[0];
                 if (!userExists) await createUser(
                     discordProfile.id,
                     discordProfile.username,
                     discordProfile.avatar,
-                    language,
+                    discordProfile.locale.includes("-") ? discordProfile.locale.split("-")[0] : discordProfile.locale,
                 );
 
                 const userStorage = await getUserByDiscordId(discordProfile.id);
@@ -117,7 +115,7 @@ export default config({
                     discordId: userStorage.discordId,
                     avatar: userStorage.avatar,
                     username: userStorage.username,
-                    language: userStorage.language,
+                    language: userStorage.language.includes("-") ? userStorage.language.split("-")[0] : userStorage.language,
                     isAnonymous: userStorage.isAnonymous,
                 }
 

@@ -24,6 +24,7 @@ import * as crypto from "node:crypto";
 export class TriviaGameRoom extends Room<TriviaGameState> {
   maxClients = 10;
   totalTurns = 0;
+  genThemeLimitTotal = 0;
   roundId: string;
   roomIdUUID: string | null = null;
   questionOptions: QuestionOptions[] = new Array<QuestionOptions>();
@@ -210,16 +211,20 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
         const data: any = await response.json();
 
         // options
-        this.questionOptions = data.questionnaires.map((q: any) => {
-            return new QuestionOptions({
-                id: q.id,
-                question: q.question,
-                options: q.options,
-                correct: q.answer,
+        if (typeof data.questionnaires !== 'undefined') {
+            this.questionOptions = data.questionnaires.map((q: any) => {
+                return new QuestionOptions({
+                    id: q.id,
+                    question: q.question,
+                    options: q.options,
+                    correct: q.answer,
+                });
             });
-        });
+        }
 
         const translations = (translated: Record<string, any>): MapSchema<string> => {
+            if (typeof translated !== "undefined") return new MapSchema<string>();
+
             const mapSchema = new MapSchema<string>();
 
             /*
@@ -329,11 +334,15 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     this.state.gameStarted = false;
     this.state.gameEnded = false;
     this.state.gameOver = false;
+    this.state.awaitingGeneration = false;
     this.state.theme = null;
     this.state.currentAnswer = -1;
     this.state.currentQuestionOptions = null;
     this.state.timerClock = 30;
     this.timerChoose = this.clock.setInterval(() => this.tickChooseTimer(), 1000);
+
+    this.genThemeLimitTotal ++;
+    if (this.genThemeLimitTotal > 2) this.nextOwner();
   }
 
   calculateNextOwner() {
@@ -350,6 +359,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
   nextOwner() {
     this.state.owner = this.calculateNextOwner();
     this.state.timerClock = 30;
+    this.genThemeLimitTotal = 0;
     if(this.timerChoose) this.timerChoose.clear();
     this.startLobby();
   }
