@@ -235,4 +235,5 @@ class LLM:
 
 
     async def random(self, prompt: str, languages: List[Literal["pt", "es", "fr", "de"]]) -> Optional[QuestionnaireResponse]:
+        logger.debug(languages)
         return await self.generate(prompt, languages)
