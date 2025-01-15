@@ -5,6 +5,7 @@ import ShuffleIcon from '@mui/icons-material/Shuffle';
 import CloseIcon from '@mui/icons-material/Close';
 import ClockIcon from '@mui/icons-material/QueryBuilder';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
+import GroupAddIcon from '@mui/icons-material/GroupAdd';
 // import HomeIcon from '@mui/icons-material/Home';
 
 // css
@@ -413,8 +414,25 @@ export default function GameRoom(){
         if (typeof room !== 'undefined' && room !== null) room.send("changeLanguage", {language: l});
     }
 
-    const openDiscord = () => {
-        window.open(`https://discord.gg/${import.meta.env.VITE_DISCORD_INVITE_CODE}`, '_blank')
+    const openOfficialDiscord = async () => {
+        if (import.meta.env.VITE_DISCORD_INVITE_CODE === undefined) {
+            handleNotifyError("Discord invite code not found!");
+            return;
+        }
+        if (discordSDK === null) {
+            handleNotifyError("Discord SDK not found!");
+            return;
+        }
+        const urlInvite = `https://discord.gg/${import.meta.env.VITE_DISCORD_INVITE_CODE}`;
+        await discordSDK.commands.openExternalLink({url: urlInvite});
+    };
+
+    const openInviteDialog = async () => {
+        if (discordSDK === null) {
+            handleNotifyError("Discord SDK not found!");
+            return;
+        }
+        await discordSDK.commands.openInviteDialog();
     }
 
     return (
@@ -671,10 +689,13 @@ export default function GameRoom(){
                     </div>
                 </div>
             ) : ""}
-            <div className={'footer'}>
-                <a onClick={openDiscord} style={{cursor: 'pointer'}}>
+            <div className={'footer'} style={{display: 'flex', alignItems: 'center', gap: '7px'}}>
+                <a onClick={openOfficialDiscord} style={{cursor: 'pointer'}}>
                     <img src={discordLogoWhite} alt={'Discord Logo'} className={'logo'} />
                     <p>{i18n.t('Official Discord Server')}</p>
+                </a>
+                <a onClick={openInviteDialog} style={{cursor: 'pointer'}}>
+                    <GroupAddIcon/>
                 </a>
             </div>
         </>
