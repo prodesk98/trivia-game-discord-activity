@@ -271,7 +271,13 @@ export default function GameRoom(){
             state.listen("timerClock", (currentValue: number) => setTimerClock(currentValue));
 
             // listen gameStarted
-            state.listen("gameStarted", (currentValue: boolean) => setGameStarted(currentValue));
+            state.listen("gameStarted", (currentValue: boolean) => {
+                setGameStarted(currentValue);
+
+                if (currentValue) {
+                    if (theme!==null) setActivity(theme);
+                }
+            });
 
             // listen gameEnded
             state.listen("gameEnded", (currentValue: boolean) => setGameEnded(currentValue));
@@ -433,6 +439,17 @@ export default function GameRoom(){
             return;
         }
         await discordSDK.commands.openInviteDialog();
+    }
+
+    const setActivity = async (theme: string) => {
+        if (discordSDK === null) return;
+        await discordSDK.commands.setActivity({
+            activity: {
+                type: 0,
+                details: translate(theme),
+                state: i18n.t('Playing'),
+            }
+        });
     }
 
     return (
