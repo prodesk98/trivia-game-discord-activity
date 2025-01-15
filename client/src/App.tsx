@@ -13,16 +13,16 @@ import {GameProvider} from "./components/GameProvider.tsx";
 function App() {
   return (
     <>
-            <BrowserRouter>
-                <GameProvider>
-                    <Routes>
-                        <Route path="/" element={<Auth />} />
-                        <Route path="/lobby/:lobbyId" element={<GameRoom />} />
-                    </Routes>
-                </GameProvider>
-            </BrowserRouter>
+        <BrowserRouter>
+            <GameProvider>
+                <Routes>
+                    <Route path="/" element={<Auth />} />
+                    <Route path="/lobby/:lobbyId" element={<GameRoom />} />
+                </Routes>
+            </GameProvider>
+        </BrowserRouter>
         <ToastContainer
-            position="top-right"
+            position="top-left"
             autoClose={5000}
             hideProgressBar={false}
             newestOnTop={false}

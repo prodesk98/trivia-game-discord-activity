@@ -1,29 +1,24 @@
 import {authenticate} from "../utils/Auth.ts";
 import {useEffect} from "react";
-import {useGame} from "./GameProvider.tsx";
-import {discordSDK} from "../utils/DiscordSDK.ts";
 import { useNavigate } from "react-router-dom";
 
 import rocketIcon from "../assets/gifs/rocket.gif";
 import logoDiscord from "../assets/images/discord-mark-white.svg";
+import {useGame} from "./GameProvider.tsx";
 
 
 export default function Auth() {
 
-    const {tokenDiscord, setTokenDiscord} = useGame();
     const navigate = useNavigate();
+    const { setTokenDiscord } = useGame();
 
     useEffect(() => {
-        if (tokenDiscord) {
-            navigate("/lobby/" + discordSDK.channelId);
-            return;
-        }
         authenticate().then((response) => {
             const token = response.token;
             console.log("Authenticated with Discord!");
 
-            navigate("/lobby/" + discordSDK.channelId);
             setTokenDiscord(token);
+            navigate("/lobby/global");
         });
     }, []);
 

@@ -18,8 +18,9 @@ class Environment(BaseModel):
     OPENAI_API_KEY: Optional[str] = getenv("OPENAI_API_KEY")
     DEEPSEEK_API_KEY: Optional[str] = getenv("DEEPSEEK_API_KEY")
     EMBEDDING_MODEL: Optional[str] = getenv("EMBEDDING_MODEL", "text-embedding-3-small")
-    STRUCTURED_MODEL: Optional[str] = getenv("STRUCTURED_MODEL", "gpt-4o-mini")
-    MODERATION_MODEL: Optional[str] = getenv("MODERATION_MODEL", "omni-moderation-latest")
+    OPENAI_MODEL: Optional[str] = getenv("OPENAI_MODEL", "gpt-4o-mini")
+    DEEPSEEK_MODEL: Optional[str] = getenv("DEEPSEEK_MODEL", "deepseek-chat")
+    OPENAI_MODERATION_MODEL: Optional[str] = getenv("OPENAI_MODERATION_MODEL", "text-moderation-stable")
     RABBITMQ_DSN: Optional[AmqpDsn] = getenv("RABBITMQ_DSN", "amqp://guest:guest@localhost:5672//")
     THEMES: List[str] = Field(default_factory=lambda: THEMES) # noqa
     SUBTOPICS: Dict[str, List[str]] = Field(default_factory=lambda: SUBTOPICS) # noqa

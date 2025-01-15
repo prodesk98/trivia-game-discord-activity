@@ -17,14 +17,8 @@ class TranslationData(BaseModel):
 
 class QuestionnaireData(BaseModel):
     questionnaires: List[QuestionBase]
-    category: Category
 
 
 class QuestionnaireResponse(BaseModel):
     questionnaires: QuestionnaireData
     translations: Dict[str, str | dict]
-
-
-class Enrichment(BaseModel):
-    theme: str = Field(..., description="Theme to be enriched", title="Theme")
-    enriched_theme: str = Field(..., description="Enriched theme enriched with key facts and subtopics", title="Enriched Theme")

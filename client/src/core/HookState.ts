@@ -2,11 +2,8 @@ import {useState} from "react";
 import {QuestionOptions} from "../schema/QuestionOptions.ts";
 import {Player} from "../schema/Player.ts";
 import {Room} from "colyseus.js";
-import {useParams} from "react-router-dom";
 
 export function useHookState() {
-
-    const { lobbyId } = useParams();
 
     const [players, setPlayers] = useState<Player[]>([]);
     const [profile, setProfile] = useState<Player>();
@@ -35,14 +32,10 @@ export function useHookState() {
     const [isDialogHome, setIsDialogHome] = useState(false);
     const [isDialogRanking, setIsDialogRanking] = useState(false);
 
-    // Auth
-    const [authLobbyId, setAuthLobbyId] = useState<string | undefined>(lobbyId);
-
     return {
         // Getters
         answerCorrect,
         answerSelected,
-        authLobbyId,
         awaitingGeneration,
         categories,
         currentQuestionOptions,
@@ -67,7 +60,6 @@ export function useHookState() {
         // Setters
         setAnswerCorrect,
         setAnswerSelected,
-        setAuthLobbyId,
         setAwaitingGeneration,
         setCategories,
         setCurrentQuestionOptions,

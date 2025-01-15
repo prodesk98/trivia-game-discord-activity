@@ -2,7 +2,7 @@ import {Bounce, toast} from "react-toastify";
 
 
 export const handleNotifyError = (e: string) => toast.error(e, {
-    position: "bottom-right",
+    position: "top-left",
     autoClose: 5000,
     hideProgressBar: false,
     closeOnClick: true,
@@ -15,7 +15,7 @@ export const handleNotifyError = (e: string) => toast.error(e, {
 
 
 export const handleNotifyGameStatus = (e: string) => toast.info(e, {
-    position: "bottom-right",
+    position: "top-left",
     autoClose: 5000,
     hideProgressBar: true,
     closeOnClick: true,

@@ -12,8 +12,6 @@ interface GameContextType {
     pauseAudio: () => void;
     toggleAudio: () => void;
     isAudioPlaying: boolean;
-    authLobbyId: string | undefined;
-    setAuthLobbyId: (lobbyId: string) => void;
     language: string;
     setLanguage: (language: string) => void;
     room: Room | undefined;
@@ -52,7 +50,7 @@ interface GameContextType {
     setCategories: (c: string[]) => void;
     owner: string|undefined;
     setOwner: (o: string) => void;
-    tokenDiscord: string | null;
+    tokenDiscord: string | undefined;
     setTokenDiscord: (t: string) => void;
 }
 
@@ -61,13 +59,10 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 export const GameProvider = ({ children }: any): JSX.Element => {
     const [isMuted, setIsMuted] = useState(false);
     const [isAudioPlaying, setIsAudioPlaying] = useState(false);
-
-    // token Discord
-    const [tokenDiscord, setTokenDiscord] = useState<string | null>(null);
+    const [tokenDiscord, setTokenDiscord] = useState<string | undefined>();
 
     const {
-        authLobbyId, setAuthLobbyId, language,
-        setLanguage, room, setRoom, ownerProfile, setOwnerProfile,
+        language, setLanguage, room, setRoom, ownerProfile, setOwnerProfile,
         profile, setProfile, theme, setTheme, setPlayers, players,
         currentQuestionOptions, setCurrentQuestionOptions,
         timeLeft, setTimeLeft, timerClock, setTimerClock,
@@ -111,6 +106,7 @@ export const GameProvider = ({ children }: any): JSX.Element => {
 
         return () => {
             if (backgroundMusicRef.current) {
+                backgroundMusicRef.current.currentTime = 0;
                 backgroundMusicRef.current.pause();
             }
         };
@@ -123,8 +119,6 @@ export const GameProvider = ({ children }: any): JSX.Element => {
         pauseAudio,
         toggleAudio,
         isAudioPlaying,
-        authLobbyId,
-        setAuthLobbyId,
         language,
         setLanguage,
         room,

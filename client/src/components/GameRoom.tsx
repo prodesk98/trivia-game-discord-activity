@@ -6,6 +6,10 @@ import CloseIcon from '@mui/icons-material/Close';
 import ClockIcon from '@mui/icons-material/QueryBuilder';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
+import SendIcon from '@mui/icons-material/Send';
+import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import ChatIcon from '@mui/icons-material/Chat';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 // import HomeIcon from '@mui/icons-material/Home';
 
 // css
@@ -42,7 +46,8 @@ import {RankingDialog} from "./fragments/RankingDialog.tsx";
 import i18n from "../utils/I18n.ts";
 import LanguageSelect from "./fragments/LanguageSelect.tsx";
 import {useGame} from "./GameProvider.tsx";
-import {useNavigate} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
+import {authenticate} from "../utils/Auth.ts";
 
 
 export default function GameRoom(){
@@ -51,12 +56,15 @@ export default function GameRoom(){
     const [isDialogPlayGame, setIsDialogPlayGame] = useState(false);
     const [isDialogHome, setIsDialogHome] = useState(false);
     const [isDialogRanking, setIsDialogRanking] = useState(false);
+    const [chatMessages, setChatMessages] = useState<string[]>([]);
+    const [isChatVisible, setChatIsVisible] = useState(false);
 
     const navigate = useNavigate();
+    const { lobbyId } = useParams();
 
     const {
         isMuted, setIsMuted, playAudio, pauseAudio,
-        toggleAudio, authLobbyId, setLanguage,
+        toggleAudio, setLanguage,
         language, room, setRoom, ownerProfile, setOwnerProfile,
         profile, setProfile, theme, setTheme, players, setPlayers,
         currentQuestionOptions, setCurrentQuestionOptions,
@@ -65,12 +73,13 @@ export default function GameRoom(){
         gameLobby, setGameLobby, gamePaused, setGamePaused,
         answerSelected, setAnswerSelected, answerCorrect, setAnswerCorrect,
         awaitingGeneration, setAwaitingGeneration, translations, setTranslations,
-        categories, setCategories, owner, setOwner, tokenDiscord
+        categories, setCategories, owner, setOwner, tokenDiscord, setTokenDiscord
     } = useGame();
 
     const changeLanguage = async (lng: string) => {
         await i18n.changeLanguage(lng, () => {
             console.log("Language changed to: ", lng);
+            if (typeof room !== 'undefined') room.send("changeLanguage", {language: lng});
         });
     };
 
@@ -123,13 +132,17 @@ export default function GameRoom(){
     useEffect(() => {
         try {
             console.log("Authenticating with Discord...");
-            const lobbyId = typeof authLobbyId !== 'undefined' ? authLobbyId : "default";
-            if (tokenDiscord === null) {
-                handleNotifyError(
-                    "Failed to authenticate with Discord. Please try again or contact the support team.");
+            if (typeof tokenDiscord === 'undefined') {
+                authenticate().then((response) => {
+                    const token = response.token;
+                    console.log("Authenticated with Discord!");
+
+                    setTokenDiscord(token);
+                    handleColyseusConnection(token, typeof lobbyId !== 'undefined' ? lobbyId : "default").then();
+                });
                 return;
             }
-            handleColyseusConnection(tokenDiscord, lobbyId).then();
+            handleColyseusConnection(tokenDiscord, typeof lobbyId !== 'undefined' ? lobbyId : "default").then();
         }catch (e) {
             console.error(e);
             handleNotifyError(`Failed to authenticate with Discord. ${e}`);
@@ -364,6 +377,10 @@ export default function GameRoom(){
             pauseAudio();
         });
 
+        room.onMessage("chatMessage", (message: string) => {
+            setChatMessages([...chatMessages, message]);
+        });
+
         room.onMessage("__playground_message_types", (message: any) => {
             console.log(message);
         });
@@ -417,7 +434,7 @@ export default function GameRoom(){
         changeLanguage(l).then();
         setLocalStorage("language", l);
 
-        if (typeof room !== 'undefined' && room !== null) room.send("changeLanguage", {language: l});
+        if (typeof room !== 'undefined') room.send("changeLanguage", {language: l});
     }
 
     const openOfficialDiscord = async () => {
@@ -451,6 +468,14 @@ export default function GameRoom(){
             }
         });
     }
+
+    const [input, setInput] = useState("");
+    const handleChat = () => {
+        if (input.trim()) {
+            if (typeof room !== 'undefined') room.send("chatMessage", input);
+            setInput("");
+        }
+    };
 
     return (
         <>
@@ -589,20 +614,24 @@ export default function GameRoom(){
                     }
                 </div>
             </div>
-            <div className="top-right-buttons">
-                {
-                    typeof room !== 'undefined' ? (
-                        <button className={'btn-ranking'} onClick={() => setIsDialogRanking(!isDialogRanking)}>
-                            <LeaderboardIcon/>
+            {typeof room !== 'undefined' ?
+                (
+                    <div className="top-right-buttons">
+                        {
+                            typeof room !== 'undefined' ? (
+                                <button className={'btn-ranking'} onClick={() => setIsDialogRanking(!isDialogRanking)}>
+                                    <LeaderboardIcon/>
+                                </button>
+                            ) : ""
+                        }
+                        <button className="btn-mute" onClick={() => handleToggleSound()}>
+                            {isMuted ? <VolumeOff/> : <VolumeUp/>}
                         </button>
-                    ) : ""
-                }
-                <button className="btn-mute" onClick={() => handleToggleSound()}>
-                    {isMuted ? <VolumeOff/> : <VolumeUp/>}
-                </button>
 
-                <LanguageSelect selectedLanguage={language} handleLanguageChange={handleLanguageChange}/>
-            </div>
+                        <LanguageSelect selectedLanguage={language} handleLanguageChange={handleLanguageChange}/>
+                    </div>
+                ) : ""
+            }
             {/*<div className="top-left-buttons">*/}
             {/*    <button className="btn-home" onClick={() => setIsDialogHome(true)}>*/}
             {/*        <HomeIcon/>*/}
@@ -706,14 +735,49 @@ export default function GameRoom(){
                     </div>
                 </div>
             ) : ""}
-            <div className={'footer'} style={{display: 'flex', alignItems: 'center', gap: '7px'}}>
-                <a onClick={openOfficialDiscord} style={{cursor: 'pointer'}}>
-                    <img src={discordLogoWhite} alt={'Discord Logo'} className={'logo'} />
-                    <p>{i18n.t('Official Discord Server')}</p>
-                </a>
-                <a onClick={openInviteDialog} style={{cursor: 'pointer'}}>
-                    <GroupAddIcon/>
-                </a>
+            <div id="chat-container">
+                <div id="chat-header" onClick={() => {setChatIsVisible(!isChatVisible)}}>
+                    <div style={{display: 'flex', gap: '5px', alignItems: 'center'}}>
+                        <ChatIcon/>
+                        <h3>{i18n.t('Chat')}</h3>
+                    </div>
+                    <button id="toggle-chat">
+                        {isChatVisible ? <ArrowDropDownIcon/>  : <ArrowDropUpIcon />}
+                    </button>
+                </div>
+                {
+                    isChatVisible ? (
+                        <>
+                            <div id="chat-messages">
+                                {
+                                    chatMessages.map((message, index) => (
+                                        <div key={index}>
+                                            <span>{message}</span>
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                            <div id="chat-input">
+                                <input type="text" id="chat-text" placeholder={i18n.t('Enter your message...')}
+                                       maxLength={56}/>
+                                <button id="send-button" onClick={handleChat}>
+                                    <SendIcon/>
+                                </button>
+                            </div>
+                        </>
+                    ) : ""
+                }
+            </div>
+            <div className={'footer'}>
+                <div style={{display: 'flex', alignItems: 'center', gap: '7px'}}>
+                    <a onClick={openOfficialDiscord} style={{cursor: 'pointer'}}>
+                        <img src={discordLogoWhite} alt={'Discord Logo'} className={'logo'}/>
+                        <p>{i18n.t('Official Discord Server')}</p>
+                    </a>
+                    <a onClick={openInviteDialog} style={{cursor: 'pointer'}}>
+                        <GroupAddIcon/>
+                    </a>
+                </div>
             </div>
         </>
     )

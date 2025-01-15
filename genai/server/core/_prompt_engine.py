@@ -4,18 +4,12 @@ QUESTIONNAIRE_PROMPT = """Generate a quiz with {quantities} multiple-choice ques
 2. The quiz must strictly adhere to the chosen theme, ensuring questions are relevant and accurate without deviating from the topic.
 3. Translations for questions and options are required in the following languages: {languages}.
 4. Answer options must be short, clear, and concise, limited to a maximum of 5 words each.
-5. Each question must have only one correct answer. Options like "all of the above" or "none of the above" are not allowed.
-
-FORMAT INSTRUCTIONS:
-{format_instructions}"""
+5. Each question must have only one correct answer. Options like "all of the above" or "none of the above" are not allowed."""
 
 
 ENRICHMENT_PROMPT = """Expand the given theme into key facts and subtopics to create diverse, accurate quiz questions. 
 Ensure the information is relevant, concise, and easy to understand. 
-Output must be in English and limited to 126 characters.
-
-Format:
-{format_instructions}"""
+Output must be in English and limited to 126 characters."""
 
 
 TOPIC_PROMPT = """You are an assistant specializing in creating trivia questions and answers. 

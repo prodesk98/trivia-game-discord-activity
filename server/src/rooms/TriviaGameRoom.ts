@@ -22,7 +22,7 @@ import * as crypto from "node:crypto";
 
 
 export class TriviaGameRoom extends Room<TriviaGameState> {
-  maxClients = 10;
+  maxClients = 5;
   totalTurns = 0;
   genThemeLimitTotal = 0;
   roundId: string;
@@ -223,8 +223,6 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
         }
 
         const translations = (translated: Record<string, any>): MapSchema<string> => {
-            if (typeof translated !== "undefined") return new MapSchema<string>();
-
             const mapSchema = new MapSchema<string>();
 
             /*
