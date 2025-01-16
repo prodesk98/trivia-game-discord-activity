@@ -127,7 +127,7 @@ services:
     environment:
       VITE_NODE_ENV: production
       COLYSEUS_ENDPOINT: http://game-server:2567
-      VITE_LIVESTREAM_ENDPOINT: https://streaming.genai-trivia.protons.buzz/lofi
+      VITE_LIVESTREAM_ENDPOINT: https://streaming.protons.buzz/lofi
     depends_on:
         - game-server
     restart: on-failure:0
@@ -138,7 +138,8 @@ services:
     ports:
       - "80:80"
     volumes:
-        - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+        - ./nginx/game.conf:/etc/nginx/sites-enabled/game.conf
+        - ./nginx/streaming.conf:/etc/nginx/sites-enabled/streaming.conf
     depends_on:
       - game-client
       - game-server
