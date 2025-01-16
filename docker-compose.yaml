@@ -127,7 +127,7 @@ services:
     environment:
       VITE_NODE_ENV: production
       COLYSEUS_ENDPOINT: http://game-server:2567
-      VITE_LIVESTREAM_ENDPOINT: /streaming/lofi
+      VITE_LIVESTREAM_ENDPOINT: /streaming
     depends_on:
         - game-server
     restart: on-failure:0
