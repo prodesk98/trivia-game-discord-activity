@@ -1,0 +1,3 @@
+file './music/lofi-1.mp3'
+file './music/lofi-2.mp3'
+file './music/lofi-3.mp3'
