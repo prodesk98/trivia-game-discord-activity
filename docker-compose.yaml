@@ -87,16 +87,12 @@ services:
       - ICECAST_PASSWORD=ice
       - ICECAST_RELAY_PASSWORD=ice
       - ICECAST_HOSTNAME=ice
-    ports:
-      - "8011:8000"
     restart: on-failure:0
 
   lofi-encoder:
     build:
         context: ./lofi
         dockerfile: ./Dockerfile
-    ports:
-      - "5555:5555"
     volumes:
       - ./lofi/music:/app/music
       - ./lofi/playlist.txt:/app/playlist.txt
