@@ -8,11 +8,18 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/colyseus': {
-        target: 'http://game-server:2567', // game-server is the name of the service in the docker-compose file
+        target: 'http://game-server:2567',
         changeOrigin: true,
         secure: false,
         ws: true,
         // rewrite: (path) => path.replace(/^\/colyseus/, '')
+      },
+      '/streaming/lofi': {
+        target: 'http://lofi-icecast:8000',
+        changeOrigin: true,
+        secure: false,
+        ws: false,
+        // rewrite: (path) => path.replace(/^\/streaming/, '')
       }
     }
   }

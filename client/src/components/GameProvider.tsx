@@ -94,7 +94,11 @@ export const GameProvider = ({ children }: any): JSX.Element => {
 
     useEffect(() => {
         if (!backgroundMusicRef.current) {
-            backgroundMusicRef.current = new Audio(import.meta.env.VITE_LIVESTREAM_ENDPOINT);
+            if (import.meta.env.VITE_NODE_ENV !== "development") {
+                backgroundMusicRef.current = new Audio('.proxy/streaming/lofi');
+            } else {
+                backgroundMusicRef.current = new Audio(import.meta.env.VITE_LIVESTREAM_ENDPOINT);
+            }
             backgroundMusicRef.current.loop = true;
             backgroundMusicRef.current.volume = 0.2;
         }
