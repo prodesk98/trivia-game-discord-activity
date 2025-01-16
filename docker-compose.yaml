@@ -132,9 +132,9 @@ services:
         - game-server
     restart: on-failure:0
 
-  nginx:
+  reverse-proxy:
+    container_name: reverse-proxy
     image: nginx:latest
-    container_name: nginx-server
     ports:
       - "80:80"
     volumes:
@@ -145,6 +145,7 @@ services:
       - game-client
       - game-server
       - lofi-icecast
+      - quiz-genai-api
 
 volumes:
   mongodb_data:
