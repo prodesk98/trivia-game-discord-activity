@@ -138,9 +138,9 @@ services:
     ports:
       - "80:80"
     volumes:
-        - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-        - ./nginx/game.conf:/etc/nginx/sites-enabled/game.conf
-        - ./nginx/streaming.conf:/etc/nginx/sites-enabled/streaming.conf
+        - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+        - ./nginx/sites-available:/etc/nginx/sites-available:ro
+        - nginx_sites_enabled:/etc/nginx/sites-enabled
     depends_on:
       - game-client
       - game-server
