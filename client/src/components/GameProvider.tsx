@@ -114,6 +114,13 @@ export const GameProvider = ({ children }: any): JSX.Element => {
         };
     }, [isMuted]);
 
+    useEffect(() => {
+        const isMutedStorage = localStorage.getItem("isMuted");
+        if (isMutedStorage) {
+            setIsMuted(JSON.parse(isMutedStorage));
+        }
+    }, []);
+
     return <GameContext.Provider value={{
         isMuted,
         setIsMuted,

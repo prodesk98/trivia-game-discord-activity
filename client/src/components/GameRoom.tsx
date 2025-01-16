@@ -63,7 +63,7 @@ export default function GameRoom(){
     const { lobbyId } = useParams();
 
     const {
-        isMuted, setIsMuted, playAudio, pauseAudio,
+        isMuted, setIsMuted, playAudio,
         toggleAudio, setLanguage,
         language, room, setRoom, ownerProfile, setOwnerProfile,
         profile, setProfile, theme, setTheme, players, setPlayers,
@@ -343,7 +343,7 @@ export default function GameRoom(){
             setAnswerCorrect(-1);
 
             // stop background music
-            pauseAudio();
+            // pauseAudio();
         });
 
         room.onMessage("next", (message: any) => {
@@ -374,7 +374,7 @@ export default function GameRoom(){
             setAnswerCorrect(message.correct);
 
             // stop background music
-            pauseAudio();
+            // pauseAudio();
         });
 
         room.onMessage("chatMessage", (message: string) => {
