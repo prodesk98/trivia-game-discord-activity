@@ -138,6 +138,7 @@ services:
     ports:
       - "80:80"
     volumes:
+        - ./nginx/nginx.conf:/etc/nginx/nginx.conf
         - ./nginx/game.conf:/etc/nginx/sites-enabled/game.conf
         - ./nginx/streaming.conf:/etc/nginx/sites-enabled/streaming.conf
     depends_on:
