@@ -1,5 +1,4 @@
 import {createContext, useContext, useEffect, useRef, useState} from "react";
-import backgroundMusicGameTimer from "../assets/sounds/music-game-timer.ogg";
 import {useHookState} from "../core/HookState.ts";
 import {Room} from "colyseus.js";
 import {Player} from "../schema/Player.ts";
@@ -95,18 +94,21 @@ export const GameProvider = ({ children }: any): JSX.Element => {
 
     useEffect(() => {
         if (!backgroundMusicRef.current) {
-            backgroundMusicRef.current = new Audio(backgroundMusicGameTimer);
+            backgroundMusicRef.current = new Audio(import.meta.env.VITE_LIVESTREAM_ENDPOINT);
             backgroundMusicRef.current.loop = true;
-            backgroundMusicRef.current.volume = 0.08;
+            backgroundMusicRef.current.volume = 0.2;
         }
 
-        if (backgroundMusicRef.current) {
-            backgroundMusicRef.current.volume = isMuted ? 0 : 0.08;
+        if (isMuted) {
+            backgroundMusicRef.current.muted = true;
+            backgroundMusicRef.current.pause();
+        } else {
+            backgroundMusicRef.current.muted = false;
+            backgroundMusicRef.current.play().then(() => console.log("Audio started!"));
         }
 
         return () => {
             if (backgroundMusicRef.current) {
-                backgroundMusicRef.current.currentTime = 0;
                 backgroundMusicRef.current.pause();
             }
         };

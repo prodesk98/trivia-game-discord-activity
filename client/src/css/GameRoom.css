@@ -878,7 +878,7 @@ button i {
 }
 
 #chat-messages {
-    height: 500px;
+    max-height: 300px;
     display: flex;
     flex-direction: column-reverse;
     flex: 1;

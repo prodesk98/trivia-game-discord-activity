@@ -1,6 +1,6 @@
 // icons
-import VolumeOff from "@mui/icons-material/VolumeOff"
-import VolumeUp from "@mui/icons-material/VolumeUp"
+import MusicOffIcon from '@mui/icons-material/MusicOff';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import CloseIcon from '@mui/icons-material/Close';
 import ClockIcon from '@mui/icons-material/QueryBuilder';
@@ -378,7 +378,12 @@ export default function GameRoom(){
         });
 
         room.onMessage("chatMessage", (message: string) => {
-            setChatMessages([...chatMessages, message]);
+            chatMessages.push(message);
+            if (chatMessages.length > 50) {
+                chatMessages.shift();
+            }
+            chatMessages.reverse();
+            setChatMessages([...chatMessages]);
         });
 
         room.onMessage("__playground_message_types", (message: any) => {
@@ -469,12 +474,13 @@ export default function GameRoom(){
         });
     }
 
-    const [input, setInput] = useState("");
     const handleChat = () => {
-        if (input.trim()) {
-            if (typeof room !== 'undefined') room.send("chatMessage", input);
-            setInput("");
+        const input = (document.getElementById('chat-text') as HTMLInputElement);
+        if (input.value.trim()) {
+            if (typeof room !== 'undefined') room.send("chatMessage", {content: input.value});
+            input.value = "";
         }
+        setChatIsVisible(true);
     };
 
     return (
@@ -625,7 +631,7 @@ export default function GameRoom(){
                             ) : ""
                         }
                         <button className="btn-mute" onClick={() => handleToggleSound()}>
-                            {isMuted ? <VolumeOff/> : <VolumeUp/>}
+                            {isMuted ? <MusicOffIcon/> : <MusicNoteIcon/>}
                         </button>
 
                         <LanguageSelect selectedLanguage={language} handleLanguageChange={handleLanguageChange}/>
@@ -739,7 +745,7 @@ export default function GameRoom(){
                 <div id="chat-header" onClick={() => {setChatIsVisible(!isChatVisible)}}>
                     <div style={{display: 'flex', gap: '5px', alignItems: 'center'}}>
                         <ChatIcon/>
-                        <h3>{i18n.t('Chat')}</h3>
+                        <h3>{i18n.t('Chat')}</h3> <span>({chatMessages.length})</span>
                     </div>
                     <button id="toggle-chat">
                         {isChatVisible ? <ArrowDropDownIcon/>  : <ArrowDropUpIcon />}
@@ -757,13 +763,15 @@ export default function GameRoom(){
                                     ))
                                 }
                             </div>
-                            <div id="chat-input">
-                                <input type="text" id="chat-text" placeholder={i18n.t('Enter your message...')}
-                                       maxLength={56}/>
-                                <button id="send-button" onClick={handleChat}>
-                                    <SendIcon/>
-                                </button>
-                            </div>
+                            <form id="chat-form" onSubmit={(e) => {e.preventDefault(); handleChat();}}>
+                                <div id="chat-input">
+                                    <input type="text" id="chat-text" placeholder={i18n.t('Enter your message...')}
+                                           maxLength={56} autoComplete={'off'}/>
+                                    <button id="send-button" onClick={handleChat}>
+                                        <SendIcon/>
+                                    </button>
+                                </div>
+                            </form>
                         </>
                     ) : ""
                 }

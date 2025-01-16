@@ -127,6 +127,7 @@ services:
     environment:
       VITE_NODE_ENV: production
       COLYSEUS_ENDPOINT: http://game-server:2567
+      VITE_LIVESTREAM_ENDPOINT: streaming-genai-trivia.protons.buzz
     depends_on:
         - game-server
     restart: on-failure:0

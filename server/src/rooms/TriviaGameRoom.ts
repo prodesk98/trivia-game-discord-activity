@@ -100,6 +100,14 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
         await updateLanguage(player.userId, message.language);
     });
 
+    this.onMessage("chatMessage", (client, message) => {
+        const player = this.state.players.get(client.sessionId);
+        if (!player) return;
+        if (message.content.length > 56) return;
+        let content = `${player.username}: ${message.content}`;
+        this.broadcast("chatMessage", content);
+    });
+
     // find all categories
     this.state.categories = await this.getCategories();
 
