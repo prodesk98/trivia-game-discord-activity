@@ -100,7 +100,7 @@ export const GameProvider = ({ children }: any): JSX.Element => {
                 backgroundMusicRef.current = new Audio(import.meta.env.VITE_LIVESTREAM_ENDPOINT);
             }
             backgroundMusicRef.current.loop = true;
-            backgroundMusicRef.current.volume = 0.2;
+            backgroundMusicRef.current.volume = 0.08;
         }
 
         if (isMuted) {

@@ -58,6 +58,7 @@ export default function GameRoom(){
     const [isDialogRanking, setIsDialogRanking] = useState(false);
     const [chatMessages, setChatMessages] = useState<string[]>([]);
     const [isChatVisible, setChatIsVisible] = useState(false);
+    const [isInitiated, setIsInitiated] = useState(false);
 
     const navigate = useNavigate();
     const { lobbyId } = useParams();
@@ -219,6 +220,12 @@ export default function GameRoom(){
 
         room.onStateChange.once((state: any) => {
             const playersArray: Player[] = Array.from(state.players.values());
+
+
+            if (playersArray.length === 1 && !isInitiated) {
+                setIsInitiated(true);
+                openInviteDialog();
+            }
 
             // sort players by score
             const playersSorted = handleCalculatePosition(playersArray, room.sessionId);

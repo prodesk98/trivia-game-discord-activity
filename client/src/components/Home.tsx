@@ -17,7 +17,7 @@ import {OrbitProgress} from "react-loading-indicators";
 import i18n from "../utils/I18n.ts";
 
 import LanguageSelect from "./fragments/LanguageSelect.tsx";
-import {setLocalStorage} from "../utils/LocalStorage.ts";
+import {getLocalStorage, hasLocalStorage, setLocalStorage} from "../utils/LocalStorage.ts";
 import {useGame} from "./GameProvider.tsx";
 
 
@@ -67,6 +67,14 @@ export default function Home() {
     useEffect(() => {
         getGuildIcon().then((icon) => {
             setGuildIcon(icon);
+        });
+        // Set language
+        discordSDK.commands.userSettingsGetLocale().then((resp) => {
+            let language = resp.locale.includes("-") ? resp.locale.split("-")[0] : resp.locale;
+            if (!hasLocalStorage("language")) {
+                setLocalStorage("language", language);
+            }
+            setLanguage(getLocalStorage("language"));
         });
     }, []);
 
