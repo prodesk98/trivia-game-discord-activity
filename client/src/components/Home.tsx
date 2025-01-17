@@ -50,14 +50,15 @@ export default function Home() {
 
     const getGuildIcon = async () => {
         try {
-            const url = `${import.meta.env.VITE_NODE_ENV !== 'production' ? 'http://localhost:2567' : '/.proxy'}/api/guild/${discordSDK.guildId}`;
+            const guildId = discordSDK.guildId;
+            if (guildId === null) return `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random() * 5)}.png`;
+            const url = `${import.meta.env.VITE_NODE_ENV !== 'production' ? 'http://localhost:2567' : '/.proxy'}/api/guild/${guildId}`;
             const guild = await axios.get(url);
             if (guild.status !== 200) {
                 return `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random() * 5)}.png`;
             }
             const icon = guild.data.icon;
-            handleNotifyError(icon);
-            return `https://cdn.discordapp.com/icons/${discordSDK.guildId}/${icon}.webp?size=50`;
+            return `https://cdn.discordapp.com/icons/${guildId}/${icon}.webp`;
         } catch (error) {
             return `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random() * 5)}.png`;
         }
