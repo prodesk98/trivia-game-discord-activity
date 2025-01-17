@@ -63,6 +63,11 @@ export default function Ranking(){
     return (
         <>
             <div className="lb-container">
+                {(
+                    <>
+                        `${import.meta.env.VITE_NODE_ENV !== 'production' ? 'http://localhost:2567' : '.proxy'}/api/ranking`
+                    </>
+                )}
                 { loading ? (
                     <div className="lb-loading">
                         <OrbitProgress color="#fff" />
