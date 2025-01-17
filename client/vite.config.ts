@@ -21,7 +21,7 @@ export default defineConfig({
         ws: false,
         // rewrite: (path) => path.replace(/^\/api/, '')
       },
-      '/streaming/lofi': {
+      '/streaming': {
         target: 'http://lofi-icecast:8000',
         changeOrigin: true,
         secure: false,

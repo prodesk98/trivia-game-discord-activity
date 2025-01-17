@@ -20,7 +20,7 @@ export default function Ranking(){
 
     useEffect(() => {
         const fetchRanking = async () => {
-            const url = `${import.meta.env.VITE_NODE_ENV !== 'production' ? 'http://localhost:2567' : '.proxy'}/api/ranking`;
+            const url = `${import.meta.env.VITE_NODE_ENV !== 'production' ? 'http://localhost:2567' : '/.proxy'}/api/ranking`;
             try {
                 const response = await fetch(url);
                 const data = await response.json();
@@ -63,11 +63,6 @@ export default function Ranking(){
     return (
         <>
             <div className="lb-container">
-                {(
-                    <>
-                        `${import.meta.env.VITE_NODE_ENV !== 'production' ? 'http://localhost:2567' : '.proxy'}/api/ranking`
-                    </>
-                )}
                 { loading ? (
                     <div className="lb-loading">
                         <OrbitProgress color="#fff" />
