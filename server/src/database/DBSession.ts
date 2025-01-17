@@ -131,6 +131,7 @@ export const getRanking = async (limit: number = 30) => {
                     _id: 0,
                     userId: "$_id",
                     total: 1,
+                    discordId: { $arrayElemAt: ["$userDetails.discordId", 0] },
                     username: { $arrayElemAt: ["$userDetails.username", 0] },
                     avatar: { $arrayElemAt: ["$userDetails.avatar", 0] }
                 }

@@ -22,15 +22,16 @@ export default function Ranking(){
         const fetchRanking = async () => {
             const url = `${import.meta.env.VITE_NODE_ENV !== 'production' ? 'http://localhost:2567' : ''}/api/ranking`;
             try {
-                const response = await fetch(url);
+                const response = await fetch('https://game.protons.buzz/api/ranking');
                 const data = await response.json();
 
                 // Get the top 3 players
-                for (let i = 0; i < 2; i++) {
+                for (let i = 0; i < 3; i++) {
                     setTopThree((prev) => [
                         ...prev,
                         {
                             id: data[i].userId,
+                            discordId: data[i]?.discordId,
                             username: data[i].username,
                             score: data[i].total,
                             avatar: data[i].avatar
@@ -38,11 +39,12 @@ export default function Ranking(){
                     ]);
                 }
                 // Get the rest of the players
-                for (let i = 2; i < data.length; i++) {
+                for (let i = 3; i < data.length; i++) {
                     setOthers((prev) => [
                         ...prev,
                         {
                             id: data[i].userId,
+                            discordId: data[i]?.discordId,
                             username: data[i].username,
                             score: data[i].total,
                             avatar: data[i].avatar
@@ -76,7 +78,7 @@ export default function Ranking(){
                             >
                                 <div className="lb-avatar-container">
                                     <img
-                                        src={handleAvatar(player.id, player.avatar)}
+                                        src={handleAvatar(player.discordId, player.avatar)}
                                         alt={`Avatar of ${player.username}`}
                                         className="lb-avatar"
                                     />
@@ -107,7 +109,7 @@ export default function Ranking(){
                                 }}>
                                     <div className="lb-player-details">
                                         <img
-                                            src={handleAvatar(player.id, player.avatar)}
+                                            src={handleAvatar(player.discordId, player.avatar)}
                                             alt={`Avatar of ${player.username}`}
                                             className="lb-avatar-small"
                                         />

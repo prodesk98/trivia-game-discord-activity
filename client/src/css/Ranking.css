@@ -82,6 +82,8 @@
 
 .lb-other-players {
     margin-top: 20px;
+    max-height: 500px;
+    overflow-y: auto;
 }
 
 .lb-player-row {
