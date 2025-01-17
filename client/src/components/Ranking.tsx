@@ -20,7 +20,7 @@ export default function Ranking(){
 
     useEffect(() => {
         const fetchRanking = async () => {
-            const url = `${import.meta.env.VITE_NODE_ENV !== 'production' ? 'http://localhost:2567' : ''}/api/ranking`;
+            // const url = `${import.meta.env.VITE_NODE_ENV !== 'production' ? 'http://localhost:2567' : ''}/api/ranking`;
             try {
                 const response = await fetch('https://game.protons.buzz/api/ranking');
                 const data = await response.json();
