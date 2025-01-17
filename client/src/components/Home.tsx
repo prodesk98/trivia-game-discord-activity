@@ -74,6 +74,7 @@ export default function Home() {
             if (!hasLocalStorage("language")) {
                 setLocalStorage("language", language);
             }
+            changeLanguage(l).then();
             setLanguage(getLocalStorage("language"));
         });
     }, []);
