@@ -1,5 +1,6 @@
 import "../css/HomeGame.css";
 import discordLogoWhite from "../assets/images/discord-mark-white.svg";
+import logo from "../assets/images/logo.png";
 import {handleNotifyError} from "../core/Notification.ts";
 import {discordSDK} from "../utils/DiscordSDK.ts";
 import {RPCCloseCodes} from "@discord/embedded-app-sdk";
@@ -92,7 +93,7 @@ export default function Home() {
         <div className="menu-container">
             <div className="title">
                 <div>
-                    <img src={'/src/assets/images/logo.png'} alt={'Logo'} width={'150px'}/>
+                    <img src={logo} alt={'Logo'} width={'150px'}/>
                 </div>
                 <div>
                     <small>By <b>Protons</b></small>
