@@ -20,9 +20,9 @@ export default function Ranking(){
 
     useEffect(() => {
         const fetchRanking = async () => {
-            // const url = `${import.meta.env.VITE_NODE_ENV !== 'production' ? 'http://localhost:2567' : ''}/api/ranking`;
+            const url = `${import.meta.env.VITE_NODE_ENV !== 'production' ? 'http://localhost:2567' : ''}/api/ranking`;
             try {
-                const response = await fetch('https://game.protons.buzz/api/ranking');
+                const response = await fetch(url);
                 const data = await response.json();
 
                 // Get the top 3 players
@@ -81,6 +81,10 @@ export default function Ranking(){
                                         src={handleAvatar(player.discordId, player.avatar)}
                                         alt={`Avatar of ${player.username}`}
                                         className="lb-avatar"
+                                        onError={(e: any) => {
+                                            e.target.onerror = null;
+                                            e.target.src = `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random() * 5)}.png`;
+                                        }}
                                     />
                                 </div>
                                 <p className="lb-rank">
@@ -112,6 +116,10 @@ export default function Ranking(){
                                             src={handleAvatar(player.discordId, player.avatar)}
                                             alt={`Avatar of ${player.username}`}
                                             className="lb-avatar-small"
+                                            onError={(e: any) => {
+                                                e.target.onerror = null;
+                                                e.target.src = `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random() * 5)}.png`;
+                                            }}
                                         />
                                         <span className="lb-row-name">{player.username}</span>
                                     </div>
