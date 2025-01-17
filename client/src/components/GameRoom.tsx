@@ -663,6 +663,7 @@ export default function GameRoom(){
                                 <button className="btn-confirm" onClick={() => {
                                     if (typeof room !== "undefined") room.leave().then();
                                     players.length = 0;
+                                    setTheme(null);
                                     navigate('/home');
                                 }}>
                                     {i18n.t('Leave')}

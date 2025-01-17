@@ -20,7 +20,7 @@ interface GameContextType {
     profile: Player|undefined;
     setProfile: (p: Player) => void;
     theme: string | null;
-    setTheme: (t: string) => void;
+    setTheme: (t: string | null) => void;
     players: Player[];
     setPlayers: (p: Player[]) => void;
     currentQuestionOptions: QuestionOptions|undefined;
