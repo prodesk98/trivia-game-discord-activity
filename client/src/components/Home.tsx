@@ -53,12 +53,13 @@ export default function Home() {
             const url = `${import.meta.env.VITE_NODE_ENV !== 'production' ? 'http://localhost:2567' : '/.proxy'}/api/guild/${discordSDK.guildId}`;
             const guild = await axios.get(url);
             if (guild.status !== 200) {
-                return `https://cdn.discordapp.com/embed/avatars/4.png`;
+                return `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random() * 5)}.png`;
             }
             const icon = guild.data.icon;
+            handleNotifyError(icon);
             return `https://cdn.discordapp.com/icons/${discordSDK.guildId}/${icon}.webp?size=50`;
         } catch (error) {
-            return `https://cdn.discordapp.com/embed/avatars/4.png`;
+            return `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random() * 5)}.png`;
         }
     }
 
@@ -104,7 +105,11 @@ export default function Home() {
                     <div>
                         {guildIcon !== undefined ? (
                             <img src={guildIcon} alt={'Logo'}
-                                 width={'50px'}/>
+                                 width={'50px'}
+                                 onError={(e: any) => {
+                                     e.target.onerror = null;
+                                     e.target.src = `https://cdn.discordapp.com/embed/avatars/${Math.floor(Math.random() * 5)}.png`;
+                                 }}/>
                         ) : (
                             <OrbitProgress variant="split-disc" color="#FFF"
                                            size="small" text=""
