@@ -1,0 +1,120 @@
+.lb-container {
+    width: 500px;
+    background: #432291;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    overflow: hidden;
+    position: relative;
+    padding: 40px;
+}
+
+.lb-top-three {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.lb-top-player {
+    text-align: center;
+    position: relative;
+}
+
+.lb-avatar-container {
+    position: relative;
+    display: inline-block;
+}
+
+.lb-first {
+    order: 1;
+    transform: translateY(-20px);
+    z-index: 3;
+}
+
+.lb-second {
+    order: 0;
+    transform: translateY(0);
+    z-index: 2;
+}
+
+.lb-third {
+    order: 2;
+    transform: translateY(0);
+    z-index: 1;
+}
+
+.lb-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.lb-trophy {
+    width: 15px;
+    height: 15px;
+}
+
+.lb-rank {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    font-size: 1rem;
+    color: #e4c863;
+    margin: 5px 0;
+    font-weight: bold;
+}
+
+.lb-name {
+    font-size: 1.2rem;
+    color: white;
+    margin-bottom: 5px;
+}
+
+.lb-score {
+    font-size: 1rem;
+    color: #ffcc00;
+    font-weight: bold;
+}
+
+.lb-other-players {
+    margin-top: 20px;
+}
+
+.lb-player-row {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    margin-bottom: 10px;
+    padding: 10px 15px;
+    border-radius: 10px;
+}
+
+.lb-player-row:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.lb-avatar-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.lb-player-details {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.lb-top-left-buttons {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+

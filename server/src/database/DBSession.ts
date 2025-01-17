@@ -103,6 +103,45 @@ export const createScore = async (userId: string, roundId: string, roomId: strin
     return score.id;
 }
 
+export const getRanking = async (limit: number = 30) => {
+    try {
+        return await Score.aggregate([
+            {
+                $group: {
+                    _id: "$userId",
+                    total: { $sum: "$value" }
+                }
+            },
+            {
+                $sort: { total: -1 }
+            },
+            {
+                $limit: limit
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "_id",
+                    foreignField: "id",
+                    as: "userDetails"
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    userId: "$_id",
+                    total: 1,
+                    username: { $arrayElemAt: ["$userDetails.username", 0] },
+                    avatar: { $arrayElemAt: ["$userDetails.avatar", 0] }
+                }
+            }
+        ]);
+    } catch (error) {
+        console.error("Error fetching ranking:", error);
+        throw new Error("Failed to fetch ranking");
+    }
+};
+
 export const getSumScoreByUserId = async (userId: string): Promise<Number> => {
     const result = await Score.aggregate(
         [
@@ -170,6 +209,15 @@ export const getGuildById = async (id: string) => {
     return Guild.findOne(
         {
             id: new mongoose.Types.UUID(id),
+        }
+    );
+}
+
+
+export const getBuildByGuidId = async (guildId: string) => {
+    return Guild.findOne(
+        {
+            guildId: guildId,
         }
     );
 }

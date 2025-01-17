@@ -9,7 +9,11 @@ import { JWT } from "@colyseus/auth";
  * Import your Room files
  */
 import { TriviaGameRoom } from "./rooms/TriviaGameRoom";
-import {createGuild, createUser, existsGuild, existsUser, getUserByDiscordId, upsertTokens} from "./database/DBSession";
+import {
+    createGuild, createUser, existsGuild,
+    existsUser, getUserByDiscordId, upsertTokens,
+    getRanking, getBuildByGuidId
+} from "./database/DBSession";
 
 export default config({
 
@@ -32,6 +36,35 @@ export default config({
     },
 
     initializeExpress: (app) => {
+
+        /**
+         * Guild
+         */
+        app.get("/api/guild/:guildId", async (req, res) => {
+            try {
+                const guildId = req.params.guildId;
+                const guild = await getBuildByGuidId(guildId);
+
+                if (!guild) {
+                    return res.status(404).json({ error: 'Guild not found' });
+                }
+                res.json(guild);
+            } catch (error) {
+                console.error(error);
+                res.status(500).json({ error: 'Internal Server Error' });
+            }
+        });
+
+        app.get("/api/ranking", async (req, res) => {
+            try {
+                const ranking = await getRanking();
+                res.json(ranking);
+            } catch (error) {
+                console.error(error);
+                res.status(500).json({ error: 'Internal Server Error' });
+            }
+        });
+
         /**
          * Discord Embedded SDK: Retrieve user token when under Discord/Embed
          */

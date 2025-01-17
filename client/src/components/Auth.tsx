@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import rocketIcon from "../assets/gifs/rocket.gif";
 import logoDiscord from "../assets/images/discord-mark-white.svg";
 import {useGame} from "./GameProvider.tsx";
+import {discordSDK} from "../utils/DiscordSDK.ts";
+import {RPCCloseCodes} from "@discord/embedded-app-sdk";
 
 
 export default function Auth() {
@@ -17,8 +19,13 @@ export default function Auth() {
             const token = response.token;
             console.log("Authenticated with Discord!");
 
+            if(discordSDK.guildId === null) {
+                discordSDK.close(RPCCloseCodes.INVALID_ORIGIN, "Guild not found");
+                return;
+            }
+
             setTokenDiscord(token);
-            navigate("/lobby/global");
+            navigate("/home");
         });
     }, []);
 

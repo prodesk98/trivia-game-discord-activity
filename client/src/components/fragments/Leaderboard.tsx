@@ -21,7 +21,7 @@ export const Leaderboard: React.FC<ILeaderboard> = ({ players, t }) => {
                                 <img src={player.avatar} alt={player.username} className="avatar"/>
                             </div>
                             <span className="username">{player.isMe ? t('You') : player.username}</span>
-                            <span className="points">{player.score}</span>
+                            <span className="points">{player.score.toLocaleString()}</span>
                         </div>
                     ))}
                 </div>

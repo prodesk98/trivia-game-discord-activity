@@ -1,0 +1,97 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Baloo 2', sans-serif;
+    background: radial-gradient(circle at center, #1e034c, #0d0221);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.menu-container {
+    text-align: center;
+}
+
+.title {
+    padding-bottom: 20px;
+}
+
+.buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.button {
+    background: #ff4d5a;
+    border: none;
+    border-radius: 30px;
+    padding: 15px;
+    font-size: 1.5rem;
+    color: white;
+    cursor: pointer;
+    margin: 0 auto;
+    transition: transform 0.2s, background-color 0.2s;
+    display: flex;
+    text-align: center;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.button .lb-text {
+    width: 100%;
+    text-align: left;
+}
+
+.button > div > img {
+    border: 1px solid #ecf0f1;
+    border-radius: 100px;
+    padding: 2px;
+    width: 50px;
+    height: 50px;
+}
+
+.button > div > svg {
+    display: block;
+    width: 50px;
+    height: 50px;
+}
+
+.button > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.button:hover {
+    transform: scale(1.05);
+    background: #ff6666;
+}
+
+.socials {
+    margin-top: 30px;
+    font-size: 1.5rem;
+    color: #ff6666;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.socials img {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.socials img:hover {
+    transform: scale(1.2);
+    color: #ff4d5a;
+}
+
+.version {
+    margin-top: 20px;
+    font-size: 0.8rem;
+    color: #888;
+}

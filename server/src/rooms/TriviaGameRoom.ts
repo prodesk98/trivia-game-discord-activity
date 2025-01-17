@@ -22,7 +22,7 @@ import * as crypto from "node:crypto";
 
 
 export class TriviaGameRoom extends Room<TriviaGameState> {
-  maxClients = 5;
+  maxClients = 10;
   totalTurns = 0;
   genThemeLimitTotal = 0;
   roundId: string;
@@ -134,7 +134,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     // @ts-ignore
     player.score = await getSumScoreByRoomIdAndUserId(player.userId, this.roomId);
 
-    if (!player.avatar.startsWith("https://")) player.avatar = `https://cdn.discordapp.com/avatars/${player.id}/${player.avatar}.png?size=256`;
+    if (!player.avatar.startsWith("https://")) player.avatar = `https://cdn.discordapp.com/avatars/${player.id}/${player.avatar}.webp?size=256`;
     this.state.players.set(client.sessionId, player);
 
     // assign the owner if there's no owner
@@ -417,7 +417,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     this.broadcast("next", {i: this.currentQuestionIndex});
 
     // start the timer
-    if (this.state.currentTimer < 30) this.state.currentTimer = 30;
+    if (this.state.currentTimer < 15) this.state.currentTimer = 15;
     this.timerGame = this.clock.setInterval(() => this.tickGameTimer(), 1000);
   }
 }

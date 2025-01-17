@@ -10,7 +10,6 @@ import SendIcon from '@mui/icons-material/Send';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ChatIcon from '@mui/icons-material/Chat';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-// import HomeIcon from '@mui/icons-material/Home';
 
 // css
 import "../css/GameRoom.css";
@@ -48,10 +47,11 @@ import LanguageSelect from "./fragments/LanguageSelect.tsx";
 import {useGame} from "./GameProvider.tsx";
 import {useNavigate, useParams} from "react-router-dom";
 import {authenticate} from "../utils/Auth.ts";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 
 export default function GameRoom(){
-    const totalTime = 30; // Tempo total da pergunta
+    const totalTime = 15; // Tempo total da pergunta
 
     const [isDialogPlayGame, setIsDialogPlayGame] = useState(false);
     const [isDialogHome, setIsDialogHome] = useState(false);
@@ -421,7 +421,7 @@ export default function GameRoom(){
 
         // set paused
         setGamePaused(true);
-        setTimeLeft(30);
+        setTimeLeft(15);
     }
 
     const translate = (key: string | undefined) => {
@@ -638,12 +638,12 @@ export default function GameRoom(){
                     </div>
                 ) : ""
             }
-            {/*<div className="top-left-buttons">*/}
-            {/*    <button className="btn-home" onClick={() => setIsDialogHome(true)}>*/}
-            {/*        <HomeIcon/>*/}
-            {/*        {i18n.t('Home')}*/}
-            {/*    </button>*/}
-            {/*</div>*/}
+            <div className="top-left-buttons">
+                <button className="btn-home" onClick={() => setIsDialogHome(true)}>
+                    <ArrowBackIcon />
+                    {i18n.t('Home')}
+                </button>
+            </div>
 
             {isDialogHome ? (
                 <div className="home-dialog-overlay">
@@ -660,7 +660,11 @@ export default function GameRoom(){
                                 <button className="btn-cancel" onClick={() => setIsDialogHome(false)}>
                                     {i18n.t('Cancel')}
                                 </button>
-                                <button className="btn-confirm" onClick={() => navigate('/')}>
+                                <button className="btn-confirm" onClick={() => {
+                                    if (typeof room !== "undefined") room.leave().then();
+                                    players.length = 0;
+                                    navigate('/home');
+                                }}>
                                     {i18n.t('Leave')}
                                 </button>
                             </div>

@@ -14,6 +14,13 @@ export default defineConfig({
         ws: true,
         // rewrite: (path) => path.replace(/^\/colyseus/, '')
       },
+      '/api': {
+        target: 'http://game-server:2567',
+        changeOrigin: true,
+        secure: false,
+        ws: false,
+        // rewrite: (path) => path.replace(/^\/api/, '')
+      },
       '/streaming/lofi': {
         target: 'http://lofi-icecast:8000',
         changeOrigin: true,
