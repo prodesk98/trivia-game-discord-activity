@@ -50,7 +50,7 @@ export default function Home() {
 
     const getGuildIcon = async () => {
         try {
-            const url = `${import.meta.env.VITE_NODE_ENV !== 'production' ? 'http://localhost:2567' : ''}/api/guild/${discordSDK.guildId}`;
+            const url = `${import.meta.env.VITE_NODE_ENV !== 'production' ? 'http://localhost:2567' : '.proxy'}/api/guild/${discordSDK.guildId}`;
             const guild = await axios.get(url);
             if (guild.status !== 200) {
                 return `https://cdn.discordapp.com/embed/avatars/4.png`;
