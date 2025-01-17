@@ -14,14 +14,41 @@ export default function Ranking(){
     const [topThree, setTopThree] = useState<any[]>([]);
     const [others, setOthers] = useState<any[]>([]);
 
+    const handleAvatar = (id: string, avatar: string) =>  {
+        return `https://cdn.discordapp.com/avatars/${id}/${avatar}.webp?size=256`;
+    }
+
     useEffect(() => {
         const fetchRanking = async () => {
             const url = `${import.meta.env.VITE_NODE_ENV !== 'production' ? 'http://localhost:2567' : ''}/api/ranking`;
             try {
                 const response = await fetch(url);
                 const data = await response.json();
-                setTopThree(data.topThree);
-                setOthers(data.others);
+
+                // Get the top 3 players
+                for (let i = 0; i < 2; i++) {
+                    setTopThree((prev) => [
+                        ...prev,
+                        {
+                            id: data[i].userId,
+                            username: data[i].username,
+                            score: data[i].total,
+                            avatar: data[i].avatar
+                        }
+                    ]);
+                }
+                // Get the rest of the players
+                for (let i = 2; i < data.length; i++) {
+                    setOthers((prev) => [
+                        ...prev,
+                        {
+                            id: data[i].userId,
+                            username: data[i].username,
+                            score: data[i].total,
+                            avatar: data[i].avatar
+                        }
+                    ]);
+                }
             } catch (error) {
                 console.error(error);
             } finally {
@@ -49,7 +76,7 @@ export default function Ranking(){
                             >
                                 <div className="lb-avatar-container">
                                     <img
-                                        src={player.avatar}
+                                        src={handleAvatar(player.id, player.avatar)}
                                         alt={`Avatar of ${player.username}`}
                                         className="lb-avatar"
                                     />
@@ -80,7 +107,7 @@ export default function Ranking(){
                                 }}>
                                     <div className="lb-player-details">
                                         <img
-                                            src={player.avatar}
+                                            src={handleAvatar(player.id, player.avatar)}
                                             alt={`Avatar of ${player.username}`}
                                             className="lb-avatar-small"
                                         />
