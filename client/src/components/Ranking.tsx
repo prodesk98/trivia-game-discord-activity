@@ -95,7 +95,7 @@ export default function Ranking(){
                 )}
             </div>
             <div className="top-left-buttons">
-                <button className="btn-home" onClick={() => navigate("/")}>
+                <button className="btn-home" onClick={() => navigate("/home")}>
                     <ArrowBackIcon/>
                     {i18n.t('Home')}
                 </button>
