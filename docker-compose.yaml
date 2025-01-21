@@ -35,8 +35,6 @@ services:
   weaviate-panel:
     container_name: weaviate-panel
     image: naaive/weaviate-ui:latest
-    ports:
-      - "8081:7777"
     environment:
       WEAVIATE_API_KEYS: ''
       WEAVIATE_URL: http://weaviate:8080
