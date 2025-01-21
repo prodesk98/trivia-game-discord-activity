@@ -32,6 +32,18 @@ services:
       - weaviate_data:/var/lib/weaviate
     restart: on-failure:0
 
+  weaviate-panel:
+    container_name: weaviate-panel
+    image: naaive/weaviate-ui:latest
+    ports:
+      - "8081:7777"
+    environment:
+      WEAVIATE_API_KEYS: ''
+      WEAVIATE_URL: http://weaviate:8080
+    depends_on:
+      - weaviate
+    restart: on-failure:0
+
   rabbitmq:
     container_name: rabbitmq
     image: rabbitmq:3.9.29-alpine
