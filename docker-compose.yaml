@@ -157,7 +157,7 @@ services:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: trivia1
     volumes:
-      - grafana-data:/var/lib/grafana
+      - grafana_data:/var/lib/grafana
     depends_on:
       - prometheus
 
@@ -179,3 +179,4 @@ services:
 volumes:
   mongodb_data:
   weaviate_data:
+  grafana_data:
