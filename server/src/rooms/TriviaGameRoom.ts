@@ -186,6 +186,9 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
   onDispose() {
     console.log(`${this.roomId} disposed!`);
     if (this.roomIdUUID !== null) updateDisposed(this.roomIdUUID, true).then();
+    for (const [sessionId, player] of this.state.players) {
+        onlineUser(player.userId, false).then();
+    }
   }
 
   calculateScore(response: number, correct: number) {
