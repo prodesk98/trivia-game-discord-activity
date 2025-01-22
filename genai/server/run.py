@@ -7,8 +7,12 @@ from fastapi.responses import ORJSONResponse
 from config import env
 from server.core.lifespan import lifespan
 
-from .provider import aquery_question, acreate_question
+from .provider import (
+    aquery_question,
+    acreate_question,
+)
 from .provider.constraints import Category
+from .routes import metrics_routers
 from .schemas.questionnaire import (
     CreateQuestionSchema,
     CreateGenerateQuestionSchema,
@@ -29,6 +33,7 @@ app = FastAPI(
     debug=env.DEBUG,
     lifespan=lifespan,
 )
+app.include_router(metrics_routers)
 
 
 @app.get("/questionnaires", response_model=List[ObjectsQuestionResponse], tags=["questionnaire"])

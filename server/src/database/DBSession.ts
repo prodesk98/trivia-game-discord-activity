@@ -35,6 +35,17 @@ export const existsUser = async (discordId: string) => {
     );
 }
 
+export const onlineUser = async (userId: string, isOnline: boolean = true) => {
+    return User.updateOne(
+        {
+            id: new mongoose.Types.UUID(userId),
+        },
+        {
+            isOnline: isOnline,
+        }
+    )
+}
+
 export const createUser = async (discordId: string, username: string, avatar?: string, language?: string): Promise<mongoose.Types.UUID> => {
     const user = new User();
     user.discordId = discordId;

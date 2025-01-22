@@ -15,7 +15,7 @@ import {
     updateLanguage,
     updateDisposed,
     getSumScoreByRoomIdAndUserId,
-    getSumScoreByUserIdAndRoundId
+    getSumScoreByUserIdAndRoundId, onlineUser
 } from "../database/DBSession";
 import {MapSchema} from "@colyseus/schema";
 import * as crypto from "node:crypto";
@@ -144,6 +144,8 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
       console.log(`${this.state.owner} is the owner!`);
     }
 
+    // online: true
+    onlineUser(player.userId, true).then();
   }
 
   onLeave (client: Client, consented: boolean) {
@@ -166,12 +168,19 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     }
 
     let countAnswered = 0;
+    let userId = null;
     for (const [sessionId, player] of this.state.players) {
-        if (player.sessionId === client.sessionId) this.state.players.delete(sessionId);
+        if (player.sessionId === client.sessionId) {
+            this.state.players.delete(sessionId);
+            userId = player.userId;
+        }
         if (player.lack === false) countAnswered++;
     }
 
     if (countAnswered === this.state.players.size) this.endTurn();
+
+    // online: false
+    onlineUser(userId, false).then();
   }
 
   onDispose() {

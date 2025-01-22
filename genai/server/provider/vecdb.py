@@ -83,3 +83,10 @@ async def aquery_question(query: str, c: CollectionAsync) -> Optional[QueryRetur
     except Exception as e:
         logger.error(f"Error querying question: {e}")
 
+
+async def acount_documents(c: CollectionAsync) -> int:
+    try:
+        return (await c.aggregate.over_all(total_count=True)).total_count
+    except Exception as e:
+        logger.error(f"Error querying question: {e}")
+        return 0

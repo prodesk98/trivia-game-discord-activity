@@ -1,6 +1,6 @@
 from typing import Optional, Dict, List
 
-from pydantic import BaseModel, AmqpDsn, Field
+from pydantic import BaseModel, AmqpDsn, MongoDsn, Field
 from dotenv import load_dotenv
 from os import getenv
 
@@ -22,6 +22,7 @@ class Environment(BaseModel):
     DEEPSEEK_MODEL: Optional[str] = getenv("DEEPSEEK_MODEL", "deepseek-chat")
     OPENAI_MODERATION_MODEL: Optional[str] = getenv("OPENAI_MODERATION_MODEL", "text-moderation-stable")
     RABBITMQ_DSN: Optional[AmqpDsn] = getenv("RABBITMQ_DSN", "amqp://guest:guest@localhost:5672//")
+    MONGODB_DSN: Optional[MongoDsn] = getenv("MONGODB_DSN", "mongodb://root:root@localhost:27017/trivia")
     THEMES: List[str] = Field(default_factory=lambda: THEMES) # noqa
     SUBTOPICS: Dict[str, List[str]] = Field(default_factory=lambda: SUBTOPICS) # noqa
 

@@ -15,6 +15,7 @@ const GuildSchema = new Schema({
     },
     userId: {
         type: Schema.Types.UUID,
+        ref: "User",
         required: true,
     },
     name: {
