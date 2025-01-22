@@ -148,6 +148,7 @@ services:
     image: prom/prometheus:latest
     volumes:
       - ./genai/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
 
@@ -180,3 +181,4 @@ volumes:
   mongodb_data:
   weaviate_data:
   grafana_data:
+  prometheus_data:
