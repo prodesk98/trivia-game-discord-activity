@@ -33,7 +33,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
   timerChoose: Delayed;
   timerGame: Delayed;
   timeOut: Delayed;
-  playersHistory: string[] = new MapSchema<string>();
+  playersHistory: string[] = new Array<string>();
 
   static onAuth (token: string) {
     if (process.env.NODE_ENV !== "production") return;
