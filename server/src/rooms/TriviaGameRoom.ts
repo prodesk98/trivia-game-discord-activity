@@ -33,6 +33,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
   timerChoose: Delayed;
   timerGame: Delayed;
   timeOut: Delayed;
+  playersHistory: string[] = new MapSchema<string>();
 
   static onAuth (token: string) {
     if (process.env.NODE_ENV !== "production") return;
@@ -145,6 +146,7 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     }
 
     // online: true
+    this.playersHistory.push(player.userId);
     onlineUser(player.userId, true).then();
   }
 
@@ -168,27 +170,25 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     }
 
     let countAnswered = 0;
-    let userId = null;
     for (const [sessionId, player] of this.state.players) {
         if (player.sessionId === client.sessionId) {
-            userId = player.userId;
             this.state.players.delete(sessionId);
+            onlineUser(player.userId, false).then();
         }
         if (player.lack === false) countAnswered++;
     }
 
     if (countAnswered === this.state.players.size) this.endTurn();
-
-    // online: false
-    onlineUser(userId, false).then();
   }
 
-  onDispose() {
+  async onDispose() {
     console.log(`${this.roomId} disposed!`);
     if (this.roomIdUUID !== null) updateDisposed(this.roomIdUUID, true).then();
-    for (const [sessionId, player] of this.state.players) {
-        onlineUser(player.userId, false).then();
+    const tasks = [];
+    for (const userId of this.playersHistory) {
+        tasks.push(onlineUser(userId, false))
     }
+    await Promise.all(tasks);
   }
 
   calculateScore(response: number, correct: number) {
