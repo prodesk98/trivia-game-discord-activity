@@ -171,8 +171,8 @@ export class TriviaGameRoom extends Room<TriviaGameState> {
     let userId = null;
     for (const [sessionId, player] of this.state.players) {
         if (player.sessionId === client.sessionId) {
-            this.state.players.delete(sessionId);
             userId = player.userId;
+            this.state.players.delete(sessionId);
         }
         if (player.lack === false) countAnswered++;
     }
