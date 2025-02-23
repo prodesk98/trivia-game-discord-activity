@@ -36,16 +36,16 @@ class LLM:
     def __init__(self, quantities: int = 10):
         self._quantities = quantities
         self.llm_enrich = ChatOpenAI(
-            model_name=env.DEEPSEEK_MODEL,
+            model_name=env.DEEPSEEK_MODEL, # noqa
             base_url=env.DEEPSEEK_API_ENDPOINT, # noqa
-            openai_api_key=env.DEEPSEEK_API_KEY,
+            openai_api_key=env.DEEPSEEK_API_KEY, # noqa
             streaming=False,
             temperature=random.uniform(0.0, .7),
             top_p=random.uniform(0.0, 1.0),
         )
         self.llm_structured = ChatOpenAI(
-            model_name=env.OPENAI_MODEL,
-            openai_api_key=env.OPENAI_API_KEY,
+            model_name=env.OPENAI_MODEL, # noqa
+            openai_api_key=env.OPENAI_API_KEY, # noqa
             streaming=False,
             temperature=.0,
         )
@@ -138,7 +138,7 @@ class LLM:
     async def generate(self, prompt: str, languages: List[Literal["pt", "es", "fr", "de"]]) -> Optional[QuestionnaireResponse]:
         if "violates" in (await self.moderation(prompt)):
             logger.error("Prompt violates moderation policy")
-            return
+            return None
 
         TranslationQuestionnaireModel = create_model(
             "TranslationQuestionnaireModel",
